@@ -1,13 +1,17 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import '../globals.css';
-import Navbar from '@/components/Navbar';
+import type { Metadata } from "next";
+import { Inter, Playfair_Display_SC } from "next/font/google";
+import "./globals.css";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
+const playfair = Playfair_Display_SC({
+  subsets: ["latin"],
+  weight: ["400", "700", "900"],
+  variable: "--font-playfair",
+});
 
 export const metadata: Metadata = {
-  title: 'AISAT Marketplace',
-  description: 'Minimal college marketplace for AISAT students',
+  title: "AISAT Marketplace",
+  description: "Minimal college marketplace for AISAT students",
 };
 
 export default function RootLayout({
@@ -17,9 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-gray-100 text-gray-900`}>
-        <Navbar />
-        <main className="max-w-4xl mx-auto p-4">{children}</main>
+      <body
+        className={`${inter.className} ${playfair.variable} `}
+      >
+        <main>{children}</main>
       </body>
     </html>
   );
