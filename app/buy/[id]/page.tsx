@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, use } from "react";
+import { useRouter } from "next/navigation";
 import { playfair } from "@/lib/fonts";
 import { styles } from "@/lib/styles";
 import { Item } from "@/lib/types";
@@ -20,6 +21,7 @@ export default function BuyPage({
   const [questions, setQuestions] = useState<any[]>([]);
   const [newQuestion, setNewQuestion] = useState("");
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchUserAndItem() {
@@ -104,7 +106,7 @@ export default function BuyPage({
       } = await supabase.auth.getUser();
       const userId = user?.id || null;
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("questions")
         .insert({
           item_id: item.id,
@@ -290,6 +292,7 @@ export default function BuyPage({
               <button
                 className="w-full py-3 px-4 font-semibold text-white rounded-lg"
                 style={{ backgroundColor: styles.warmPrimary }}
+                onClick={() => router.push(`/chat?listing=${item.id}&seller=${item.user_id}`)}
               >
                 Contact Seller
               </button>

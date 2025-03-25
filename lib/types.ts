@@ -43,23 +43,22 @@ export interface FAQ {
   is_answered: boolean;
 }
 
+export interface Message {
+  id: string;
+  sent_at: string;
+  sender_id: string;
+  reciver_id: string;
+  listing_id: number;
+  message: string;
+  sender_name?: string;
+  sender_profile_image?: string;
+}
+
 // Export these interfaces in a barrel pattern to ensure usage
 export interface AuthState {
   user: User | null;
   isLoading: boolean;
   error: string | null;
-}
-
-export interface FAQ {
-  id: string;
-  item_id: string;
-  user_id: string | null;
-  question: string;
-  answer: string | null;
-  created_at: string;
-  answered_at: string | null;
-  user_name: string;
-  is_answered: boolean;
 }
 
 // Consider creating a types index file that re-exports these types

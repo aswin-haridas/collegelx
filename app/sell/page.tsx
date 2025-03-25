@@ -23,7 +23,6 @@ export default function SellPage() {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
@@ -171,7 +170,7 @@ export default function SellPage() {
     const fileName = `${userId}_${Date.now()}.${fileExt}`;
     const filePath = `${fileName}`;
 
-    const { error: uploadError, data } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from("images")
       .upload(filePath, file, {
         cacheControl: "3600",
@@ -204,7 +203,6 @@ export default function SellPage() {
 
     setLoading(true);
     setUploadError(null);
-    setIsUploading(true);
 
     try {
       // Check if user is logged in
@@ -240,7 +238,7 @@ export default function SellPage() {
       };
 
       // Insert into Supabase items table
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("items")
         .insert(itemData)
         .select();
@@ -259,7 +257,6 @@ export default function SellPage() {
     } finally {
       setLoading(false);
       setUploadProgress(0);
-      setIsUploading(false);
     }
   };
 

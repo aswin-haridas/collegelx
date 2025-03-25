@@ -14,6 +14,8 @@ export default function Home() {
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   // Filter states
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -76,6 +78,15 @@ export default function Home() {
     };
 
     fetchItems();
+
+    // Get user information from sessionStorage
+    if (typeof window !== "undefined") {
+      const storedUserName = sessionStorage.getItem("userName");
+      const storedUserRole = sessionStorage.getItem("userRole");
+
+      setUserName(storedUserName);
+      setUserRole(storedUserRole);
+    }
   }, []);
 
   // Filter items whenever filter criteria change
@@ -112,10 +123,13 @@ export default function Home() {
               className={`text-3xl font-bold mb-4 ${playfair.className}`}
               style={{ color: styles.warmText }}
             >
-              Welcome to AISAT Marketplace
+              {userName
+                ? `Welcome, ${userName}`
+                : "Welcome to AISAT Marketplace"}
             </h1>
             <p style={{ color: styles.warmText }}>
               Buy and sell college essentials with ease.
+              {userRole === "admin" && " You have admin privileges."}
             </p>
           </div>
 
