@@ -24,6 +24,7 @@ export interface Item {
   title: string;
   category: string;
   description: string;
+  seller_id: string;
   price: number;
   status: string;
   images?: string[]; // Changed from image_url to images to match usage in components

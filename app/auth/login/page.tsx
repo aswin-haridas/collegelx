@@ -1,250 +1,182 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { styles } from "@/lib/styles";
 import { supabase } from "@/lib/supabase";
+import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "@/lib/hooks/useAuth";
 
-/**
- * Login to an existing account using database authentication
- */
 export default function LoginPage() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { isAuthenticated, isLoading } = useAuth(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/";
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const loginUser = async (email: string, password: string) => {
-    // Check email and password against the users table
-    const { data: user, error: fetchError } = await supabase
-      .from("users")
-      .select("*")
-      .eq("email", email)
-      .single();
-
-    if (fetchError) {
-      throw new Error("Invalid email or password");
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push(redirect);
     }
+  }, [isAuthenticated, redirect, router]);
 
-    // Simple password check (in a real app, you would use encryption)
-    if (user && user.password === password) {
-      // Store user role and name in sessionStorage for session management
-      sessionStorage.setItem("userRole", user.role);
-      sessionStorage.setItem("userName", user.name);
-      sessionStorage.setItem("userId", user.id);
-
-      // Still keep the full user object in localStorage for backward compatibility
-      localStorage.setItem("user", JSON.stringify(user));
-
-      return user;
-    } else {
-      throw new Error("Invalid email or password");
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setIsLoading(true);
+    setError(null);
+    setLoading(true);
 
     try {
-      await loginUser(formData.email, formData.password);
-      router.push("/");
-    } catch (err: any) {
-      setError(err.message);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        // Get user details from your user table
+        const { data: userData, error: userError } = await supabase
+          .from("user")
+          .select("*")
+          .eq("userid", data.user.id)
+          .single();
+
+        if (userError) throw userError;
+
+        // Store auth data in localStorage
+        localStorage.setItem("auth", "true");
+        localStorage.setItem("user_id", userData.userid);
+        localStorage.setItem("name", userData.name);
+        localStorage.setItem("role", userData.role);
+
+        // Redirect to the intended page
+        router.push(redirect);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Invalid email or password");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row">
-      {/* Left side with tagline */}
-      <div className="md:w-1/2 flex flex-col items-center justify-center p-8 md:p-12">
-        <div className="text-center md:text-left w-full max-w-lg">
-          <h1
-            className={`text-4xl md:text-5xl lg:text-6xl font-bold mb-6 ${playfair.className}`}
-            style={{ color: styles.warmPrimary }}
-          >
-            CollegeLX
-          </h1>
-          <p
-            className="text-xl md:text-2xl lg:text-3xl font-light mb-8"
-            style={{ color: styles.warmText }}
-          >
-            A place you can share your items with ease
-          </p>
-          <div
-            className="hidden md:block h-1 w-20 mb-8 rounded-full"
-            style={{ backgroundColor: styles.warmAccent }}
-          ></div>
-          <p
-            className="text-base md:text-lg"
-            style={{ color: styles.warmText }}
-          >
-            Connect with fellow students, share resources, and simplify campus
-            life.
-          </p>
-        </div>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <Loader2
+          className="h-8 w-8 animate-spin"
+          style={{ color: styles.warmPrimary }}
+        />
       </div>
+    );
+  }
 
-      {/* Right side with form */}
-      <div className="md:w-1/2 flex items-center justify-center p-4 md:p-12">
-        <div
-          className="w-full max-w-md space-y-6 p-8 md:p-10 rounded-xl shadow-lg"
-          style={{ backgroundColor: "white" }}
-        >
-          <div>
-            <h2
-              className={`text-center text-3xl font-bold ${playfair.className}`}
+  return (
+    <div className="min-h-screen flex flex-col justify-center items-center p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link href="/">
+            <h1
+              className={`text-4xl ${playfair.className}`}
               style={{ color: styles.warmPrimary }}
             >
-              Sign in to your account
-            </h2>
-            <p
-              className="mt-3 text-center text-sm"
-              style={{ color: styles.warmText }}
-            >
-              Don't have an account?{" "}
-              <Link
-                href="/auth/signup"
-                className="font-medium hover:text-warmAccentDark transition-colors"
-                style={{ color: styles.warmAccent }}
+              CollegeLX
+            </h1>
+          </Link>
+        </div>
+
+        <div className="bg-white p-8 rounded-lg shadow-md">
+          <h2
+            className="text-2xl font-semibold mb-6"
+            style={{ color: styles.warmText }}
+          >
+            Log In
+          </h2>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div
+                className="p-3 rounded-lg text-sm"
+                style={{
+                  backgroundColor: "rgba(220, 38, 38, 0.1)",
+                  color: "#DC2626",
+                }}
               >
-                Sign up
-              </Link>
-            </p>
-          </div>
-
-          {error && (
-            <div
-              className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md relative"
-              role="alert"
-            >
-              <span className="block sm:inline">{error}</span>
-            </div>
-          )}
-
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="space-y-3">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium mb-1"
-                  style={{ color: styles.warmText }}
-                >
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="appearance-none relative block w-full px-3 py-2 border-2 rounded-md placeholder-warmText/50 focus:outline-none focus:ring-warmAccent focus:border-warmAccent sm:text-sm"
-                  style={{
-                    borderColor: styles.warmBorder,
-                    color: styles.warmText,
-                  }}
-                  placeholder="Email address"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
+                {error}
               </div>
+            )}
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium mb-1"
-                  style={{ color: styles.warmText }}
-                >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="appearance-none relative block w-full px-3 py-2 border-2 rounded-md placeholder-warmText/50 focus:outline-none focus:ring-warmAccent focus:border-warmAccent sm:text-sm"
-                  style={{
-                    borderColor: styles.warmBorder,
-                    color: styles.warmText,
-                  }}
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 focus:ring rounded"
-                  style={{
-                    color: styles.warmAccent,
-                    borderColor: styles.warmBorder,
-                  }}
-                />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm"
-                  style={{ color: styles.warmText }}
-                >
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <Link
-                  href="/auth/forgot-password"
-                  className="font-medium hover:text-warmAccentDark"
-                  style={{ color: styles.warmAccent }}
-                >
-                  Forgot your password?
-                </Link>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
+                style={{
+                  borderColor: styles.warmBorder,
+                  color: styles.warmText,
+                }}
+              />
             </div>
 
             <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors"
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                 style={{
-                  backgroundColor: isLoading ? "#ccc" : styles.warmPrimary,
-                  borderColor: "transparent",
+                  borderColor: styles.warmBorder,
+                  color: styles.warmText,
                 }}
-                onMouseOver={(e) =>
-                  !isLoading &&
-                  (e.currentTarget.style.backgroundColor =
-                    styles.warmPrimaryDark)
-                }
-                onMouseOut={(e) =>
-                  !isLoading &&
-                  (e.currentTarget.style.backgroundColor = styles.warmPrimary)
-                }
-              >
-                {isLoading ? "Processing..." : "Sign in"}
-              </button>
+              />
             </div>
+
+            <button
+              type="submit"
+              className="w-full py-2 px-4 rounded-lg text-white flex items-center justify-center"
+              style={{ backgroundColor: styles.warmPrimary }}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                  Logging in...
+                </>
+              ) : (
+                "Log In"
+              )}
+            </button>
           </form>
+
+          <p className="mt-4 text-center text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Link
+              href={`/auth/signup${
+                redirect !== "/"
+                  ? `?redirect=${encodeURIComponent(redirect)}`
+                  : ""
+              }`}
+              className="font-medium hover:underline"
+              style={{ color: styles.warmPrimary }}
+            >
+              Sign Up
+            </Link>
+          </p>
         </div>
       </div>
     </div>
