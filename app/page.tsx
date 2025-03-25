@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import ItemCard from "@/components/ItemCard";
 import { Item } from "@/lib/types";
-import { getItems } from "./api/items";
 import Link from "next/link";
-import { playfair } from "./font/fonts";
+import { playfair } from "../lib/fonts";
 import { styles } from "@/lib/styles";
+import Sidebar from "@/components/Sidebar";
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
   const [items, setItems] = useState<Item[]>([]);
@@ -34,6 +35,30 @@ export default function Home() {
     { id: "100-200", label: "₹100-200" },
     { id: "200-plus", label: "₹200+" },
   ];
+
+  const getItems = async () => {
+    try {
+      // Query items sorted by creation date (newest first)
+      const { data: items, error } = await supabase
+        .from("items")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching items:", error);
+        throw new Error(error.message);
+      }
+
+      if (!items) {
+        return [];
+      }
+
+      return items as Item[];
+    } catch (error: any) {
+      console.error("Failed to fetch items:", error);
+      throw new Error(error?.message || "Failed to fetch items");
+    }
+  };
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -78,92 +103,106 @@ export default function Home() {
   }, [items, categoryFilter, priceFilter]);
 
   return (
-    <div
-      className="py-10 px-4 max-w-6xl mx-auto"
-      style={{ backgroundColor: styles.warmBg }}
-    >
-      <div className="text-center mb-10">
-        <h1
-          className={`text-3xl font-bold mb-4 ${playfair.className}`}
-          style={{ color: styles.warmText }}
-        >
-          Welcome to AISAT Marketplace
-        </h1>
-        <p style={{ color: styles.warmText }}>
-          Buy and sell college essentials with ease.
-        </p>
-      </div>
-
-      {/* Filter options */}
-      <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div>
-            <label
-              htmlFor="category-filter"
-              className="block text-sm font-medium mb-1"
+    <div className="flex">
+      <Sidebar />
+      <main className="ml-64 w-full min-h-screen p-8 ">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10">
+            <h1
+              className={`text-3xl font-bold mb-4 ${playfair.className}`}
               style={{ color: styles.warmText }}
             >
-              Category
-            </label>
-            <select
-              id="category-filter"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="block w-full px-4 py-2 rounded-md shadow-sm"
-              style={{ borderColor: styles.warmBorder, color: styles.warmText }}
-            >
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </option>
-              ))}
-            </select>
+              Welcome to AISAT Marketplace
+            </h1>
+            <p style={{ color: styles.warmText }}>
+              Buy and sell college essentials with ease.
+            </p>
           </div>
 
-          <div>
-            <label
-              htmlFor="price-filter"
-              className="block text-sm font-medium mb-1"
+          {/* Filter options */}
+          <div className="mb-8 flex flex-col sm:flex-row gap-4 ">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div>
+                <label
+                  htmlFor="category-filter"
+                  className="block text-sm font-medium mb-1"
+                  style={{ color: styles.warmText }}
+                >
+                  Category
+                </label>
+                <select
+                  id="category-filter"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="block w-full px-4 py-2 rounded shadow-sm"
+                  style={{
+                    borderColor: styles.warmBorder,
+                    color: styles.warmText,
+                  }}
+                >
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="price-filter"
+                  className="block text-sm font-medium mb-1"
+                  style={{ color: styles.warmText }}
+                >
+                  Price Range
+                </label>
+                <select
+                  id="price-filter"
+                  value={priceFilter}
+                  onChange={(e) => setPriceFilter(e.target.value)}
+                  className="block w-full px-4 py-2 rounded-md shadow-sm"
+                  style={{
+                    borderColor: styles.warmBorder,
+                    color: styles.warmText,
+                  }}
+                >
+                  {priceRanges.map((range) => (
+                    <option key={range.id} value={range.id}>
+                      {range.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {loading ? (
+            <div
+              className="text-center py-10"
               style={{ color: styles.warmText }}
             >
-              Price Range
-            </label>
-            <select
-              id="price-filter"
-              value={priceFilter}
-              onChange={(e) => setPriceFilter(e.target.value)}
-              className="block w-full px-4 py-2 rounded-md shadow-sm"
-              style={{ borderColor: styles.warmBorder, color: styles.warmText }}
+              Loading items...
+            </div>
+          ) : error ? (
+            <div className="text-center py-10 text-red-500">{error}</div>
+          ) : filteredItems.length === 0 ? (
+            <div
+              className="text-center py-10"
+              style={{ color: styles.warmText }}
             >
-              {priceRanges.map((range) => (
-                <option key={range.id} value={range.id}>
-                  {range.label}
-                </option>
+              No items available matching your filters.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredItems.map((item) => (
+                <Link href={`/buy/${item.id}`} key={item.id}>
+                  <ItemCard item={item} />
+                </Link>
               ))}
-            </select>
-          </div>
+            </div>
+          )}
         </div>
-      </div>
-
-      {loading ? (
-        <div className="text-center py-10" style={{ color: styles.warmText }}>
-          Loading items...
-        </div>
-      ) : error ? (
-        <div className="text-center py-10 text-red-500">{error}</div>
-      ) : filteredItems.length === 0 ? (
-        <div className="text-center py-10" style={{ color: styles.warmText }}>
-          No items available matching your filters.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredItems.map((item) => (
-            <Link href={`/buy/${item.id}`} key={item.id}>
-              <ItemCard item={item} />
-            </Link>
-          ))}
-        </div>
-      )}
+      </main>
     </div>
   );
 }

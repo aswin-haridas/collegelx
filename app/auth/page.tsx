@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { styles } from "@/lib/styles";
+import { supabase } from "@/lib/supabase";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -53,26 +54,56 @@ export default function AuthPage() {
     }
 
     try {
-      const response = await fetch("/api/auth", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action: isLogin ? "login" : "signup",
+      const { data, error } = await supabase
+        .from("users")
+        .select("email")
+        .eq("email", formData.email);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data && data.length > 0) {
+        setError("Email already in use");
+        setIsLoading(false);
+        return;
+      }
+
+      if (isLogin) {
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
-          name: formData.name,
-          phone: formData.phone,
-          universityNumber: formData.universityNumber,
-          department: formData.department,
-        }),
-      });
+        });
 
-      const data = await response.json();
+        if (error) {
+          throw new Error(error.message);
+        }
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+        });
 
-      if (!response.ok) {
-        throw new Error(data.error || "Authentication failed");
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        if (data.user) {
+          const { error } = await supabase.from("users").insert([
+            {
+              id: data.user.id,
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone,
+              universityNumber: formData.universityNumber,
+              department: formData.department,
+            },
+          ]);
+
+          if (error) {
+            throw new Error(error.message);
+          }
+        }
       }
 
       // Redirect on success

@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { styles } from "@/lib/styles";
-import { playfair } from "@/app/font/fonts";
-import Header from "@/components/Header";
-import { Trash2 } from "lucide-react";
+import { playfair } from "@/lib/fonts";
+import Header from "@/components/Sidebar";
+import { AlertCircle, Info, Loader2, Trash2 } from "lucide-react";
 
 export default function SellPage() {
   const router = useRouter();
@@ -24,6 +24,8 @@ export default function SellPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   // Get current user ID on component mount
   useEffect(() => {
@@ -31,10 +33,56 @@ export default function SellPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      setUserId(user?.id || null);
+
+      if (user?.id) {
+        setUserId(user.id);
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+        // Redirect to login if not logged in
+        setTimeout(() => {
+          router.push("/auth?redirect=/sell");
+        }, 2000);
+      }
     }
     getUserId();
-  }, []);
+  }, [router]);
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!formData.title.trim()) {
+      errors.title = "Title is required";
+    } else if (formData.title.length < 3) {
+      errors.title = "Title must be at least 3 characters";
+    }
+
+    if (!formData.description.trim()) {
+      errors.description = "Description is required";
+    } else if (formData.description.length < 10) {
+      errors.description = "Description must be at least 10 characters";
+    }
+
+    if (!formData.price) {
+      errors.price = "Price is required";
+    } else if (
+      isNaN(parseFloat(formData.price)) ||
+      parseFloat(formData.price) <= 0
+    ) {
+      errors.price = "Price must be a positive number";
+    }
+
+    if (!formData.category) {
+      errors.category = "Please select a category";
+    }
+
+    if (images.length === 0) {
+      errors.images = "Please add at least one image";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -46,16 +94,44 @@ export default function SellPage() {
       ...prev,
       [name]: value,
     }));
+
+    // Clear error when field is modified
+    if (formErrors[name]) {
+      setFormErrors((prev) => {
+        const updated = { ...prev };
+        delete updated[name];
+        return updated;
+      });
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
-      setImages(filesArray);
+
+      // Don't allow more than 5 images
+      if (images.length + filesArray.length > 5) {
+        setFormErrors((prev) => ({
+          ...prev,
+          images: "Maximum 5 images allowed",
+        }));
+        return;
+      }
+
+      setImages((prev) => [...prev, ...filesArray]);
 
       // Create temporary URLs for preview
       const urls = filesArray.map((file) => URL.createObjectURL(file));
-      setImageUrls(urls);
+      setImageUrls((prev) => [...prev, ...urls]);
+
+      // Clear any image-related errors
+      if (formErrors.images) {
+        setFormErrors((prev) => {
+          const updated = { ...prev };
+          delete updated.images;
+          return updated;
+        });
+      }
     }
   };
 
@@ -92,7 +168,7 @@ export default function SellPage() {
     }
 
     const fileExt = file.name.split(".").pop();
-    const fileName = `${Date.now()}.${fileExt}`;
+    const fileName = `${userId}_${Date.now()}.${fileExt}`;
     const filePath = `${fileName}`;
 
     const { error: uploadError, data } = await supabase.storage
@@ -116,14 +192,24 @@ export default function SellPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate form before submission
+    if (!validateForm()) {
+      // Scroll to the first error
+      const firstErrorField = Object.keys(formErrors)[0];
+      const errorElement = document.getElementById(firstErrorField);
+      errorElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     setLoading(true);
     setUploadError(null);
     setIsUploading(true);
 
     try {
-      // Check if any images were selected
-      if (images.length === 0) {
-        throw new Error("Please add at least one image of your item");
+      // Check if user is logged in
+      if (!userId) {
+        throw new Error("You must be logged in to sell items");
       }
 
       // Upload images first
@@ -143,8 +229,8 @@ export default function SellPage() {
 
       // Format data for Supabase
       const itemData = {
-        title: formData.title,
-        description: formData.description,
+        title: formData.title.trim(),
+        description: formData.description.trim(),
         price: parseFloat(formData.price),
         category: parseInt(formData.category),
         user_id: userId,
@@ -163,6 +249,7 @@ export default function SellPage() {
         throw new Error(`Database error: ${error.message}`);
       }
 
+      // Success message and redirect
       alert("Item added successfully!");
       router.push("/");
     } catch (error: any) {
@@ -177,6 +264,49 @@ export default function SellPage() {
   };
 
   const inputStyle = `w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 transition-colors`;
+  const errorInputStyle = `w-full px-3 py-2 border border-red-500 rounded-md shadow-sm focus:outline-none focus:ring-2 transition-colors`;
+
+  // Show loading message while checking authentication
+  if (isLoggedIn === null) {
+    return (
+      <div
+        className="flex flex-col items-center justify-center min-h-screen"
+        style={{ backgroundColor: styles.warmBg }}
+      >
+        <Loader2
+          className="w-10 h-10 animate-spin mb-4"
+          style={{ color: styles.warmPrimary }}
+        />
+        <p style={{ color: styles.warmText }}>Loading...</p>
+      </div>
+    );
+  }
+
+  // Show message if not logged in
+  if (isLoggedIn === false) {
+    return (
+      <div
+        className="flex flex-col items-center justify-center min-h-screen p-4"
+        style={{ backgroundColor: styles.warmBg }}
+      >
+        <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full text-center">
+          <AlertCircle
+            className="mx-auto w-12 h-12 mb-4"
+            style={{ color: styles.warmPrimary }}
+          />
+          <h2
+            className="text-xl font-bold mb-2"
+            style={{ color: styles.warmText }}
+          >
+            Login Required
+          </h2>
+          <p className="mb-4 text-gray-600">
+            You need to be logged in to sell items. Redirecting to login page...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -203,7 +333,7 @@ export default function SellPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label htmlFor="title" className={`block font-medium `}>
-                Title
+                Title <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -212,17 +342,22 @@ export default function SellPage() {
                 value={formData.title}
                 onChange={handleChange}
                 required
-                className={inputStyle}
+                className={formErrors.title ? errorInputStyle : inputStyle}
                 style={{
-                  borderColor: styles.warmBorder,
+                  borderColor: formErrors.title
+                    ? "rgb(239, 68, 68)"
+                    : styles.warmBorder,
                   color: styles.warmText,
                 }}
               />
+              {formErrors.title && (
+                <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <label htmlFor="description" className="block font-medium">
-                Description
+                Description <span className="text-red-500">*</span>
               </label>
               <textarea
                 id="description"
@@ -231,39 +366,59 @@ export default function SellPage() {
                 onChange={handleChange}
                 rows={4}
                 required
-                className={inputStyle}
+                className={
+                  formErrors.description ? errorInputStyle : inputStyle
+                }
                 style={{
-                  borderColor: styles.warmBorder,
+                  borderColor: formErrors.description
+                    ? "rgb(239, 68, 68)"
+                    : styles.warmBorder,
                   color: styles.warmText,
                 }}
               />
+              {formErrors.description && (
+                <p className="text-red-500 text-sm mt-1">
+                  {formErrors.description}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label htmlFor="price" className="block font-medium">
-                  Price
+                  Price <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="number"
-                  id="price"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  step="0.01"
-                  min="0"
-                  required
-                  className={inputStyle}
-                  style={{
-                    borderColor: styles.warmBorder,
-                    color: styles.warmText,
-                  }}
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5">₹</span>
+                  <input
+                    type="number"
+                    id="price"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleChange}
+                    step="0.01"
+                    min="0"
+                    required
+                    className={formErrors.price ? errorInputStyle : inputStyle}
+                    style={{
+                      paddingLeft: "1.5rem",
+                      borderColor: formErrors.price
+                        ? "rgb(239, 68, 68)"
+                        : styles.warmBorder,
+                      color: styles.warmText,
+                    }}
+                  />
+                </div>
+                {formErrors.price && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.price}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="category" className="block font-medium">
-                  Category
+                  Category <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="category"
@@ -271,9 +426,11 @@ export default function SellPage() {
                   value={formData.category}
                   onChange={handleChange}
                   required
-                  className={inputStyle}
+                  className={formErrors.category ? errorInputStyle : inputStyle}
                   style={{
-                    borderColor: styles.warmBorder,
+                    borderColor: formErrors.category
+                      ? "rgb(239, 68, 68)"
+                      : styles.warmBorder,
                     color: styles.warmText,
                   }}
                 >
@@ -284,23 +441,55 @@ export default function SellPage() {
                   <option value="4">Clothing</option>
                   <option value="5">Other</option>
                 </select>
+                {formErrors.category && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.category}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Image Upload Section */}
             <div className="space-y-2">
               <label htmlFor="images" className="block font-medium">
-                Images
+                Images <span className="text-red-500">*</span>
+                <span className="text-xs text-gray-500 ml-2">
+                  (Max 5 images, 5MB each)
+                </span>
               </label>
-              <input
-                type="file"
-                id="images"
-                name="images"
-                onChange={handleImageChange}
-                multiple
-                accept="image/*"
-                className="w-full"
-              />
+              <div
+                className={`border-2 border-dashed rounded-md p-4 text-center ${
+                  formErrors.images ? "border-red-500" : "border-gray-300"
+                }`}
+              >
+                <input
+                  type="file"
+                  id="images"
+                  name="images"
+                  onChange={handleImageChange}
+                  multiple
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  className="hidden"
+                />
+                <label
+                  htmlFor="images"
+                  className="flex flex-col items-center cursor-pointer"
+                >
+                  <Info size={24} className="mb-2 text-gray-400" />
+                  <span className="text-gray-600">
+                    {images.length === 0
+                      ? "Click to select images"
+                      : "Click to add more images"}
+                  </span>
+                  <span className="text-xs text-gray-500 mt-1">
+                    Supported formats: JPEG, PNG, GIF, WEBP
+                  </span>
+                </label>
+              </div>
+
+              {formErrors.images && (
+                <p className="text-red-500 text-sm mt-1">{formErrors.images}</p>
+              )}
 
               {/* Image Previews */}
               {imageUrls.length > 0 && (
@@ -361,9 +550,16 @@ export default function SellPage() {
                   color: "white",
                   borderColor: "transparent",
                 }}
-                className="w-full py-2 px-4 rounded-md hover:opacity-90 focus:outline-none focus:ring-2 transition-colors disabled:opacity-70 font-medium"
+                className="w-full py-2 px-4 rounded-md hover:opacity-90 focus:outline-none focus:ring-2 transition-colors disabled:opacity-70 font-medium flex items-center justify-center"
               >
-                {loading ? "Adding..." : "Add Item"}
+                {loading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin mr-2" />
+                    <span>Adding Item...</span>
+                  </>
+                ) : (
+                  "Add Item"
+                )}
               </button>
             </div>
           </form>
