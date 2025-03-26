@@ -14,6 +14,9 @@ export default function SellPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [productType, setProductType] = useState("");
+  const [year, setYear] = useState("");
+  const [department, setDepartment] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -38,14 +41,14 @@ export default function SellPage() {
         images.map(async (image) => {
           const fileName = `${Date.now()}-${image.name}`;
           const { data, error } = await supabase.storage
-            .from("items")
+            .from("images")
             .upload(fileName, image);
 
           if (error) throw error;
 
           const {
             data: { publicUrl },
-          } = supabase.storage.from("items").getPublicUrl(fileName);
+          } = supabase.storage.from("images").getPublicUrl(fileName);
 
           return publicUrl;
         })
@@ -56,6 +59,9 @@ export default function SellPage() {
         title,
         description,
         price: parseFloat(price),
+        product_type: productType,
+        year,
+        department,
         image_url: imageUrls,
         seller_id: userId,
         status: "available",
@@ -108,6 +114,7 @@ export default function SellPage() {
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Title Row */}
             <div>
               <label className="block text-sm font-medium text-gray-600">
                 Title
@@ -125,6 +132,7 @@ export default function SellPage() {
               />
             </div>
 
+            {/* Description Row */}
             <div>
               <label className="block text-sm font-medium text-gray-600">
                 Description
@@ -142,23 +150,102 @@ export default function SellPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-600">
-                Price (₹)
-              </label>
-              <input
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-                min="0"
-                step="0.01"
-                className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
-                style={{
-                  borderColor: styles.warmBorder,
-                  color: styles.warmText,
-                }}
-              />
+            {/* Price and Product Type Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600">
+                  Price (₹)
+                </label>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  required
+                  min="0"
+                  step="0.01"
+                  className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
+                  style={{
+                    borderColor: styles.warmBorder,
+                    color: styles.warmText,
+                  }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-600">
+                  Product Type
+                </label>
+                <select
+                  value={productType}
+                  onChange={(e) => setProductType(e.target.value)}
+                  required
+                  className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
+                  style={{
+                    borderColor: styles.warmBorder,
+                    color: styles.warmText,
+                  }}
+                >
+                  <option value="">Select Product Type</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Clothing">Clothing</option>
+                  <option value="Furniture">Furniture</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Year and Department Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600">
+                  Year
+                </label>
+                <select
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  required
+                  className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
+                  style={{
+                    borderColor: styles.warmBorder,
+                    color: styles.warmText,
+                  }}
+                >
+                  <option value="">Select Year</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-600">
+                  Department
+                </label>
+                <select
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  required
+                  className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
+                  style={{
+                    borderColor: styles.warmBorder,
+                    color: styles.warmText,
+                  }}
+                >
+                  <option value="">Select Department</option>
+                  <option value="Computer Science">Computer Science</option>
+                  <option value="Information Technology">
+                    Information Technology
+                  </option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Mechanical">Mechanical</option>
+                  <option value="Civil">Civil</option>
+                  <option value="Electrical">Electrical</option>
+                  <option value="Business Administration">
+                    Business Administration
+                  </option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
             </div>
 
             <div>
