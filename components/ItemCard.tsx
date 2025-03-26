@@ -1,8 +1,8 @@
 import { useState } from "react";
 import Image from "next/image";
-import { Item } from "@/lib/types";
 import { styles } from "@/lib/styles";
 import Link from "next/link";
+import { Item } from "@/lib/types";
 
 interface ItemCardProps {
   item: Item;
@@ -20,7 +20,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     item.images && item.images.length > 0
       ? item.images[0]
       : item.imageUrl || "/placeholder-image.png";
-
+  
   return (
     <Link href={`/buy/${item.id}`} className="block h-full">
       <div

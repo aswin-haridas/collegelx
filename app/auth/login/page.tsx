@@ -32,35 +32,28 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("email", email)
+        .eq("password", password);
 
-      if (error) throw error;
-
-      if (data.user) {
-        // Get user details from your user table
-        const { data: userData, error: userError } = await supabase
-          .from("user")
-          .select("*")
-          .eq("userid", data.user.id)
-          .single();
-
-        if (userError) throw userError;
-
-        // Store auth data in localStorage
-        localStorage.setItem("auth", "true");
-        localStorage.setItem("user_id", userData.userid);
-        localStorage.setItem("name", userData.name);
-        localStorage.setItem("role", userData.role);
-
-        // Redirect to the intended page
-        router.push(redirect);
+      if (error || !data || data.length === 0) {
+        throw new Error("Invalid email or password");
       }
+
+      const userData = data[0];
+
+      // Store auth data in localStorage
+      localStorage.setItem("auth", "true");
+      localStorage.setItem("user_id", userData.userid);
+      localStorage.setItem("name", userData.name);
+      localStorage.setItem("role", userData.role);
+
+      alert("Login successful!");
+      router.push("/");
     } catch (err) {
-      console.error("Login error:", err);
-      setError("Invalid email or password");
+      setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setLoading(false);
     }

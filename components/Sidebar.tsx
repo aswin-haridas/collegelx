@@ -119,7 +119,7 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
                   }`}
                   style={{
                     color: isActive
-                      ? activeTextColor || styles.warmBg
+                      ? styles.warmBorder
                       : styles.warmText,
                     backgroundColor: isActive
                       ? styles.warmPrimary
@@ -142,7 +142,7 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
                     className="mr-3"
                     style={{
                       color: isActive
-                        ? activeTextColor || styles.warmPrimary
+                        ? styles.warmBorder
                         : styles.warmText,
                     }}
                   >
