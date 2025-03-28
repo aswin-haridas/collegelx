@@ -7,6 +7,7 @@ import Header from "@/components/Sidebar";
 import { supabase } from "@/lib/supabase";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { playfair } from "@/lib/fonts";
 
 // Define types for better type safety
 interface Product {
@@ -44,7 +45,7 @@ const ProductItem = ({
 }) => (
   <div
     key={product.id}
-    className="border p-4 rounded-lg flex justify-between items-center"
+    className="border border-gray-50 shadow-xl  p-4 rounded-lg flex justify-between items-center"
   >
     <div>
       <h3 className="font-semibold">{product.title}</h3>
@@ -178,7 +179,7 @@ export default function AdminPage() {
       <div className="max-w-4xl mx-auto p-4 ml-64">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h1
-            className="text-2xl font-semibold mb-6"
+            className={`text-5xl font-base mb-6 mt-9 ${playfair.className}`}
             style={{ color: styles.warmPrimaryDark }}
           >
             Admin Dashboard
@@ -192,7 +193,7 @@ export default function AdminPage() {
           )}
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Pending Approvals</h2>
+            {/* <h2 className="text-xl font-semibold">Pending Approvals</h2> */}
 
             {products.map((product) => (
               <ProductItem
