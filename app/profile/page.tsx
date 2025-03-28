@@ -513,8 +513,8 @@ export default function ProfilePage() {
               {items.map((item) => (
                 <li key={item.id} className="p-3 border flex justify-between items-center rounded shadow-md">
                 <div className="flex-1">
-                  <p><strong>Name:</strong> {item.name}</p>
-                  <p><strong>Description:</strong> {item.description}</p>
+                  {/* <p><strong>Name:</strong> {item.name}</p> */}
+                  <p><strong> {item.description}</strong></p>
                   <p className="text-sm text-gray-500">Created at: {new Date(item.created_at).toLocaleString()}</p>
                 </div>
                 {item.image && (
