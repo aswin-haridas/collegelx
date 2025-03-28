@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
 import { useRouter, usePathname } from "next/navigation";
-import { Home, ShoppingBag, User, LogOut, MessageCircle } from "lucide-react";
+import { Home, ShoppingBag, User, LogOut, MessageCircle, ClockAlert } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 interface SidebarProps {
@@ -17,7 +17,7 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
-
+  const userRole = sessionStorage.getItem("userRole")
   useEffect(() => {
     // Check authentication status and get user information
     async function checkAuth() {
@@ -59,7 +59,9 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
       localStorage.removeItem("user_id");
       localStorage.removeItem("name");
       localStorage.removeItem("role");
-
+      sessionStorage.removeItem("userRole");
+      sessionStorage.removeItem("userName");
+      sessionStorage.removeItem("userId");
       // Redirect to login page
       router.push("/auth/login");
     } catch (error) {
@@ -73,7 +75,10 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
     { name: "Messages", href: "/chat", icon: <MessageCircle size={18} /> },
     { name: "Profile", href: "/profile", icon: <User size={18} /> },
   ];
-
+  
+  const adminItems = [
+    { name: "Pending Request", href: "/", icon: <ClockAlert size={18} /> }
+  ];
   return (
     <aside
       className="h-screen w-64 fixed left-0 top-0 z-10 shadow-md flex flex-col py-6 px-4"
@@ -98,64 +103,81 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
           </p>
         </div>
       )}
+    
+      {userRole == 'user' ? (
+         <nav className="flex-1">
+         <ul className="flex flex-col space-y-2">
+           {navItems.map((item) => {
+             const isActive = pathname === item.href;
+             const requiresAuth =
+               item.href !== "/" && !item.href.startsWith("/buy/");
+             const linkHref =
+               requiresAuth && !userName
+                 ? `/auth/login?redirect=${encodeURIComponent(item.href)}`
+                 : item.href;
+ 
+             return (
+           
+               <li key={item.name}>
+                 <Link
+                   href={linkHref}
+                   className={`flex items-center py-2.5 px-3 rounded-lg transition-all duration-200 ${
+                     isActive ? "bg-opacity-10 font-medium" : ""
+                   }`}
+                   style={{
+                     color: isActive
+                       ? styles.warmBorder
+                       : styles.warmText,
+                     backgroundColor: isActive
+                       ? styles.warmPrimary
+                       : "transparent",
+                     opacity: isActive ? 1 : 0.8,
+                   }}
+                   onMouseOver={(e) => {
+                     if (!isActive) {
+                       e.currentTarget.style.backgroundColor =
+                         "rgba(184, 110, 84, 0.1)";
+                     }
+                   }}
+                   onMouseOut={(e) => {
+                     if (!isActive) {
+                       e.currentTarget.style.backgroundColor = "transparent";
+                     }
+                   }}
+                 >
+                   <span
+                     className="mr-3"
+                     style={{
+                       color: isActive
+                         ? styles.warmBorder
+                         : styles.warmText,
+                     }}
+                   >
+                     {item.icon}
+                   </span>
+                   {item.name}
+                 </Link>
+               </li>
+             );
+           })}
+         </ul>
+       </nav>
+      ) : (
+        <div
+        className={`flex items-center py-2.5 px-3 rounded-lg transition-all duration-200 bg-opacity-10 font-medium}`}
+        style={{
+          borderColor: styles.warmBorder,
+          backgroundColor: styles.warmAccent,
+          opacity: 1,
+        }}
+       
 
-      <nav className="flex-1">
-        <ul className="flex flex-col space-y-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            const requiresAuth =
-              item.href !== "/" && !item.href.startsWith("/buy/");
-            const linkHref =
-              requiresAuth && !userName
-                ? `/auth/login?redirect=${encodeURIComponent(item.href)}`
-                : item.href;
-
-            return (
-              <li key={item.name}>
-                <Link
-                  href={linkHref}
-                  className={`flex items-center py-2.5 px-3 rounded-lg transition-all duration-200 ${
-                    isActive ? "bg-opacity-10 font-medium" : ""
-                  }`}
-                  style={{
-                    color: isActive
-                      ? styles.warmBorder
-                      : styles.warmText,
-                    backgroundColor: isActive
-                      ? styles.warmPrimary
-                      : "transparent",
-                    opacity: isActive ? 1 : 0.8,
-                  }}
-                  onMouseOver={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor =
-                        "rgba(184, 110, 84, 0.1)";
-                    }
-                  }}
-                  onMouseOut={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                    }
-                  }}
-                >
-                  <span
-                    className="mr-3"
-                    style={{
-                      color: isActive
-                        ? styles.warmBorder
-                        : styles.warmText,
-                    }}
-                  >
-                    {item.icon}
-                  </span>
-                  {item.name}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-
+      >
+        <span className="mr-3">{adminItems[0].icon}</span>
+        {adminItems[0].name}
+      </div>
+      )}
+      
       {userName ? (
         <div
           className="mt-4 border-t pt-4"
