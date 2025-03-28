@@ -98,7 +98,7 @@ import { Loader2 } from "lucide-react";
 import Header from "@/components/Sidebar";
 import { styles } from "@/lib/styles";
 import Link from "next/link";
-
+import ChatPage from "./chat/page";
 interface Item {
   id: string;
   title: string;
@@ -128,7 +128,7 @@ export default function ItemsPage() {
   useEffect(() => {
     async function fetchItems() {
       try {
-        let query = supabase.from("items").select("*").eq("status", "available");
+        let query = supabase.from("items").select("*").eq("availability", "true");
 
         if (selectedYear !== "All") query = query.eq("year", selectedYear);
         if (selectedDepartment !== "All") query = query.eq("department", selectedDepartment);
@@ -205,7 +205,7 @@ export default function ItemsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="p-2 border rounded-lg border-yellow-600"
               />
-              <select onChange={(e) => setSelectedYear(e.target.value)} className="p-2 border rounded-lg">
+              {/* <select onChange={(e) => setSelectedYear(e.target.value)} className="p-2 border rounded-lg">
                 {years.map((year) => (
                   <option key={year} value={year}>{year}</option>
                 ))}
@@ -219,8 +219,8 @@ export default function ItemsPage() {
                 {productTypes.map((type) => (
                   <option key={type} value={type}>{type}</option>
                 ))}
-              </select>
-              <button onClick={() => setSortByPrice(sortByPrice === "asc" ? "desc" : "asc")} className="p-2 border rounded-lg">
+              </select> */}
+              <button onClick={() => setSortByPrice(sortByPrice === "asc" ? "desc" : "asc")} className="p-2 border border-amber-700 rounded-lg">
                 Sort by Price: {sortByPrice === "asc" ? "Low to High" : "High to Low"}
               </button>
             </div>
@@ -231,7 +231,7 @@ export default function ItemsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {filteredItems.map((item) => (
                   <Link href={`/buy/${item.id}`} key={item.id} className="block h-full">
-                    <div className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
+                    <div className="border border-stone-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
                       <div className="relative h-44 bg-gray-100">
                         {item.images?.length > 0 ? (
                           <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover" />

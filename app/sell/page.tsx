@@ -32,8 +32,9 @@ export default function SellPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userId) return;
-
+    
+    if (userId) 
+    console.log(userId);
     setUploading(true);
     try {
       // Upload images to storage
@@ -53,22 +54,31 @@ export default function SellPage() {
           return publicUrl;
         })
       );
-
+      const userID = sessionStorage.getItem("userId")
       // Insert item into database
-      const { error } = await supabase.from("items").insert({
+      const { error: insertError } = await supabase.from("items").insert({
+        user_id: userID,
         title,
         description,
         price: parseFloat(price),
+        
         product_type: productType,
-        year,
-        department,
+        // year,
+        // department,
+        images: imageUrls,
+
+        // image_url: JSON.stringify(imageUrls), // Ensure correct format
         image_url: imageUrls,
-        seller_id: userId,
-        status: "available",
+        // seller_id: userId,
+        availability: "false",
         created_at: new Date().toISOString(),
       });
-
-      if (error) throw error;
+      
+      if (insertError) {
+        console.error("Insert Error:", insertError);
+        alert("Failed to create listing. Please try again.");
+      }
+      
 
       // Redirect to home page on success
       router.push("/");
@@ -186,15 +196,18 @@ export default function SellPage() {
                   }}
                 >
                   <option value="">Select Product Type</option>
-                  <option value="Electronics">Electronics</option>
+                  <option value="Book">Book</option>
                   <option value="Clothing">Clothing</option>
-                  <option value="Furniture">Furniture</option>
+                  <option value="Bag">Bag</option>
+                  <option value="Electronic">Electronic</option>
+                  <option value="Stationary">Stationary</option>
+
                 </select>
               </div>
             </div>
 
             {/* Year and Department Row */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600">
                   Year
@@ -246,7 +259,7 @@ export default function SellPage() {
                   <option value="Other">Other</option>
                 </select>
               </div>
-            </div>
+            </div> */}
 
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-2">

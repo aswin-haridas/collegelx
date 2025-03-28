@@ -90,6 +90,9 @@ export default function SignupPage() {
       sessionStorage.setItem("userId", newUser[0].id);
 
       // Still keep the full user object in localStorage for backward compatibility
+      localStorage.setItem("auth", "true");
+      localStorage.setItem("user_id", newUser[0].id);
+      localStorage.setItem("name", newUser[0].name);
       localStorage.setItem("user", JSON.stringify(newUser[0]));
       return newUser[0];
     } else {

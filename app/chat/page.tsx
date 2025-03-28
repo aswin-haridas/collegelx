@@ -40,14 +40,13 @@ export default function ChatPage() {
 
         // Get user profile from user table
         const { data: userData, error: userError } = await supabase
-          .from("user")
+          .from("users")
           .select("*")
-          .eq("userid", userId)
-          .single();
+          .eq("user_id", userId)
 
         if (userError) throw userError;
 
-        setCurrentUser(userData);
+        setCurrentUser(userData[0] || null);
 
         // Fetch data if we have listing ID and seller ID
         if (listingId && receiverId) {
@@ -84,9 +83,9 @@ export default function ChatPage() {
       // Get seller details
       if (receiverId) {
         const { data: sellerData, error: sellerError } = await supabase
-          .from("user")
+          .from("users")
           .select("*")
-          .eq("userid", receiverId)
+          .eq("id", receiverId)
           .single();
 
         if (sellerError) throw sellerError;
