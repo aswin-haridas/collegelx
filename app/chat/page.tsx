@@ -268,22 +268,22 @@ export default function ChatPage() {
   }
 
   // Loading state
-  if (loading) {
-    return (
-      <div className="h-screen">
-        <Header activeTextColor={styles.warmPrimary} />
-        <div className="flex justify-center items-center h-full ml-64">
-          <Loader2
-            className="h-8 w-8 animate-spin"
-            style={{ color: styles.warmPrimary }}
-          />
-          <span className="ml-2" style={{ color: styles.warmText }}>
-            Loading conversation...
-          </span>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="h-screen">
+  //       <Header activeTextColor={styles.warmPrimary} />
+  //       <div className="flex justify-center items-center h-full ml-64">
+  //         <Loader2
+  //           className="h-8 w-8 animate-spin"
+  //           style={{ color: styles.warmPrimary }}
+  //         />
+  //         <span className="ml-2" style={{ color: styles.warmText }}>
+  //           Loading conversation...
+  //         </span>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // Error state
   if (error) {
