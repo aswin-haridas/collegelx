@@ -16,9 +16,9 @@ export function ItemDetails({
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <div className="relative h-96">
-        {item.image_url && item.image_url.length > 0 ? (
+        {item.images && item.images.length > 0 ? (
           <img
-            src={item.image_url[0]}
+            src={item.images[0]}
             alt={item.title}
             className="w-full h-full object-cover"
           />

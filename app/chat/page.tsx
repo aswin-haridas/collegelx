@@ -34,7 +34,8 @@ export default function ChatPage() {
       try {
         setIsAuthChecking(true);
 
-        if (!isAuthenticated) {
+        if (!isAuthenticated || !userId) {
+          setLoading(false);
           return; // useAuth hook will handle the redirect
         }
 
@@ -42,7 +43,7 @@ export default function ChatPage() {
         const { data: userData, error: userError } = await supabase
           .from("users")
           .select("*")
-          .eq("user_id", userId)
+          .eq("id", userId);
 
         if (userError) throw userError;
 
@@ -52,22 +53,24 @@ export default function ChatPage() {
         if (listingId && receiverId) {
           await fetchListingAndSellerData();
         }
+
+        setLoading(false);
       } catch (error: any) {
-  console.error("Error checking auth:", error);
+        console.error("Error checking auth:", error);
 
-  if (error.response) {
-    console.error("Response Data:", error.response.data);
-    console.error("Status Code:", error.response.status);
-    console.error("Headers:", error.response.headers);
-  } else if (error.request) {
-    console.error("No response received:", error.request);
-  } else {
-    console.error("Error message:", error.message);
-  }
+        if (error.response) {
+          console.error("Response Data:", error.response.data);
+          console.error("Status Code:", error.response.status);
+          console.error("Headers:", error.response.headers);
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+        } else {
+          console.error("Error message:", error.message);
+        }
 
-  setError("Failed to load user data");
-}
-finally {
+        setError("Failed to load user data");
+        setLoading(false);
+      } finally {
         setIsAuthChecking(false);
       }
     }
@@ -280,22 +283,22 @@ finally {
   }
 
   // Loading state
-  // if (loading) {
-  //   return (
-  //     <div className="h-screen">
-  //       <Header activeTextColor={styles.warmPrimary} />
-  //       <div className="flex justify-center items-center h-full ml-64">
-  //         <Loader2
-  //           className="h-8 w-8 animate-spin"
-  //           style={{ color: styles.warmPrimary }}
-  //         />
-  //         <span className="ml-2" style={{ color: styles.warmText }}>
-  //           Loading conversation...
-  //         </span>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  if (loading) {
+    return (
+      <div className="h-screen">
+        <Header activeTextColor={styles.warmPrimary} />
+        <div className="flex justify-center items-center h-full ml-64">
+          <Loader2
+            className="h-8 w-8 animate-spin"
+            style={{ color: styles.warmPrimary }}
+          />
+          <span className="ml-2" style={{ color: styles.warmText }}>
+            Loading conversation...
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   // Error state
   if (error) {
@@ -347,9 +350,9 @@ finally {
           {item && (
             <div className="flex items-center flex-grow">
               <div className="h-12 w-12 bg-gray-200 rounded-lg overflow-hidden mr-3 flex-shrink-0">
-                {item.image_url && item.image_url.length > 0 ? (
+                {item.images && item.images.length > 0 ? (
                   <img
-                    src={item.image_url[0]}
+                    src={item.images[0]}
                     alt={item.title}
                     className="h-full w-full object-cover"
                   />

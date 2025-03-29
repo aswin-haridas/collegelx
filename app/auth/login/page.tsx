@@ -25,75 +25,36 @@ export default function LoginPage() {
       router.push(redirect);
     }
   }, [isAuthenticated, redirect, router]);
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setError(null);
-  //   setLoading(true);
-  
-  //   try {
-  //     const { data, error } = await supabase
-  //       .from("users")
-  //       .select("*")
-  //       .eq("email", email)
-  //       .eq("password", password);
-  
-  //     if (error || !data || data.length === 0) {
-  //       throw new Error("Invalid email or password");
-  //     }
-  
-  //     const userData = data[0];
-  
-  //     // Store in sessionStorage (same as signup)
-  //     sessionStorage.setItem("userRole", userData.role);
-  //     sessionStorage.setItem("userName", userData.name);
-  //     sessionStorage.setItem("userId", userData.id);
-  
-  //     // // Also store in localStorage for consistency
-  //     localStorage.setItem("auth", "true");
-  //     localStorage.setItem("user_id", userData.id);
-  //     localStorage.setItem("name", userData.name);
-  //     // localStorage.setItem("role", userData.role);
-  //     localStorage.setItem("user", JSON.stringify(userData));
-  
-  //     alert("Login successful!");
-  //     router.push("/");
-  //   } catch (err) {
-  //     setError(err instanceof Error ? err.message : "Login failed");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-  
+
     try {
       const { data, error } = await supabase
         .from("users")
         .select("*")
         .eq("email", email)
         .eq("password", password);
-  
+
       if (error || !data || data.length === 0) {
         throw new Error("Invalid email or password");
       }
-  
+
       const userData = data[0];
-  
-      // Store in sessionStorage
-      sessionStorage.setItem("userRole", userData.role);
-      sessionStorage.setItem("userName", userData.name);
-      sessionStorage.setItem("userId", userData.id);
-  
+
       // Store in localStorage
+      localStorage.setItem("userRole", userData.role);
+      localStorage.setItem("userName", userData.name);
+      localStorage.setItem("userId", userData.id);
+
+      // Also store in localStorage for consistency
       localStorage.setItem("auth", "true");
-      localStorage.setItem("user_id", userData.id);
+      localStorage.setItem("id", userData.id);
       localStorage.setItem("name", userData.name);
       localStorage.setItem("user", JSON.stringify(userData));
-  
-  
+
       // ✅ Ensure proper redirection
       if (userData.name.toLowerCase() === "admin") {
         router.push("/admin"); // Redirect admin users to "/admin"
@@ -106,8 +67,7 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
-  
-  
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex justify-center items-center">

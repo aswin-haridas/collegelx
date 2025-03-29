@@ -85,7 +85,7 @@ export default function AdminPage() {
   // Check authentication and admin role
   useEffect(() => {
     console.log("Auth Status:", { isAuthenticated, role, isLoading });
-    const adminrole = sessionStorage.getItem("userRole");
+    const adminrole = localStorage.getItem("userRole");
     if (adminrole !== "admin") {
       router.push("/");
     } else {

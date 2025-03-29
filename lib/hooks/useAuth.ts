@@ -27,7 +27,7 @@ export function useAuth(requireAuth: boolean = true) {
   const checkAuth = () => {
     // Get auth data from localStorage
     const name = localStorage.getItem("name");
-    const userId = localStorage.getItem("user_id");
+    const userId = localStorage.getItem("id");
     const role = localStorage.getItem("role");
     const isAuthenticated = localStorage.getItem("auth") === "true";
 

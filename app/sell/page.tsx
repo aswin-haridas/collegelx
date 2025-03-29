@@ -14,7 +14,7 @@ export default function SellPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [productType, setProductType] = useState("");
+  const [category, setcategory] = useState("");
   const [year, setYear] = useState("");
   const [department, setDepartment] = useState("");
   const [tags, setTags] = useState("");
@@ -57,17 +57,16 @@ export default function SellPage() {
       const userID = sessionStorage.getItem("userId");
       // Insert item into database
       const { error: insertError } = await supabase.from("items").insert({
-        user_id: userID,
+        id: userID,
         title,
         description,
         price: parseFloat(price),
-        product_type: productType,
+        product_type: category,
         year,
         department,
         images: imageUrls,
-        image_url: imageUrls,
         tags: tags.split(",").map((tag) => tag.trim()), // Convert tags string to array
-        availability: "false",
+        status: "unlisted", // Changed from availability: "false"
         created_at: new Date().toISOString(),
       });
 
@@ -182,8 +181,8 @@ export default function SellPage() {
                   Product Type
                 </label>
                 <select
-                  value={productType}
-                  onChange={(e) => setProductType(e.target.value)}
+                  value={category}
+                  onChange={(e) => setcategory(e.target.value)}
                   required
                   className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                   style={{

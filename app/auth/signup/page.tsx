@@ -25,12 +25,10 @@ export default function SignupPage() {
 
   const departments = [
     "Computer Science",
-    "Information Technology",
     "Electronics",
     "Mechanical",
     "Civil",
     "Electrical",
-    "Business Administration",
     "Other",
   ];
 
@@ -60,17 +58,16 @@ export default function SignupPage() {
 
     if (existingUser && existingUser.length > 0) {
       throw new Error("Email already in use");
-    } 
-    const userID =  crypto.randomUUID();
-      
+    }
+    const userID = crypto.randomUUID();
 
     // Create user directly in the users table
     const { data: newUser, error: insertError } = await supabase
       .from("users")
       .insert([
         {
-          user_id: userID,
-          name: userData. name,
+          id: userID,
+          name: userData.name,
           email: userData.email,
           password: userData.password, // In a production app, you would hash this password
           phone: userData.phone || null,
@@ -87,14 +84,14 @@ export default function SignupPage() {
     }
 
     if (newUser && newUser.length > 0) {
-      // Store user role and name in sessionStorage
-      sessionStorage.setItem("userRole", newUser[0].role);
-      sessionStorage.setItem("userName", newUser[0].name);
-      sessionStorage.setItem("userId", newUser[0].id);
+      // Store user role and name in localStorage
+      localStorage.setItem("userRole", newUser[0].role);
+      localStorage.setItem("userName", newUser[0].name);
+      localStorage.setItem("userId", newUser[0].id);
 
       // Still keep the full user object in localStorage for backward compatibility
       localStorage.setItem("auth", "true");
-      localStorage.setItem("user_id", newUser[0].id);
+      localStorage.setItem("id", newUser[0].id);
       localStorage.setItem("name", newUser[0].name);
       localStorage.setItem("user", JSON.stringify(newUser[0]));
       return newUser[0];

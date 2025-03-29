@@ -72,9 +72,9 @@ const NavItem = ({
 const Sidebar = ({ activeTextColor }: SidebarProps) => {
   const [userName, setUserName] = useState<string | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [userRole, setUserRole] = useState<string>("user");
   const router = useRouter();
   const pathname = usePathname();
-  const userRole = sessionStorage.getItem("userRole") || "user";
 
   const navItems: NavItemType[] = [
     { name: "Home", href: "/", icon: <Home size={18} /> },
@@ -87,6 +87,14 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
     { name: "Pending Request", href: "/", icon: <ClockAlert size={18} /> },
   ];
 
+  // Public pages that don't require authentication
+  const publicPages = ["/", "/auth/login", "/auth/register"];
+
+  useEffect(() => {
+    // Safely access localStorage after component mounts
+    setUserRole(localStorage.getItem("userRole") || "user");
+  }, []);
+
   useEffect(() => {
     async function checkAuth() {
       try {
@@ -97,11 +105,11 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
           setUserName(localStorage.getItem("name") || "User");
         } else {
           const currentPath = window.location.pathname;
-          if (
-            !currentPath.includes("/auth") &&
-            currentPath !== "/" &&
-            !currentPath.includes("/buy/")
-          ) {
+          const isPublicPage =
+            publicPages.includes(currentPath) ||
+            currentPath.startsWith("/buy/");
+
+          if (!isPublicPage) {
             router.push("/auth/login");
           }
         }
@@ -117,14 +125,18 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
 
   const handleLogout = async () => {
     try {
-      // Clear authentication data
-      ["auth", "user_id", "name", "role"].forEach((item) =>
-        localStorage.removeItem(item)
-      );
+      // Clear all auth data at once
+      const itemsToClear = [
+        "auth",
+        "id",
+        "name",
+        "role",
+        "userRole",
+        "userName",
+        "userId",
+      ];
 
-      ["userRole", "userName", "userId"].forEach((item) =>
-        sessionStorage.removeItem(item)
-      );
+      itemsToClear.forEach((item) => localStorage.removeItem(item));
 
       router.push("/auth/login");
     } catch (error) {

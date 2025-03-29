@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import Header from "@/components/Sidebar";
 import { styles } from "@/lib/styles";
 import Link from "next/link";
-import ChatPage from "./chat/page";
+
 interface Item {
   id: string;
   title: string;
@@ -16,23 +16,21 @@ interface Item {
   category?: string;
   year?: number;
   department?: string;
-  productType?: string;
 }
 
 const departments = [
   "Computer Science",
-  "AI",
-  "Mech",
-  "EC",
-  "EEE",
+  "Electronics",
+  "Mechanical",
   "Civil",
-  "All",
+  "Electrical",
+  "Other",
 ];
-const productTypes = [
+
+const category = [
   "Notes",
   "Uniform",
   "Stationary",
-  "Furniture",
   "Others",
   "All",
 ];
@@ -45,7 +43,7 @@ export default function ItemsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState<string | number>("All");
   const [selectedDepartment, setSelectedDepartment] = useState("All");
-  const [selectedProductType, setSelectedProductType] = useState("All");
+  const [selectedcategory, setSelectedcategory] = useState("All");
   const [sortByPrice, setSortByPrice] = useState("asc");
 
   useEffect(() => {
@@ -54,13 +52,13 @@ export default function ItemsPage() {
         let query = supabase
           .from("items")
           .select("*")
-          .eq("availability", "true");
+          .eq("status", "available");
 
         if (selectedYear !== "All") query = query.eq("year", selectedYear);
         if (selectedDepartment !== "All")
           query = query.eq("department", selectedDepartment);
-        if (selectedProductType !== "All")
-          query = query.eq("productType", selectedProductType);
+        if (selectedcategory !== "All")
+          query = query.eq("category", selectedcategory);
         query = query.order("price", { ascending: sortByPrice === "asc" });
 
         const { data, error } = await query;
@@ -75,7 +73,7 @@ export default function ItemsPage() {
     }
 
     fetchItems();
-  }, [selectedYear, selectedDepartment, selectedProductType, sortByPrice]);
+  }, [selectedYear, selectedDepartment, selectedcategory, sortByPrice]);
 
   const filteredItems = items.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -152,11 +150,11 @@ export default function ItemsPage() {
                 </select>
 
                 <select
-                  value={selectedProductType}
-                  onChange={(e) => setSelectedProductType(e.target.value)}
+                  value={selectedcategory}
+                  onChange={(e) => setSelectedcategory(e.target.value)}
                   className="p-2 border rounded-lg border-yellow-600"
                 >
-                  {productTypes.map((type) => (
+                  {category.map((type) => (
                     <option key={type} value={type}>
                       {type === "All" ? "All Product Types" : type}
                     </option>
