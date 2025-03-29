@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { styles } from "@/lib/styles";
 import Header from "@/components/Sidebar";
 import { supabase } from "@/lib/supabase";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, CircleCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { playfair } from "@/lib/fonts";
 
@@ -14,8 +14,8 @@ interface Product {
   id: string;
   title: string;
   price: number;
-  description:string;
-  approved: boolean;
+  description: string;
+  status: string; // Changed from approved: boolean
 }
 
 // Loading component for better reusability
@@ -85,8 +85,8 @@ export default function AdminPage() {
   // Check authentication and admin role
   useEffect(() => {
     console.log("Auth Status:", { isAuthenticated, role, isLoading });
-    const adminrole=sessionStorage.getItem("userRole")
-    if ( adminrole!== "admin") {
+    const adminrole = sessionStorage.getItem("userRole");
+    if (adminrole !== "admin") {
       router.push("/");
     } else {
       setLoading(false);
@@ -101,7 +101,7 @@ export default function AdminPage() {
       const { data, error } = await supabase
         .from("items")
         .select("*")
-        .eq("availability", "false");
+        .eq("status", "unlisted"); // Changed from availability: "false"
 
       if (error) {
         setFetchError(error.message);
@@ -128,7 +128,7 @@ export default function AdminPage() {
 
       const { error } = await supabase
         .from("items")
-        .update({ availability: true })
+        .update({ status: "available" }) // Changed from availability: true
         .eq("id", productId);
 
       if (error) {
@@ -187,7 +187,7 @@ export default function AdminPage() {
 
           {(fetchError || actionError) && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-center">
-              <AlertCircle className="h-5 w-5 mr-2" />
+              <CircleCheck className="h-5 w-5 mr-2" />
               <span>{fetchError || actionError}</span>
             </div>
           )}
