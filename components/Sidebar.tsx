@@ -2,37 +2,100 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import {
+  Home,
+  ShoppingBag,
+  User,
+  LogOut,
+  MessageCircle,
+  ClockAlert,
+} from "lucide-react";
 import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
-import { useRouter, usePathname } from "next/navigation";
-import { Home, ShoppingBag, User, LogOut, MessageCircle, ClockAlert } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 interface SidebarProps {
   activeTextColor?: string;
 }
 
+interface NavItemType {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+}
+
+const NavItem = ({
+  item,
+  isActive,
+}: {
+  item: NavItemType;
+  isActive: boolean;
+}) => {
+  return (
+    <li key={item.name}>
+      <Link
+        href={item.href}
+        className={`flex items-center py-2.5 px-3 rounded-lg transition-all duration-200 ${
+          isActive ? "bg-opacity-10 font-medium" : ""
+        }`}
+        style={{
+          color: isActive ? styles.warmBorder : styles.warmText,
+          backgroundColor: isActive ? styles.warmPrimary : "transparent",
+          opacity: isActive ? 1 : 0.8,
+        }}
+        onMouseOver={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = "rgba(184, 110, 84, 0.1)";
+          }
+        }}
+        onMouseOut={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }
+        }}
+      >
+        <span
+          className="mr-3"
+          style={{
+            color: isActive ? styles.warmBorder : styles.warmText,
+          }}
+        >
+          {item.icon}
+        </span>
+        {item.name}
+      </Link>
+    </li>
+  );
+};
+
 const Sidebar = ({ activeTextColor }: SidebarProps) => {
   const [userName, setUserName] = useState<string | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
-  const userRole = sessionStorage.getItem("userRole")
+  const userRole = sessionStorage.getItem("userRole");
+
+  const navItems: NavItemType[] = [
+    { name: "Home", href: "/", icon: <Home size={18} /> },
+    { name: "Sell", href: "/sell", icon: <ShoppingBag size={18} /> },
+    { name: "Messages", href: "/chat", icon: <MessageCircle size={18} /> },
+    { name: "Profile", href: "/profile", icon: <User size={18} /> },
+  ];
+
+  const adminItems: NavItemType[] = [
+    { name: "Pending Request", href: "/", icon: <ClockAlert size={18} /> },
+  ];
+
   useEffect(() => {
-    // Check authentication status and get user information
     async function checkAuth() {
       try {
         setIsAuthChecking(true);
-
-        // Check if user is authenticated using localStorage
         const isAuthenticated = localStorage.getItem("auth") === "true";
 
         if (isAuthenticated) {
-          // Get name from localStorage
-          const name = localStorage.getItem("name");
-          setUserName(name || "User");
+          setUserName(localStorage.getItem("name") || "User");
         } else {
-          // Handle case when user is not logged in
           const currentPath = window.location.pathname;
           if (
             !currentPath.includes("/auth") &&
@@ -54,31 +117,30 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
 
   const handleLogout = async () => {
     try {
-      // Clear local storage items to match the login page approach
-      localStorage.removeItem("auth");
-      localStorage.removeItem("user_id");
-      localStorage.removeItem("name");
-      localStorage.removeItem("role");
-      sessionStorage.removeItem("userRole");
-      sessionStorage.removeItem("userName");
-      sessionStorage.removeItem("userId");
-      // Redirect to login page
+      // Clear authentication data
+      ["auth", "user_id", "name", "role"].forEach((item) =>
+        localStorage.removeItem(item)
+      );
+
+      ["userRole", "userName", "userId"].forEach((item) =>
+        sessionStorage.removeItem(item)
+      );
+
       router.push("/auth/login");
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
-  const navItems = [
-    { name: "Home", href: "/", icon: <Home size={18} /> },
-    { name: "Sell", href: "/sell", icon: <ShoppingBag size={18} /> },
-    { name: "Messages", href: "/chat", icon: <MessageCircle size={18} /> },
-    { name: "Profile", href: "/profile", icon: <User size={18} /> },
-  ];
-  
-  const adminItems = [
-    { name: "Pending Request", href: "/", icon: <ClockAlert size={18} /> }
-  ];
+  const hoverStyle = {
+    onMouseOver: (e: React.MouseEvent<HTMLElement>) => {
+      e.currentTarget.style.backgroundColor = "rgba(184, 110, 84, 0.1)";
+    },
+    onMouseOut: (e: React.MouseEvent<HTMLElement>) => {
+      e.currentTarget.style.backgroundColor = "transparent";
+    },
+  };
+
   return (
     <aside
       className="h-screen w-64 fixed left-0 top-0 z-10 shadow-md flex flex-col py-6 px-4"
@@ -103,81 +165,41 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
           </p>
         </div>
       )}
-    
-      {userRole == 'user' ? (
-         <nav className="flex-1">
-         <ul className="flex flex-col space-y-2">
-           {navItems.map((item) => {
-             const isActive = pathname === item.href;
-             const requiresAuth =
-               item.href !== "/" && !item.href.startsWith("/buy/");
-             const linkHref =
-               requiresAuth && !userName
-                 ? `/auth/login?redirect=${encodeURIComponent(item.href)}`
-                 : item.href;
- 
-             return (
-           
-               <li key={item.name}>
-                 <Link
-                   href={linkHref}
-                   className={`flex items-center py-2.5 px-3 rounded-lg transition-all duration-200 ${
-                     isActive ? "bg-opacity-10 font-medium" : ""
-                   }`}
-                   style={{
-                     color: isActive
-                       ? styles.warmBorder
-                       : styles.warmText,
-                     backgroundColor: isActive
-                       ? styles.warmPrimary
-                       : "transparent",
-                     opacity: isActive ? 1 : 0.8,
-                   }}
-                   onMouseOver={(e) => {
-                     if (!isActive) {
-                       e.currentTarget.style.backgroundColor =
-                         "rgba(184, 110, 84, 0.1)";
-                     }
-                   }}
-                   onMouseOut={(e) => {
-                     if (!isActive) {
-                       e.currentTarget.style.backgroundColor = "transparent";
-                     }
-                   }}
-                 >
-                   <span
-                     className="mr-3"
-                     style={{
-                       color: isActive
-                         ? styles.warmBorder
-                         : styles.warmText,
-                     }}
-                   >
-                     {item.icon}
-                   </span>
-                   {item.name}
-                 </Link>
-               </li>
-             );
-           })}
-         </ul>
-       </nav>
+
+      {userRole === "user" ? (
+        <nav className="flex-1">
+          <ul className="flex flex-col space-y-2">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              const requiresAuth =
+                item.href !== "/" && !item.href.startsWith("/buy/");
+              const linkHref =
+                requiresAuth && !userName
+                  ? `/auth/login?redirect=${encodeURIComponent(item.href)}`
+                  : item.href;
+
+              // Replace the item href for the NavItem component
+              const navItem = { ...item, href: linkHref };
+              return (
+                <NavItem key={item.name} item={navItem} isActive={isActive} />
+              );
+            })}
+          </ul>
+        </nav>
       ) : (
         <div
-        className={`flex items-center py-2.5 px-3 rounded-lg transition-all duration-200 bg-opacity-10 font-medium}`}
-        style={{
-          borderColor: styles.warmBorder,
-          backgroundColor: styles.warmAccent,
-          opacity: 1,
-        }}
-       
-
-      >
-        <span className="mr-3">{adminItems[0].icon}</span>
-        {adminItems[0].name}
-      </div>
+          className="flex items-center py-2.5 px-3 rounded-lg transition-all duration-200 bg-opacity-10 font-medium"
+          style={{
+            borderColor: styles.warmBorder,
+            backgroundColor: styles.warmAccent,
+            opacity: 1,
+          }}
+        >
+          <span className="mr-3">{adminItems[0].icon}</span>
+          {adminItems[0].name}
+        </div>
       )}
-      
+
       {userName ? (
         <div
           className="mt-4 border-t pt-4"
@@ -190,12 +212,7 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
               color: styles.warmText,
               backgroundColor: "transparent",
             }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = "rgba(184, 110, 84, 0.1)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            {...hoverStyle}
           >
             <span className="mr-3">
               <LogOut size={18} />
@@ -217,13 +234,7 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
                 backgroundColor: "transparent",
                 fontWeight: "500",
               }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  "rgba(184, 110, 84, 0.1)";
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
+              {...hoverStyle}
             >
               <span className="mr-3">
                 <User size={18} />

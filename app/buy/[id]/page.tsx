@@ -135,7 +135,9 @@ export default function ItemPage() {
 
   const handleChat = () => {
     if (!isAuthenticated) {
-      router.push(`/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      router.push(
+        `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`
+      );
       return;
     }
 
@@ -149,7 +151,10 @@ export default function ItemPage() {
       <div className="h-screen">
         <Header activeTextColor={styles.warmPrimary} />
         <div className="flex justify-center items-center h-full ml-64">
-          <Loader2 className="h-8 w-8 animate-spin" style={{ color: styles.warmPrimary }} />
+          <Loader2
+            className="h-8 w-8 animate-spin"
+            style={{ color: styles.warmPrimary }}
+          />
         </div>
       </div>
     );
@@ -161,7 +166,10 @@ export default function ItemPage() {
         <Header activeTextColor={styles.warmPrimary} />
         <div className="flex justify-center items-center h-full ml-64">
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2" style={{ color: styles.warmText }}>
+            <h2
+              className="text-xl font-semibold mb-2"
+              style={{ color: styles.warmText }}
+            >
               Item not found
             </h2>
             <button
@@ -187,11 +195,21 @@ export default function ItemPage() {
             <h1 className="text-6xl font-bold text-gray-800">{item.title}</h1>
             <p className="text-gray-600 mt-4 text-lg">{item.description}</p>
             <div className="mt-4 text-lg">
-              <p><span className="font-semibold text-gray-700">Price:</span> ${item.price}</p>
-              <p><span className="font-semibold text-gray-700">Product Type:</span> {item.product_type}</p>
-              <p><span className="font-semibold text-gray-700">Created At:</span> {new Date(item.created_at).toLocaleString()}</p>
+              <p>
+                <span className="font-semibold text-gray-700">Price:</span> 
+                {item.price}
+              </p>
+              <p>
+                <span className="font-semibold text-gray-700">
+                  Product Type:
+                </span>
+                {item.product_type}
+              </p>
+              <p>
+                <span className="font-semibold text-gray-700">Created At:</span>{" "}
+                {new Date(item.created_at).toLocaleString()}
+              </p>
             </div>
-            
           </div>
           {/* Right Side - Image */}
           {item.image_url && (
@@ -205,11 +223,11 @@ export default function ItemPage() {
           )}
         </div>
         <button
-              onClick={handleChat}
-              className="mt-6 w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg text-lg"
-            >
-              Chat with Seller
-            </button>
+          onClick={handleChat}
+          className="mt-6 w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg text-lg"
+        >
+          Chat with Seller
+        </button>
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ export interface AuthState {
 }
 
 export interface Item {
-  product_type: ReactNode;
+  product_type: string;
   id: string;
   created_at: string;
   user_id: string;
