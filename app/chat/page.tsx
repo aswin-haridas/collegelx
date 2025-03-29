@@ -95,36 +95,37 @@ export default function ChatPage() {
     fetchMessages();
     fetchReceiverName();
 
-    // Subscribe to new messages
+    // Subscribe to new messages with improved approach
     const channel = supabase
-      .channel("messages")
+      .channel("public:messages")
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: `sender_id=eq.${userId},reciver_id=eq.${receiverId}`,
         },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `sender_id=eq.${receiverId},reciver_id=eq.${userId}`,
-        },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
+          const newMessage = payload.new as Message;
+
+          // Only add message if it belongs to this conversation
+          if (
+            (newMessage.sender_id === userId &&
+              newMessage.reciver_id === receiverId) ||
+            (newMessage.sender_id === receiverId &&
+              newMessage.reciver_id === userId)
+          ) {
+            setMessages((prev) => [...prev, newMessage]);
+          }
         }
       )
       .subscribe();
 
+    // Debug that subscription is active
+    console.log("Realtime subscription activated");
+
     return () => {
+      console.log("Cleaning up realtime subscription");
       supabase.removeChannel(channel);
     };
   }, [userId, receiverId, router]);

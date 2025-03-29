@@ -54,7 +54,7 @@ function useSimilarItems(item: Item | null, limit: number = 4) {
 }
 
 export default function ItemPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth(false);
+  const { isAuthenticated, isLoading: authLoading, userId } = useAuth(false);
   const router = useRouter();
   const params = useParams();
   const itemId = params?.id as string;
@@ -70,6 +70,8 @@ export default function ItemPage() {
   const { similarItems, loading: similarItemsLoading } = useSimilarItems(item);
 
   const loading = authLoading || itemLoading;
+
+  const isOwner = userId && item?.seller_id === userId;
 
   const handleChat = () => {
     if (!isAuthenticated) {
@@ -101,7 +103,6 @@ export default function ItemPage() {
     return (
       <div className="h-screen">
         <Sidebar />
-
         <div className="flex justify-center items-center h-full ml-64">
           <div className="text-center">
             <h2
@@ -125,6 +126,7 @@ export default function ItemPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Sidebar />
       <div className="max-w-6xl mx-auto p-4 ml-64 py-10">
         {/* Back button */}
         <button
@@ -174,11 +176,18 @@ export default function ItemPage() {
 
                 <button
                   onClick={handleChat}
-                  className="w-full py-3 px-4 rounded-lg text-white flex items-center justify-center transition-colors hover:bg-opacity-90"
-                  style={{ backgroundColor: styles.warmPrimary }}
+                  className={`w-full py-3 px-4 rounded-lg flex items-center justify-center transition-colors ${
+                    isOwner
+                      ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                      : "text-white hover:bg-opacity-90"
+                  }`}
+                  style={{
+                    backgroundColor: isOwner ? undefined : styles.warmPrimary,
+                  }}
+                  disabled={!!isOwner}
                 >
                   <MessageSquare className="mr-2 h-5 w-5" />
-                  Chat with Seller
+                  {isOwner ? "You own this item" : "Chat with Seller"}
                 </button>
               </div>
 
@@ -224,7 +233,10 @@ export default function ItemPage() {
                   >
                     Seller Information
                   </h2>
-                  <div className="flex items-center">
+                  <div
+                    className="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                    onClick={() => router.push(`/profile/${seller.userid}`)}
+                  >
                     <div className="h-12 w-12 rounded-full bg-gray-200 overflow-hidden mr-4 flex items-center justify-center">
                       {seller.profile_image ? (
                         <img
@@ -240,7 +252,7 @@ export default function ItemPage() {
                     </div>
                     <div>
                       <p
-                        className="font-medium"
+                        className="font-medium hover:underline"
                         style={{ color: styles.warmText }}
                       >
                         {seller.name || "Anonymous Seller"}
