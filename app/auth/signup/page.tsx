@@ -60,14 +60,17 @@ export default function SignupPage() {
 
     if (existingUser && existingUser.length > 0) {
       throw new Error("Email already in use");
-    }
+    } 
+    const userID =  crypto.randomUUID();
+      
 
     // Create user directly in the users table
     const { data: newUser, error: insertError } = await supabase
       .from("users")
       .insert([
         {
-          name: userData.name,
+          user_id: userID,
+          name: userData. name,
           email: userData.email,
           password: userData.password, // In a production app, you would hash this password
           phone: userData.phone || null,
