@@ -28,11 +28,11 @@ function useSimilarItems(item: Item | null, limit: number = 4) {
 
     const fetchSimilarItems = async () => {
       try {
-        // Find items with the same product_type but not the same ID
+        // Find items with the same category but not the same ID
         const { data, error } = await supabase
           .from("items")
           .select("*")
-          .eq("product_type", item.product_type)
+          .eq("category", item.category)
           .eq("status", "available")
           .neq("id", item.id)
           .limit(limit);
@@ -173,7 +173,7 @@ export default function ItemPage() {
                     ₹{item.price}
                   </p>
                   <span className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-full">
-                    {item.product_type}
+                    {item.category}
                   </span>
                 </div>
 
@@ -209,7 +209,7 @@ export default function ItemPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-gray-500">Product Type</p>
-                    <p className="font-medium">{item.product_type}</p>
+                    <p className="font-medium">{item.category}</p>
                   </div>
                   <div>
                     <p className="text-gray-500">Listed On</p>
@@ -317,7 +317,7 @@ export default function ItemPage() {
                           ₹{similarItem.price}
                         </span>
                         <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                          {similarItem.product_type}
+                          {similarItem.category}
                         </span>
                       </div>
                     </div>

@@ -61,7 +61,7 @@ export default function SellPage() {
         title,
         description,
         price: parseFloat(price),
-        product_type: category,
+        category: category,
         year,
         department,
         images: imageUrls,

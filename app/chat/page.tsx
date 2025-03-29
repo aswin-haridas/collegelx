@@ -1,90 +1,82 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { styles } from "@/lib/styles";
 import { Item, Message, User } from "@/lib/types";
 import Header from "@/components/Sidebar";
 import { Loader2, Send, ArrowLeft, AlertCircle } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function ChatPage() {
-  const { isAuthenticated, userId, isLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const listingId = searchParams.get("listing");
-  const receiverId = searchParams.get("seller");
+  const {
+    userId: currentUserId,
+    isAuthenticated,
+    isLoading: authLoading,
+  } = useAuth();
 
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [seller, setSeller] = useState<User | null>(null);
-  const [item, setItem] = useState<Item | null>(null);
+  // State variables
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [chatSubscription, setChatSubscription] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [item, setItem] = useState<Item | null>(null);
+  const [seller, setSeller] = useState<User | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [isAuthChecking, setIsAuthChecking] = useState(false);
 
-  // Check if user is logged in and get user data
+  // Get listingId and receiverId from query parameters
+  const listingId = searchParams?.get("listingId");
+  const receiverId = searchParams?.get("receiverId");
+
+  // Fetch current user details
   useEffect(() => {
-    async function checkAuth() {
+    if (!isAuthenticated || !currentUserId) return;
+
+    async function fetchCurrentUser() {
       try {
-        setIsAuthChecking(true);
-
-        if (!isAuthenticated || !userId) {
-          setLoading(false);
-          return; // useAuth hook will handle the redirect
-        }
-
-        // Get user profile from user table
-        const { data: userData, error: userError } = await supabase
+        const { data, error } = await supabase
           .from("users")
           .select("*")
-          .eq("id", userId);
+          .eq("userid", currentUserId)
+          .single();
 
-        if (userError) throw userError;
-
-        setCurrentUser(userData[0] || null);
-
-        // Fetch data if we have listing ID and seller ID
-        if (listingId && receiverId) {
-          await fetchListingAndSellerData();
-        }
-
-        setLoading(false);
-      } catch (error: any) {
-        console.error("Error checking auth:", error);
-
-        if (error.response) {
-          console.error("Response Data:", error.response.data);
-          console.error("Status Code:", error.response.status);
-          console.error("Headers:", error.response.headers);
-        } else if (error.request) {
-          console.error("No response received:", error.request);
-        } else {
-          console.error("Error message:", error.message);
-        }
-
-        setError("Failed to load user data");
-        setLoading(false);
-      } finally {
-        setIsAuthChecking(false);
+        if (error) throw error;
+        setCurrentUser(data);
+      } catch (error) {
+        console.error("Error fetching current user:", error);
+        setError("Failed to load user information");
       }
     }
 
-    if (!isLoading) {
-      checkAuth();
-    }
-  }, [isAuthenticated, userId, isLoading, listingId, receiverId]);
+    fetchCurrentUser();
+  }, [currentUserId, isAuthenticated]);
 
-  // Fetch listing and seller data
-  async function fetchListingAndSellerData() {
-    try {
-      // Get listing details
-      if (listingId) {
+  // Fetch messages, item details, and seller info
+  useEffect(() => {
+    if (!listingId || !receiverId || !currentUserId) return;
+
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch messages
+        const { data: messagesData, error: messagesError } = await supabase
+          .from("messages")
+          .select("*")
+          .eq("listing_id", listingId)
+          .or(`sender_id.eq.${currentUserId},reciver_id.eq.${currentUserId}`)
+          .order("sent_at", { ascending: true });
+
+        if (messagesError) throw messagesError;
+
+        // Fetch item details
         const { data: itemData, error: itemError } = await supabase
           .from("items")
           .select("*")
@@ -92,79 +84,32 @@ export default function ChatPage() {
           .single();
 
         if (itemError) throw itemError;
-        setItem(itemData);
-      }
 
-      // Get seller details
-      if (receiverId) {
+        // Fetch seller details
         const { data: sellerData, error: sellerError } = await supabase
           .from("users")
           .select("*")
-          .eq("id", receiverId)
+          .eq("userid", receiverId)
           .single();
 
         if (sellerError) throw sellerError;
+
+        setMessages(messagesData || []);
+        setItem(itemData);
         setSeller(sellerData);
+      } catch (error: any) {
+        console.error("Error fetching data:", error);
+        setError(error.message || "Failed to load conversation data");
+      } finally {
+        setLoading(false);
       }
-
-      // Fetch previous messages
-      await fetchMessages();
-
-      // Subscribe to new messages
-      setupRealtimeSubscription();
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setError("Failed to load conversation data");
-    }
-  }
-
-  // Fetch previous messages between the current user and seller for this listing
-  async function fetchMessages() {
-    if (!currentUser?.userid || !receiverId || !listingId) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("messages")
-        .select(
-          `
-          *,
-          sender:sender_id(name, profile_image)
-        `
-        )
-        .or(
-          `and(sender_id.eq.${currentUser.userid},reciver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},reciver_id.eq.${currentUser.userid})`
-        )
-        .eq("listing_id", listingId)
-        .order("sent_at", { ascending: true });
-
-      if (error) throw error;
-
-      // Format messages with sender info
-      const formattedMessages = data.map((msg: any) => ({
-        ...msg,
-        sender_name: msg.sender?.name,
-        sender_profile_image: msg.sender?.profile_image,
-      })) as Message[];
-
-      setMessages(formattedMessages);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      setError("Failed to load messages");
-    }
-  }
-
-  // Set up real-time subscription for new messages
-  function setupRealtimeSubscription() {
-    if (!currentUser?.userid || !receiverId || !listingId) return;
-
-    // Clean up any existing subscription
-    if (chatSubscription) {
-      supabase.removeChannel(chatSubscription);
     }
 
-    // Create a new subscription
-    const channel = supabase
-      .channel("public:messages")
+    fetchData();
+
+    // Set up real-time subscription for new messages
+    const subscription = supabase
+      .channel("messages-channel")
       .on(
         "postgres_changes",
         {
@@ -173,80 +118,61 @@ export default function ChatPage() {
           table: "messages",
           filter: `listing_id=eq.${listingId}`,
         },
-        async (payload) => {
-          console.log("New message received:", payload);
-
-          // Get sender details
-          const { data: senderData } = await supabase
-            .from("user")
-            .select("name, profile_image")
-            .eq("userid", payload.new.sender_id)
-            .single();
-
-          // Add the new message to state with proper typing
-          const newMsg = {
-            ...payload.new,
-            sender_name: senderData?.name,
-            sender_profile_image: senderData?.profile_image,
-          } as Message;
-
-          setMessages((current) => [...current, newMsg]);
+        (payload) => {
+          const newMessage = payload.new as Message;
+          if (
+            (newMessage.sender_id === currentUserId &&
+              newMessage.reciver_id === receiverId) ||
+            (newMessage.sender_id === receiverId &&
+              newMessage.reciver_id === currentUserId)
+          ) {
+            setMessages((prevMessages) => [...prevMessages, newMessage]);
+          }
         }
       )
       .subscribe();
 
-    setChatSubscription(channel);
-
-    // Clean up subscription when component unmounts
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(subscription);
     };
-  }
+  }, [listingId, receiverId, currentUserId]);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages update
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    scrollToBottom();
   }, [messages]);
 
-  // Handle sending a new message
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Send message function
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newMessage.trim() || !currentUser || !receiverId || !listingId) return;
+    if (!newMessage.trim() || !currentUser || !listingId || !receiverId) return;
 
     setSending(true);
 
     try {
-      const messageData = {
+      const { error } = await supabase.from("messages").insert({
         sender_id: currentUser.userid,
         reciver_id: receiverId,
-        listing_id: Number(listingId),
+        listing_id: listingId,
         message: newMessage.trim(),
         sent_at: new Date().toISOString(),
-      };
-
-      const { error } = await supabase.from("messages").insert(messageData);
+      });
 
       if (error) throw error;
 
-      // Clear input after sending
       setNewMessage("");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending message:", error);
-      alert("Failed to send message. Please try again.");
+      setError(error.message || "Failed to send message");
     } finally {
       setSending(false);
     }
   };
-
-  // Cleanup subscription when component unmounts
-  useEffect(() => {
-    return () => {
-      if (chatSubscription) {
-        supabase.removeChannel(chatSubscription);
-      }
-    };
-  }, [chatSubscription]);
 
   // If no listing is selected, show chat list or prompt
   if (!listingId || !receiverId) {
@@ -493,7 +419,7 @@ export default function ChatPage() {
             />
             <button
               type="submit"
-              className="p-2 rounded-lg text-white disabled:opacity-50"
+              className="p-2.5 px-5 rounded-lg text-white disabled:opacity-50"
               style={{ backgroundColor: styles.warmPrimary }}
               disabled={!newMessage.trim() || sending}
             >
