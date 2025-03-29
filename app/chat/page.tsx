@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { Loader2, AlertCircle, ArrowLeft, Send } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import { supabase } from "@/lib/supabase";
 import { styles } from "@/lib/styles";
@@ -15,6 +15,12 @@ interface Message {
   listing_id: string;
 }
 
+interface ListingInfo {
+  title: string;
+  price: number;
+  id: string;
+}
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -22,32 +28,45 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [receiverName, setReceiverName] = useState<string | null>(null);
+  const [listingInfo, setListingInfo] = useState<ListingInfo | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const userId =
     typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+
+  // Get IDs from URL params first, then fallback to session storage
   const receiverId =
-    typeof window !== "undefined"
+    searchParams?.get("receiverId") ||
+    (typeof window !== "undefined"
       ? sessionStorage.getItem("receiver_id")
-      : null;
+      : null);
   const listingId =
-    typeof window !== "undefined" ? sessionStorage.getItem("listing_id") : null;
+    searchParams?.get("listingId") ||
+    (typeof window !== "undefined"
+      ? sessionStorage.getItem("listing_id")
+      : null);
 
   useEffect(() => {
-    // Redirect if not logged in or no receiver ID
-    if (!userId || !receiverId) {
+    // Redirect if not logged in or missing required IDs
+    if (!userId || !receiverId || !listingId) {
       router.push("/messages");
       return;
     }
 
+    // Save to session storage for persistence
+    if (receiverId) sessionStorage.setItem("receiver_id", receiverId);
+    if (listingId) sessionStorage.setItem("listing_id", listingId);
+
     const fetchMessages = async () => {
       try {
         setLoading(true);
-        // Fix the query structure
+        // Query messages specific to this conversation AND listing
         const { data, error } = await supabase
           .from("messages")
           .select("*")
+          .eq("listing_id", listingId)
           .or(`sender_id.eq.${userId},reciver_id.eq.${userId}`)
           .or(`sender_id.eq.${receiverId},reciver_id.eq.${receiverId}`)
           .order("sent_at", { ascending: true });
@@ -59,8 +78,9 @@ export default function ChatPage() {
         // Filter messages client-side to ensure they're between these two users only
         const filteredMessages = (data || []).filter(
           (msg) =>
-            (msg.sender_id === userId && msg.reciver_id === receiverId) ||
-            (msg.sender_id === receiverId && msg.reciver_id === userId)
+            ((msg.sender_id === userId && msg.reciver_id === receiverId) ||
+              (msg.sender_id === receiverId && msg.reciver_id === userId)) &&
+            msg.listing_id === listingId
         );
 
         setMessages(filteredMessages);
@@ -92,10 +112,29 @@ export default function ChatPage() {
       }
     };
 
+    const fetchListingInfo = async () => {
+      if (!listingId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("listings")
+          .select("title, price, id")
+          .eq("id", listingId)
+          .single();
+
+        if (data && !error) {
+          setListingInfo(data);
+        }
+      } catch (err) {
+        console.error("Error fetching listing info:", err);
+      }
+    };
+
     fetchMessages();
     fetchReceiverName();
+    fetchListingInfo();
 
-    // Subscribe to new messages with improved approach
+    // Subscribe to new messages for this specific listing
     const channel = supabase
       .channel("public:messages")
       .on(
@@ -108,12 +147,13 @@ export default function ChatPage() {
         (payload) => {
           const newMessage = payload.new as Message;
 
-          // Only add message if it belongs to this conversation
+          // Only add message if it belongs to this specific conversation AND listing
           if (
-            (newMessage.sender_id === userId &&
+            ((newMessage.sender_id === userId &&
               newMessage.reciver_id === receiverId) ||
-            (newMessage.sender_id === receiverId &&
-              newMessage.reciver_id === userId)
+              (newMessage.sender_id === receiverId &&
+                newMessage.reciver_id === userId)) &&
+            newMessage.listing_id === listingId
           ) {
             setMessages((prev) => [...prev, newMessage]);
           }
@@ -128,7 +168,7 @@ export default function ChatPage() {
       console.log("Cleaning up realtime subscription");
       supabase.removeChannel(channel);
     };
-  }, [userId, receiverId, router]);
+  }, [userId, receiverId, listingId, router]);
 
   useEffect(() => {
     // Scroll to bottom when messages change
@@ -138,7 +178,7 @@ export default function ChatPage() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newMessage.trim() || !userId || !receiverId) return;
+    if (!newMessage.trim() || !userId || !receiverId || !listingId) return;
 
     try {
       setSending(true);
@@ -148,7 +188,7 @@ export default function ChatPage() {
         sender_id: userId,
         reciver_id: receiverId,
         sent_at: new Date().toISOString(),
-        listing_id: listingId || "",
+        listing_id: listingId,
       };
 
       const { error } = await supabase.from("messages").insert([messageData]);
@@ -164,6 +204,12 @@ export default function ChatPage() {
     }
   };
 
+  const goToListing = () => {
+    if (listingId) {
+      router.push(`/buy/${listingId}`);
+    }
+  };
+
   return (
     <div className="h-screen flex">
       <Sidebar />
@@ -171,28 +217,43 @@ export default function ChatPage() {
       <div className="flex-1 ml-64 flex flex-col">
         {/* Chat header */}
         <div
-          className="p-4 border-b flex items-center"
+          className="p-4 border-b flex items-center justify-between"
           style={{ borderColor: styles.warmBorder }}
         >
-          <button
-            onClick={() => router.push("/messages")}
-            className="mr-4 p-2 rounded-full hover:bg-gray-100"
-          >
-            <ArrowLeft className="h-5 w-5" style={{ color: styles.warmText }} />
-          </button>
-          <div>
-            <h2
-              className="font-medium text-lg"
-              style={{ color: styles.warmText }}
+          <div className="flex items-center">
+            <button
+              onClick={() => router.push("/messages")}
+              className="mr-4 p-2 rounded-full hover:bg-gray-100"
             >
-              {receiverName || "Chat"}
-            </h2>
-            {listingId && (
-              <p className="text-sm text-gray-500">
-                Listing #{listingId.substring(0, 8)}
-              </p>
-            )}
+              <ArrowLeft
+                className="h-5 w-5"
+                style={{ color: styles.warmText }}
+              />
+            </button>
+            <div>
+              <h2
+                className="font-medium text-lg"
+                style={{ color: styles.warmText }}
+              >
+                {receiverName || "Chat"}
+              </h2>
+            </div>
           </div>
+
+          {/* Listing info in header */}
+          {listingInfo && (
+            <div
+              className="flex items-center bg-gray-50 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-100"
+              onClick={goToListing}
+            >
+              <div>
+                <p className="text-sm font-medium">{listingInfo.title}</p>
+                <p className="text-sm" style={{ color: styles.warmPrimary }}>
+                  ₹{listingInfo.price}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -219,40 +280,49 @@ export default function ChatPage() {
         ) : (
           <>
             <div className="flex-1 overflow-y-auto p-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex mb-3 ${
-                    message.sender_id === userId
-                      ? "justify-end"
-                      : "justify-start"
-                  }`}
-                >
+              {messages.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-gray-500">
+                  <p>No messages yet</p>
+                  <p className="text-sm">Start the conversation!</p>
+                </div>
+              ) : (
+                messages.map((message) => (
                   <div
-                    className={`p-3 rounded-lg max-w-[70%] ${
+                    key={message.id}
+                    className={`flex mb-3 ${
                       message.sender_id === userId
-                        ? "text-white"
-                        : "bg-gray-100"
+                        ? "justify-end"
+                        : "justify-start"
                     }`}
-                    style={{
-                      backgroundColor:
-                        message.sender_id === userId ? styles.warmPrimary : "",
-                      color:
-                        message.sender_id === userId
-                          ? "white"
-                          : styles.warmText,
-                    }}
                   >
-                    <p>{message.message}</p>
-                    <div className="text-xs mt-1 opacity-70 text-right">
-                      {new Date(message.sent_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                    <div
+                      className={`p-3 rounded-lg max-w-[70%] ${
+                        message.sender_id === userId
+                          ? "text-white"
+                          : "bg-gray-100"
+                      }`}
+                      style={{
+                        backgroundColor:
+                          message.sender_id === userId
+                            ? styles.warmPrimary
+                            : "",
+                        color:
+                          message.sender_id === userId
+                            ? "white"
+                            : styles.warmText,
+                      }}
+                    >
+                      <p>{message.message}</p>
+                      <div className="text-xs mt-1 opacity-70 text-right">
+                        {new Date(message.sent_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
               <div ref={messagesEndRef} />
             </div>
             <form

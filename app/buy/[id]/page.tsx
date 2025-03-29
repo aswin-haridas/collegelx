@@ -21,11 +21,7 @@ export default function ItemPage() {
   const itemId = params?.id as string;
   const [ownerData, setOwnerData] = useState<{ name: string } | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const {
-    item,
-    loading: itemLoading,
-    error: itemError,
-  } = useItem(itemId, true);
+  const { item, loading: itemLoading } = useItem(itemId, true);
 
   const { seller, loading: sellerLoading } = useSeller(item?.sender_id);
 
@@ -33,30 +29,30 @@ export default function ItemPage() {
 
   const isOwner = userId && item?.sender_id === userId;
 
-  // Store item ID and seller ID in session storage on page load
+  // Store item ID and seller ID in session storage whenever they become available
   useEffect(() => {
-    if (item && seller) {
+    if (item) {
       sessionStorage.setItem("listing_id", item.id);
+    }
+
+    if (seller?.userid) {
       sessionStorage.setItem("sender_id", seller.userid);
     }
-  }, []);
+  }, [item, seller]);
 
   // Fetch owner data separately when item is loaded
   useEffect(() => {
     const fetchOwnerName = async () => {
       if (!item?.owner) return;
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("users")
         .select("name")
         .eq("id", item.owner)
         .single();
 
-      if (!error && data) {
+      if (data) {
         setOwnerData(data);
-        console.log("Owner data fetched:", data);
-      } else if (error) {
-        console.error("Error fetching owner data:", error);
       }
     };
 
@@ -73,24 +69,19 @@ export default function ItemPage() {
       return;
     }
 
-    // Use session storage values as fallback if direct access to item/seller fails
-    const chatItemId = item?.id || sessionStorage.getItem("currentItemId");
-    const chatSellerId =
-      seller?.userid || sessionStorage.getItem("currentSellerId");
-
-    console.log("Chat data:", { chatItemId, chatSellerId, item, seller });
+    const chatItemId = item?.id || sessionStorage.getItem("listing_id");
+    let chatSellerId =
+      seller?.userid || sessionStorage.getItem("sender_id") || item?.sender_id;
 
     if (!chatItemId || !chatSellerId) {
-      console.error("Missing required chat information:", {
-        chatItemId,
-        chatSellerId,
-      });
-      alert(
-        "Unable to start chat. Missing item or seller information. Please try refreshing the page."
-      );
       return;
     }
 
+    // Store in session storage before navigation
+    sessionStorage.setItem("listing_id", chatItemId);
+    sessionStorage.setItem("receiver_id", chatSellerId);
+
+    // Navigate with query parameters
     router.push(`/chat?listingId=${chatItemId}&receiverId=${chatSellerId}`);
   };
 
@@ -107,7 +98,7 @@ export default function ItemPage() {
     );
   }
 
-  if (itemError || !item) {
+  if (!item) {
     return (
       <div className="h-screen">
         <Sidebar />
@@ -144,7 +135,7 @@ export default function ItemPage() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to listings
         </button>
-  
+
         {/* Main item card */}
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
           <div className="flex flex-wrap md:flex-nowrap items-start gap-8">
@@ -154,23 +145,23 @@ export default function ItemPage() {
                 {/* Currently selected image */}
                 <div className="rounded-lg overflow-hidden mb-4">
                   <img
-                    src={item.images[selectedImageIndex]} // Add state for selectedImageIndex
+                    src={item.images[selectedImageIndex]}
                     alt={`${item.title} - Image ${selectedImageIndex + 1}`}
                     className="w-full h-96 object-cover rounded-lg"
                   />
                 </div>
-                
+
                 {/* Image selection buttons */}
                 {item.images.length > 1 && (
                   <div className="flex flex-wrap gap-2 justify-center">
                     {item.images.map((image, index) => (
                       <button
                         key={index}
-                        onClick={() => setSelectedImageIndex(index)} // Add setter from useState
+                        onClick={() => setSelectedImageIndex(index)}
                         className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
                           selectedImageIndex === index
-                            ? 'border-warmPrimary' // Use your warmPrimary color
-                            : 'border-gray-200 hover:border-gray-400'
+                            ? "border-warmPrimary"
+                            : "border-gray-200 hover:border-gray-400"
                         }`}
                         style={{
                           borderColor:
