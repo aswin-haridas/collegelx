@@ -13,11 +13,6 @@ import {
 } from "lucide-react";
 import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
-import { supabase } from "@/lib/supabase";
-
-interface SidebarProps {
-  activeTextColor?: string;
-}
 
 interface NavItemType {
   name: string;
@@ -69,7 +64,7 @@ const NavItem = ({
   );
 };
 
-const Sidebar = ({ activeTextColor }: SidebarProps) => {
+const Sidebar = () => {
   const [userName, setUserName] = useState<string | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [userRole, setUserRole] = useState<string>("user");

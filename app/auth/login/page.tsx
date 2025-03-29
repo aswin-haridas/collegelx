@@ -8,7 +8,7 @@ import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
-import AdminPage from "@/app/admin/page";
+
 export default function LoginPage() {
   const { isAuthenticated, isLoading } = useAuth(false);
   const router = useRouter();

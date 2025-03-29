@@ -13,6 +13,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Item } from "@/lib/types";
 import Link from "next/link";
+import Sidebar from "@/components/Sidebar";
 
 // Custom hook for fetching similar items
 function useSimilarItems(item: Item | null, limit: number = 4) {
@@ -65,11 +66,7 @@ export default function ItemPage() {
     error: itemError,
   } = useItem(itemId, true);
 
-  const {
-    seller,
-    loading: sellerLoading,
-    error: sellerError,
-  } = useSeller(item?.id);
+  const { seller, loading: sellerLoading } = useSeller(item?.seller_id);
 
   const { similarItems, loading: similarItemsLoading } = useSimilarItems(item);
 
@@ -83,15 +80,14 @@ export default function ItemPage() {
       return;
     }
 
-    if (item) {
-      router.push(`/chat?listing=${item.id}&seller=${item.id}`);
+    if (item && seller) {
+      router.push(`/chat?listingId=${item.id}&receiverId=${seller.userid}`);
     }
   };
 
   if (loading) {
     return (
       <div className="h-screen">
-        <Header activeTextColor={styles.warmPrimary} />
         <div className="flex justify-center items-center h-full ml-64">
           <Loader2
             className="h-8 w-8 animate-spin"
@@ -105,7 +101,8 @@ export default function ItemPage() {
   if (itemError || !item) {
     return (
       <div className="h-screen">
-        <Header activeTextColor={styles.warmPrimary} />
+        <Sidebar />
+
         <div className="flex justify-center items-center h-full ml-64">
           <div className="text-center">
             <h2
@@ -129,7 +126,6 @@ export default function ItemPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header activeTextColor={styles.warmPrimary} />
       <div className="max-w-6xl mx-auto p-4 ml-64 py-10">
         {/* Back button */}
         <button

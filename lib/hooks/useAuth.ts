@@ -25,31 +25,34 @@ export function useAuth(requireAuth: boolean = true) {
   }, [pathname]);
 
   const checkAuth = () => {
-    // Get auth data from localStorage
-    const name = localStorage.getItem("name");
-    const userId = localStorage.getItem("id");
-    const role = localStorage.getItem("role");
-    const isAuthenticated = localStorage.getItem("auth") === "true";
+    // Use a safe way to access localStorage (only in client)
+    if (typeof window !== "undefined") {
+      // Get auth data from localStorage
+      const name = localStorage.getItem("name");
+      const userId = localStorage.getItem("id");
+      const role = localStorage.getItem("role");
+      const isAuthenticated = localStorage.getItem("auth") === "true";
 
-    setAuthData({
-      name,
-      userId,
-      role,
-      isAuthenticated,
-      isLoading: false,
-    });
+      setAuthData({
+        name,
+        userId,
+        role,
+        isAuthenticated,
+        isLoading: false,
+      });
 
-    // Check if authentication is required and user is not authenticated
-    if (requireAuth && !isAuthenticated) {
-      // Don't redirect if on public pages
-      if (
-        !pathname?.includes("/auth") &&
-        pathname !== "/" &&
-        !pathname?.includes("/buy/")
-      ) {
-        router.push(
-          `/auth/login?redirect=${encodeURIComponent(pathname || "/")}`
-        );
+      // Check if authentication is required and user is not authenticated
+      if (requireAuth && !isAuthenticated) {
+        // Don't redirect if on public pages
+        if (
+          !pathname?.includes("/auth") &&
+          pathname !== "/" &&
+          !pathname?.includes("/buy/")
+        ) {
+          router.push(
+            `/auth/login?redirect=${encodeURIComponent(pathname || "/")}`
+          );
+        }
       }
     }
   };

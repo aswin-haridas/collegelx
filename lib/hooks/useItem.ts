@@ -8,30 +8,34 @@ export function useItem(id: string, approvedOnly: boolean = false) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    
-
     const fetchItem = async () => {
-      let query = supabase.from("items").select("*").eq("id", id);
-    
-      if (approvedOnly) {
-        query = query.eq("status", "available");
+      if (!id) {
+        setLoading(false);
+        return;
       }
-    
-      const { data, error } = await query.single();
-    
-      console.log("Supabase Response:", { data, error });
-    
-      if (error) {
-        console.error("Supabase Error:", error);
-        setError(error);
-        setItem(null);
-      } else {
-        setItem(data);
+
+      try {
+        let query = supabase.from("items").select("*").eq("id", id);
+
+        if (approvedOnly) {
+          query = query.eq("status", "available");
+        }
+
+        const { data, error } = await query.single();
+
+        if (error) {
+          setError(error);
+          setItem(null);
+        } else {
+          setItem(data);
+        }
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
       }
-    
-      setLoading(false);
     };
-    
+
     fetchItem();
   }, [id, approvedOnly]);
 

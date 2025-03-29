@@ -5,10 +5,11 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { styles } from "@/lib/styles";
 import Header from "@/components/Sidebar";
 import { supabase } from "@/lib/supabase";
-import { Loader2, Star, University, Edit, Trash2 } from "lucide-react";
+import { Loader2, Star, Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ItemCard from "@/components/ItemCard";
 import { Item as ItemType } from "@/lib/types";
+import Sidebar from "@/components/Sidebar";
 
 interface User {
   name: string;
@@ -36,7 +37,6 @@ export default function ProfilePage() {
     year: "",
   });
   const router = useRouter();
-  const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -113,13 +113,6 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Error updating user data:", error);
     }
-    const name = localStorage.getItem("name");
-    setUserName(name || "User");
-  };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    router.push("/auth/login");
   };
 
   const handleEditItem = (itemId: string) => {
@@ -146,7 +139,6 @@ export default function ProfilePage() {
   if (loading || isLoading) {
     return (
       <div className="h-screen">
-        <Header activeTextColor={styles.warmPrimary} />
         <div className="flex justify-center items-center h-full ml-64">
           <Loader2
             className="h-8 w-8 animate-spin"
@@ -159,7 +151,8 @@ export default function ProfilePage() {
 
   return (
     <div className="h-screen">
-      <Header activeTextColor={styles.warmPrimary} />
+        <Sidebar />
+
       <div className="max-w-4xl mx-auto p-4 ml-64">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center mb-6">

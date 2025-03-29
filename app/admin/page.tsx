@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { Loader2, CircleCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { playfair } from "@/lib/fonts";
+import Sidebar from "@/components/Sidebar";
 
 // Define types for better type safety
 interface Product {
@@ -21,7 +22,6 @@ interface Product {
 // Loading component for better reusability
 const LoadingSpinner = () => (
   <div className="h-screen">
-    <Header activeTextColor={styles.warmPrimary} />
     <div className="flex justify-center items-center h-full ml-64">
       <Loader2
         className="h-8 w-8 animate-spin"
@@ -175,7 +175,8 @@ export default function AdminPage() {
 
   return (
     <div className="h-screen">
-      <Header activeTextColor={styles.warmPrimary} />
+        <Sidebar />
+
       <div className="max-w-4xl mx-auto p-4 ml-64">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h1

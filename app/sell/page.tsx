@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { styles } from "@/lib/styles";
-import Header from "@/components/Sidebar";
+import Sidebar from "@/components/Sidebar";
 import { supabase } from "@/lib/supabase";
 import { Loader2, Upload } from "lucide-react";
 
 export default function SellPage() {
-  const { isAuthenticated, userId, isLoading } = useAuth();
+  const { userId, isLoading } = useAuth();
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -95,7 +95,6 @@ export default function SellPage() {
   if (isLoading) {
     return (
       <div className="h-screen">
-        <Header activeTextColor={styles.warmPrimary} />
         <div className="flex justify-center items-center h-full ml-64">
           <Loader2
             className="h-8 w-8 animate-spin"
@@ -108,7 +107,8 @@ export default function SellPage() {
 
   return (
     <div className="h-screen">
-      <Header activeTextColor={styles.warmPrimary} />
+        <Sidebar />
+
       <div className="max-w-4xl mx-auto p-4 ml-64">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h1

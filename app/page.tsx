@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import Header from "@/components/Sidebar";
 import { styles } from "@/lib/styles";
 import Link from "next/link";
+import Sidebar from "@/components/Sidebar";
 
 interface Item {
   id: string;
@@ -27,13 +28,7 @@ const departments = [
   "Other",
 ];
 
-const category = [
-  "Notes",
-  "Uniform",
-  "Stationary",
-  "Others",
-  "All",
-];
+const category = ["Notes", "Uniform", "Stationary", "Others", "All"];
 const years = [1, 2, 3, 4, "All"];
 
 export default function ItemsPage() {
@@ -90,7 +85,7 @@ export default function ItemsPage() {
   return (
     <>
       <div className="min-h-screen">
-        <Header activeTextColor={styles.warmPrimary} />
+        <Sidebar />
         <div className="p-4 ml-64">
           <div className="max-w-7xl mx-auto">
             <h1

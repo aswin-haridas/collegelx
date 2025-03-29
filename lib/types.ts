@@ -1,5 +1,3 @@
-import { ReactNode } from "react";
-
 export interface User {
   id: any;
   userid: string;
@@ -21,7 +19,6 @@ export interface AuthState {
 }
 
 export interface Item {
-  category: string;
   id: string;
   created_at: string;
   user_id: string;
