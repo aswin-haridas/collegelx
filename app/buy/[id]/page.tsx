@@ -12,6 +12,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Item } from "@/lib/types";
 import Sidebar from "@/components/Sidebar";
+import Link from "next/link";
 
 export default function ItemPage() {
   const { isAuthenticated, isLoading: authLoading, userId } = useAuth(false);
@@ -19,7 +20,7 @@ export default function ItemPage() {
   const params = useParams();
   const itemId = params?.id as string;
   const [ownerData, setOwnerData] = useState<{ name: string } | null>(null);
-
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const {
     item,
     loading: itemLoading,
@@ -143,20 +144,50 @@ export default function ItemPage() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to listings
         </button>
-
+  
         {/* Main item card */}
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
           <div className="flex flex-wrap md:flex-nowrap items-start gap-8">
-            {/* Left Side - Image */}
+            {/* Left Side - Multiple Images */}
             {item.images && item.images.length > 0 && (
               <div className="md:w-2/5 w-full">
-                <div className="rounded-lg overflow-hidden">
+                {/* Currently selected image */}
+                <div className="rounded-lg overflow-hidden mb-4">
                   <img
-                    src={item.images[0]}
-                    alt={item.title}
-                    className="w-full h-auto object-cover rounded-lg"
+                    src={item.images[selectedImageIndex]} // Add state for selectedImageIndex
+                    alt={`${item.title} - Image ${selectedImageIndex + 1}`}
+                    className="w-full h-96 object-cover rounded-lg"
                   />
                 </div>
+                
+                {/* Image selection buttons */}
+                {item.images.length > 1 && (
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {item.images.map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImageIndex(index)} // Add setter from useState
+                        className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                          selectedImageIndex === index
+                            ? 'border-warmPrimary' // Use your warmPrimary color
+                            : 'border-gray-200 hover:border-gray-400'
+                        }`}
+                        style={{
+                          borderColor:
+                            selectedImageIndex === index
+                              ? styles.warmPrimary
+                              : undefined,
+                        }}
+                      >
+                        <img
+                          src={image}
+                          alt={`${item.title} - Thumbnail ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -231,7 +262,13 @@ export default function ItemPage() {
                   {ownerData && (
                     <div>
                       <p className="text-gray-500">Owner</p>
-                      <p className="font-medium">{ownerData.name}</p>
+                      <p
+                        className="font-medium cursor-pointer hover:underline"
+                        onClick={() => router.push(`/profile/${item.owner}`)}
+                        style={{ color: styles.warmPrimary }}
+                      >
+                        {ownerData.name}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -263,13 +300,17 @@ export default function ItemPage() {
                         </span>
                       )}
                     </div>
-                    <div>
-                      <p
+                    <div className="flex flex-col">
+                      <div
                         className="font-medium hover:underline"
                         style={{ color: styles.warmText }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/profile/${seller.userid}`);
+                        }}
                       >
                         {ownerData?.name || seller.name || "Anonymous Seller"}
-                      </p>
+                      </div>
                       <p className="text-sm text-gray-500">
                         {seller.department ? `${seller.department}` : ""}
                       </p>

@@ -31,6 +31,8 @@ export default function ProfilePage() {
   const [userRating, setUserRating] = useState<number | null>(null);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
   const [hasRated, setHasRated] = useState(false);
+
+  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -75,7 +77,7 @@ export default function ProfilePage() {
 
         if (ratingData && ratingData.length > 0) {
           const avgRating =
-            ratingData.reduce((sum, item) => sum + item.rating, 0) /
+            ratingData.reduce((sum, item) => sum + Number(item.rating), 0) /
             ratingData.length;
           setUser((prev) => (prev ? { ...prev, rating: avgRating } : null));
         }
@@ -88,7 +90,7 @@ export default function ProfilePage() {
               .select("rating")
               .eq("rated_user_id", profileId)
               .eq("rater_user_id", userId)
-              .single();
+              .maybeSingle();
 
           if (!ratingCheckError && existingRating) {
             setUserRating(existingRating.rating);
@@ -132,6 +134,8 @@ export default function ProfilePage() {
       fetchUserItems();
     }
   }, [profileId]);
+
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -177,15 +181,27 @@ export default function ProfilePage() {
     if (!userId || !profileId || userId === profileId) return;
 
     try {
+      // First check if user has already rated
+      const { data: existingRating, error: checkError } = await supabase
+        .from("ratings")
+        .select("id")
+        .eq("rated_user_id", profileId)
+        .eq("rater_user_id", userId)
+        .single();
+
+      if (checkError && checkError.code !== "PGRST116") {
+        throw checkError;
+      }
+
+      let ratingError;
       // If already rated, update the rating
-      if (hasRated) {
+      if (existingRating) {
         const { error } = await supabase
           .from("ratings")
           .update({ rating })
           .eq("rated_user_id", profileId)
           .eq("rater_user_id", userId);
-
-        if (error) throw error;
+        ratingError = error;
       } else {
         // Otherwise insert a new rating
         const { error } = await supabase.from("ratings").insert({
@@ -193,29 +209,31 @@ export default function ProfilePage() {
           rater_user_id: userId,
           rating,
         });
-
-        if (error) throw error;
-        setHasRated(true);
+        ratingError = error;
       }
 
+      if (ratingError) throw ratingError;
+
       setUserRating(rating);
+      setHasRated(true);
 
       // Refetch the average rating
-      const { data: ratingData, error: ratingError } = await supabase
+      const { data: ratingData, error: ratingError2 } = await supabase
         .from("ratings")
         .select("rating")
         .eq("rated_user_id", profileId);
 
-      if (ratingError) throw ratingError;
+      if (ratingError2) throw ratingError2;
 
       if (ratingData && ratingData.length > 0) {
         const avgRating =
-          ratingData.reduce((sum, item) => sum + item.rating, 0) /
+          ratingData.reduce((sum, item) => sum + Number(item.rating), 0) /
           ratingData.length;
         setUser((prev) => (prev ? { ...prev, rating: avgRating } : null));
       }
     } catch (error) {
       console.error("Error rating user:", error);
+      alert("Failed to submit rating. Please try again.");
     }
   };
 
@@ -235,6 +253,7 @@ export default function ProfilePage() {
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover border-2 border-yellow-800"
               />
+              
             </div>
             <div>
               <h1
@@ -255,7 +274,7 @@ export default function ProfilePage() {
                       star <= (user?.rating || 0)
                         ? "fill-yellow-500 text-yellow-500"
                         : "text-gray-300"
-                    }`}
+                    } cursor-pointer transition-all duration-150`}
                   />
                 ))}
                 <span className="ml-2 text-sm text-gray-600">
@@ -273,7 +292,7 @@ export default function ProfilePage() {
                       <Star
                         key={star}
                         size={20}
-                        className={`cursor-pointer ${
+                        className={`cursor-pointer transition-all duration-150 hover:scale-110 ${
                           star <= (hoveredRating || userRating || 0)
                             ? "fill-yellow-500 text-yellow-500"
                             : "text-gray-300"
