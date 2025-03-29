@@ -17,6 +17,7 @@ export default function SellPage() {
   const [productType, setProductType] = useState("");
   const [year, setYear] = useState("");
   const [department, setDepartment] = useState("");
+  const [tags, setTags] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -32,9 +33,8 @@ export default function SellPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (userId) 
-    console.log(userId);
+
+    if (userId) console.log(userId);
     setUploading(true);
     try {
       // Upload images to storage
@@ -54,31 +54,27 @@ export default function SellPage() {
           return publicUrl;
         })
       );
-      const userID = sessionStorage.getItem("userId")
+      const userID = sessionStorage.getItem("userId");
       // Insert item into database
       const { error: insertError } = await supabase.from("items").insert({
         user_id: userID,
         title,
         description,
         price: parseFloat(price),
-        
         product_type: productType,
-        // year,
-        // department,
+        year,
+        department,
         images: imageUrls,
-
-        // image_url: JSON.stringify(imageUrls), // Ensure correct format
         image_url: imageUrls,
-        // seller_id: userId,
+        tags: tags.split(",").map((tag) => tag.trim()), // Convert tags string to array
         availability: "false",
         created_at: new Date().toISOString(),
       });
-      
+
       if (insertError) {
         console.error("Insert Error:", insertError);
         alert("Failed to create listing. Please try again.");
       }
-      
 
       // Redirect to home page on success
       router.push("/");
@@ -196,18 +192,16 @@ export default function SellPage() {
                   }}
                 >
                   <option value="">Select Product Type</option>
-                  <option value="Book">Book</option>
-                  <option value="Clothing">Clothing</option>
-                  <option value="Bag">Bag</option>
-                  <option value="Electronic">Electronic</option>
+                  <option value="Notes">Notes</option>
+                  <option value="Uniform">Uniform</option>
                   <option value="Stationary">Stationary</option>
-
+                  <option value="Others">Others</option>
                 </select>
               </div>
             </div>
 
             {/* Year and Department Row */}
-            {/* <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600">
                   Year
@@ -223,10 +217,11 @@ export default function SellPage() {
                   }}
                 >
                   <option value="">Select Year</option>
-                  <option value="1">1</option>
+                  <option value="1st">1st</option>
                   <option value="2">2</option>
                   <option value="3">3</option>
                   <option value="4">4</option>
+                  <option value="all">All</option>
                 </select>
               </div>
 
@@ -246,20 +241,33 @@ export default function SellPage() {
                 >
                   <option value="">Select Department</option>
                   <option value="Computer Science">Computer Science</option>
-                  <option value="Information Technology">
-                    Information Technology
-                  </option>
-                  <option value="Electronics">Electronics</option>
+                  <option value="AI">AI</option>
                   <option value="Mechanical">Mechanical</option>
+                  <option value="EC">EC</option>
+                  <option value="EEE">EEE</option>
                   <option value="Civil">Civil</option>
-                  <option value="Electrical">Electrical</option>
-                  <option value="Business Administration">
-                    Business Administration
-                  </option>
-                  <option value="Other">Other</option>
+                  <option value="all">All</option>
                 </select>
               </div>
-            </div> */}
+            </div>
+
+            {/* Tags Row */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600">
+                Tags (comma separated)
+              </label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="e.g. engineering, first year, textbook"
+                className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
+                style={{
+                  borderColor: styles.warmBorder,
+                  color: styles.warmText,
+                }}
+              />
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-2">

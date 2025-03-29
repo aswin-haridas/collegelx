@@ -93,7 +93,6 @@ export default function LoginPage() {
       localStorage.setItem("name", userData.name);
       localStorage.setItem("user", JSON.stringify(userData));
   
-      alert("Login successful!");
   
       // ✅ Ensure proper redirection
       if (userData.name.toLowerCase() === "admin") {

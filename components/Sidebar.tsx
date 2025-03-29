@@ -74,7 +74,7 @@ const Sidebar = ({ activeTextColor }: SidebarProps) => {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
-  const userRole = sessionStorage.getItem("userRole");
+  const userRole = sessionStorage.getItem("userRole") || "user";
 
   const navItems: NavItemType[] = [
     { name: "Home", href: "/", icon: <Home size={18} /> },
