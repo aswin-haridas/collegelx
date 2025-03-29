@@ -52,10 +52,22 @@ export default function ChatPage() {
         if (listingId && receiverId) {
           await fetchListingAndSellerData();
         }
-      } catch (error) {
-        console.error("Error checking auth:", error);
-        setError("Failed to load user data");
-      } finally {
+      } catch (error: any) {
+  console.error("Error checking auth:", error);
+
+  if (error.response) {
+    console.error("Response Data:", error.response.data);
+    console.error("Status Code:", error.response.status);
+    console.error("Headers:", error.response.headers);
+  } else if (error.request) {
+    console.error("No response received:", error.request);
+  } else {
+    console.error("Error message:", error.message);
+  }
+
+  setError("Failed to load user data");
+}
+finally {
         setIsAuthChecking(false);
       }
     }
@@ -319,7 +331,7 @@ export default function ChatPage() {
     <div className="h-screen">
       <Header activeTextColor={styles.warmPrimary} />
 
-      <div className="max-w-4xl mx-auto p-4 ml-64 h-full flex flex-col">
+      <div className="max-w-4xl mx-20  p-4 ml-64 h-full flex flex-col">
         {/* Chat Header with Item and Seller Info */}
         <div
           className="bg-white p-4 rounded-t-lg shadow-sm flex items-center space-x-4 border-b"
