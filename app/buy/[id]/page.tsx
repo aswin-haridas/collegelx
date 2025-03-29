@@ -11,53 +11,14 @@ import { Loader2, MessageSquare, ArrowLeft } from "lucide-react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Item } from "@/lib/types";
-import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
-
-// Custom hook for fetching similar items
-function useSimilarItems(item: Item | null, limit: number = 4) {
-  const [similarItems, setSimilarItems] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    if (!item) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchSimilarItems = async () => {
-      try {
-        // Find items with the same category but not the same ID
-        const { data, error } = await supabase
-          .from("items")
-          .select("*")
-          .eq("category", item.category)
-          .eq("status", "available")
-          .neq("id", item.id)
-          .limit(limit);
-
-        if (error) throw error;
-        setSimilarItems(data || []);
-      } catch (err) {
-        console.error("Error fetching similar items:", err);
-        setError(err as Error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSimilarItems();
-  }, [item, limit]);
-
-  return { similarItems, loading, error };
-}
 
 export default function ItemPage() {
   const { isAuthenticated, isLoading: authLoading, userId } = useAuth(false);
   const router = useRouter();
   const params = useParams();
   const itemId = params?.id as string;
+  const [ownerData, setOwnerData] = useState<{ name: string } | null>(null);
 
   const {
     item,
@@ -67,11 +28,41 @@ export default function ItemPage() {
 
   const { seller, loading: sellerLoading } = useSeller(item?.seller_id);
 
-  const { similarItems, loading: similarItemsLoading } = useSimilarItems(item);
-
   const loading = authLoading || itemLoading;
 
   const isOwner = userId && item?.seller_id === userId;
+
+  // Store item ID and seller ID in session storage on page load
+  useEffect(() => {
+    if (item && seller) {
+      sessionStorage.setItem("listing_id", item.id);
+      sessionStorage.setItem("seller_id", seller.userid);
+    }
+  }, []);
+
+  // Fetch owner data separately when item is loaded
+  useEffect(() => {
+    const fetchOwnerName = async () => {
+      if (!item?.owner) return;
+
+      const { data, error } = await supabase
+        .from("users")
+        .select("name")
+        .eq("id", item.owner)
+        .single();
+
+      if (!error && data) {
+        setOwnerData(data);
+        console.log("Owner data fetched:", data);
+      } else if (error) {
+        console.error("Error fetching owner data:", error);
+      }
+    };
+
+    if (item?.owner) {
+      fetchOwnerName();
+    }
+  }, [item]);
 
   const handleChat = () => {
     if (!isAuthenticated) {
@@ -81,9 +72,25 @@ export default function ItemPage() {
       return;
     }
 
-    if (item && seller) {
-      router.push(`/chat?listingId=${item.id}&receiverId=${seller.userid}`);
+    // Use session storage values as fallback if direct access to item/seller fails
+    const chatItemId = item?.id || sessionStorage.getItem("currentItemId");
+    const chatSellerId =
+      seller?.userid || sessionStorage.getItem("currentSellerId");
+
+    console.log("Chat data:", { chatItemId, chatSellerId, item, seller });
+
+    if (!chatItemId || !chatSellerId) {
+      console.error("Missing required chat information:", {
+        chatItemId,
+        chatSellerId,
+      });
+      alert(
+        "Unable to start chat. Missing item or seller information. Please try refreshing the page."
+      );
+      return;
     }
+
+    router.push(`/chat?listingId=${chatItemId}&receiverId=${chatSellerId}`);
   };
 
   if (loading) {
@@ -221,6 +228,12 @@ export default function ItemPage() {
                       {new Date(item.created_at).toLocaleDateString()}
                     </p>
                   </div>
+                  {ownerData && (
+                    <div>
+                      <p className="text-gray-500">Owner</p>
+                      <p className="font-medium">{ownerData.name}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -255,7 +268,7 @@ export default function ItemPage() {
                         className="font-medium hover:underline"
                         style={{ color: styles.warmText }}
                       >
-                        {seller.name || "Anonymous Seller"}
+                        {ownerData?.name || seller.name || "Anonymous Seller"}
                       </p>
                       <p className="text-sm text-gray-500">
                         {seller.department ? `${seller.department}` : ""}
@@ -267,73 +280,6 @@ export default function ItemPage() {
             </div>
           </div>
         </div>
-
-        {/* Similar Products Section */}
-        {!similarItemsLoading && similarItems.length > 0 && (
-          <div className="mt-12">
-            <h2
-              className={`${playfair.className} text-2xl font-semibold mb-6`}
-              style={{ color: styles.warmText }}
-            >
-              Similar Products
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {similarItems.map((similarItem) => (
-                <Link
-                  href={`/buy/${similarItem.id}`}
-                  key={similarItem.id}
-                  className="block"
-                >
-                  <div
-                    className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full flex flex-col bg-white"
-                    style={{ borderColor: styles.warmBorder }}
-                  >
-                    {/* Image */}
-                    <div className="relative h-48 bg-gray-100">
-                      {similarItem.images && similarItem.images.length > 0 ? (
-                        <img
-                          src={similarItem.images[0]}
-                          alt={similarItem.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                          <span className="text-gray-500 text-sm">
-                            No image
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-4 flex flex-col flex-grow">
-                      <h3
-                        className="font-medium text-lg mb-1 line-clamp-2"
-                        style={{ color: styles.warmText }}
-                      >
-                        {similarItem.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm mb-2 flex-grow line-clamp-2">
-                        {similarItem.description}
-                      </p>
-                      <div className="flex justify-between items-center mt-2">
-                        <span
-                          className="font-bold"
-                          style={{ color: styles.warmPrimary }}
-                        >
-                          ₹{similarItem.price}
-                        </span>
-                        <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                          {similarItem.category}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

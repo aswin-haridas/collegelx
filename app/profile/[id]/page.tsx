@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { styles } from "@/lib/styles";
 import { supabase } from "@/lib/supabase";
 import { Star, Edit, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import ItemCard from "@/components/ItemCard";
 import { Item as ItemType } from "@/lib/types";
 import Sidebar from "@/components/Sidebar";
@@ -20,6 +20,7 @@ interface User {
   profile_image?: string;
   year?: string;
   rating?: number;
+  id: string;
 }
 
 export default function ProfilePage() {
@@ -27,6 +28,9 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<ItemType[]>([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [hoveredRating, setHoveredRating] = useState<number | null>(null);
+  const [hasRated, setHasRated] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -35,45 +39,80 @@ export default function ProfilePage() {
     year: "",
   });
   const router = useRouter();
+  const { id } = useParams();
+  const profileId = Array.isArray(id) ? id[0] : id;
+  const isOwnProfile = userId === profileId;
 
   useEffect(() => {
     async function fetchUserData() {
-      if (!userId) return;
+      if (!profileId) return;
       try {
         const { data, error } = await supabase
           .from("users")
           .select("*")
-          .eq("id", userId)
+          .eq("id", profileId)
           .single();
         if (error) throw error;
         setUser(data);
-        setFormData({
-          name: data.name,
-          email: data.email,
-          department: data.department,
-          university_id: data.university_id,
-          year: data.year,
-        });
+
+        if (isOwnProfile) {
+          setFormData({
+            name: data.name,
+            email: data.email,
+            department: data.department || "",
+            university_id: data.university_id || "",
+            year: data.year || "",
+          });
+        }
+
+        // Fetch user's average rating
+        const { data: ratingData, error: ratingError } = await supabase
+          .from("ratings")
+          .select("rating")
+          .eq("rated_user_id", profileId);
+
+        if (ratingError) throw ratingError;
+
+        if (ratingData && ratingData.length > 0) {
+          const avgRating =
+            ratingData.reduce((sum, item) => sum + item.rating, 0) /
+            ratingData.length;
+          setUser((prev) => (prev ? { ...prev, rating: avgRating } : null));
+        }
+
+        // Check if current user has already rated this user
+        if (userId && userId !== profileId) {
+          const { data: existingRating, error: ratingCheckError } =
+            await supabase
+              .from("ratings")
+              .select("rating")
+              .eq("rated_user_id", profileId)
+              .eq("rater_user_id", userId)
+              .single();
+
+          if (!ratingCheckError && existingRating) {
+            setUserRating(existingRating.rating);
+            setHasRated(true);
+          }
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
-      } finally {
-        console.log("User data fetched:", user);
       }
     }
 
-    if (!isLoading && isAuthenticated) {
+    if (!isLoading) {
       fetchUserData();
     }
-  }, [userId, isAuthenticated, isLoading]);
+  }, [profileId, userId, isLoading, isOwnProfile]);
 
   useEffect(() => {
     async function fetchUserItems() {
-      if (!userId) return;
+      if (!profileId) return;
       try {
         const { data, error } = await supabase
           .from("items")
           .select("*")
-          .eq("id", userId);
+          .eq("user_id", profileId);
         if (error) throw error;
 
         const transformedItems = data.map((item) => ({
@@ -89,10 +128,10 @@ export default function ProfilePage() {
       }
     }
 
-    if (userId) {
+    if (profileId) {
       fetchUserItems();
     }
-  }, [userId]);
+  }, [profileId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -131,6 +170,52 @@ export default function ProfilePage() {
       } catch (error) {
         console.error("Error deleting item:", error);
       }
+    }
+  };
+
+  const handleRateUser = async (rating: number) => {
+    if (!userId || !profileId || userId === profileId) return;
+
+    try {
+      // If already rated, update the rating
+      if (hasRated) {
+        const { error } = await supabase
+          .from("ratings")
+          .update({ rating })
+          .eq("rated_user_id", profileId)
+          .eq("rater_user_id", userId);
+
+        if (error) throw error;
+      } else {
+        // Otherwise insert a new rating
+        const { error } = await supabase.from("ratings").insert({
+          rated_user_id: profileId,
+          rater_user_id: userId,
+          rating,
+        });
+
+        if (error) throw error;
+        setHasRated(true);
+      }
+
+      setUserRating(rating);
+
+      // Refetch the average rating
+      const { data: ratingData, error: ratingError } = await supabase
+        .from("ratings")
+        .select("rating")
+        .eq("rated_user_id", profileId);
+
+      if (ratingError) throw ratingError;
+
+      if (ratingData && ratingData.length > 0) {
+        const avgRating =
+          ratingData.reduce((sum, item) => sum + item.rating, 0) /
+          ratingData.length;
+        setUser((prev) => (prev ? { ...prev, rating: avgRating } : null));
+      }
+    } catch (error) {
+      console.error("Error rating user:", error);
     }
   };
 
@@ -174,9 +259,38 @@ export default function ProfilePage() {
                   />
                 ))}
                 <span className="ml-2 text-sm text-gray-600">
-                  {user?.rating ? `${user.rating}/5` : "No ratings yet"}
+                  {user?.rating
+                    ? `${user.rating.toFixed(1)}/5`
+                    : "No ratings yet"}
                 </span>
               </div>
+
+              {!isOwnProfile && userId && (
+                <div className="mt-3">
+                  <p className="text-sm text-gray-600 mb-1">Rate this user:</p>
+                  <div className="flex items-center">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        size={20}
+                        className={`cursor-pointer ${
+                          star <= (hoveredRating || userRating || 0)
+                            ? "fill-yellow-500 text-yellow-500"
+                            : "text-gray-300"
+                        }`}
+                        onMouseEnter={() => setHoveredRating(star)}
+                        onMouseLeave={() => setHoveredRating(null)}
+                        onClick={() => handleRateUser(star)}
+                      />
+                    ))}
+                    {hasRated && (
+                      <span className="ml-2 text-sm text-green-600">
+                        {userRating ? `Your rating: ${userRating}/5` : ""}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -256,13 +370,15 @@ export default function ProfilePage() {
                 </p>
               </div>
               <div className="flex gap-2 mt-4">
-                <button
-                  className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                  style={{ backgroundColor: styles.warmPrimary }}
-                  onClick={() => setIsEditing(true)}
-                >
-                  Edit Profile
-                </button>
+                {isOwnProfile && (
+                  <button
+                    className="px-4 py-2 text-white rounded-lg hover:brightness-110"
+                    style={{ backgroundColor: styles.warmPrimary }}
+                    onClick={() => setIsEditing(true)}
+                  >
+                    Edit Profile
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -271,37 +387,39 @@ export default function ProfilePage() {
             className="text-xl font-semibold mt-8 mb-4"
             style={{ color: styles.warmText }}
           >
-            Your Items
+            {isOwnProfile ? "Your Items" : `${user?.name}'s Items`}
           </h2>
           {items.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {items.map((item) => (
                 <div key={item.id} className="relative group">
                   <ItemCard item={item} />
-                  <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      className="p-2 bg-white rounded-full shadow-md"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleEditItem(item.id);
-                      }}
-                      style={{ color: styles.warmPrimary }}
-                      title="Edit item"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      className="p-2 bg-white rounded-full shadow-md"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleDeleteItem(item.id);
-                      }}
-                      style={{ color: styles.warmPrimary }}
-                      title="Delete item"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+                  {isOwnProfile && (
+                    <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        className="p-2 bg-white rounded-full shadow-md"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleEditItem(item.id);
+                        }}
+                        style={{ color: styles.warmPrimary }}
+                        title="Edit item"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        className="p-2 bg-white rounded-full shadow-md"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleDeleteItem(item.id);
+                        }}
+                        style={{ color: styles.warmPrimary }}
+                        title="Delete item"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  )}
                   <div
                     className="absolute bottom-2 right-2 px-2 py-1 text-xs font-medium rounded-full"
                     style={{
@@ -327,13 +445,15 @@ export default function ProfilePage() {
           ) : (
             <div className="text-center p-8 bg-gray-50 rounded-lg">
               <p className="text-gray-500">No items added yet.</p>
-              <button
-                onClick={() => router.push("/sell")}
-                className="mt-4 px-4 py-2 text-white rounded-lg hover:brightness-110"
-                style={{ backgroundColor: styles.warmPrimary }}
-              >
-                Add an Item
-              </button>
+              {isOwnProfile && (
+                <button
+                  onClick={() => router.push("/sell")}
+                  className="mt-4 px-4 py-2 text-white rounded-lg hover:brightness-110"
+                  style={{ backgroundColor: styles.warmPrimary }}
+                >
+                  Add an Item
+                </button>
+              )}
             </div>
           )}
         </div>

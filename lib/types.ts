@@ -29,6 +29,7 @@ export interface Item {
   price: number;
   status: string;
   images?: string[];
+  owner: string;
 }
 
 export interface FAQ {
@@ -46,7 +47,7 @@ export interface FAQ {
 export interface Message {
   id: string;
   sent_at: string;
-  sender_id: string;
+  seller_id: string;
   reciver_id: string;
   listing_id: number;
   message: string;
