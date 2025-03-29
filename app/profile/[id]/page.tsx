@@ -27,19 +27,10 @@ export default function ProfilePage() {
   const { isAuthenticated, userId, isLoading } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<ItemType[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
   const [hasRated, setHasRated] = useState(false);
 
-  
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    department: "",
-    university_id: "",
-    year: "",
-  });
   const router = useRouter();
   const { id } = useParams();
   const profileId = Array.isArray(id) ? id[0] : id;
@@ -56,16 +47,6 @@ export default function ProfilePage() {
           .single();
         if (error) throw error;
         setUser(data);
-
-        if (isOwnProfile) {
-          setFormData({
-            name: data.name,
-            email: data.email,
-            department: data.department || "",
-            university_id: data.university_id || "",
-            year: data.year || "",
-          });
-        }
 
         // Fetch user's average rating
         const { data: ratingData, error: ratingError } = await supabase
@@ -134,27 +115,6 @@ export default function ProfilePage() {
       fetchUserItems();
     }
   }, [profileId]);
-
-  
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSave = async () => {
-    if (!userId) return;
-    try {
-      const { error } = await supabase
-        .from("users")
-        .update(formData)
-        .eq("id", userId);
-      if (error) throw error;
-      setUser({ ...user, ...formData } as User);
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Error updating user data:", error);
-    }
-  };
 
   const handleEditItem = (itemId: string) => {
     router.push(`/sell/edit/${itemId}`);
@@ -253,7 +213,6 @@ export default function ProfilePage() {
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover border-2 border-yellow-800"
               />
-              
             </div>
             <div>
               <h1
@@ -313,94 +272,35 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {isEditing ? (
-            <>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full border p-2 my-2 rounded"
-              />
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full border p-2 my-2 rounded"
-              />
-              <input
-                type="text"
-                name="department"
-                value={formData.department}
-                onChange={handleInputChange}
-                className="w-full border p-2 my-2 rounded"
-              />
-              <input
-                type="text"
-                name="university_id"
-                value={formData.university_id}
-                onChange={handleInputChange}
-                className="w-full border p-2 my-2 rounded"
-              />
-              <input
-                type="text"
-                name="year"
-                value={formData.year || ""}
-                onChange={handleInputChange}
-                className="w-full border p-2 my-2 rounded"
-                placeholder="Year of Study"
-              />
-              <button
-                className="mt-4 px-4 py-2 text-white rounded-lg hover:bg-green-600"
-                onClick={handleSave}
-                style={{ backgroundColor: styles.warmPrimary }}
-              >
-                Save
-              </button>
-            </>
-          ) : (
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="grid grid-cols-2 gap-4">
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="grid grid-cols-2 gap-4">
+              <p className="my-2">
+                <strong>Name:</strong> {user?.name}
+              </p>
+              <p className="my-2">
+                <strong>Email:</strong> {user?.email}
+              </p>
+              <p className="my-2">
+                <strong>Department:</strong>{" "}
+                {user?.department || "Not specified"}
+              </p>
+              <p className="my-2">
+                <strong>University ID:</strong>{" "}
+                {user?.university_id || "Not specified"}
+              </p>
+              <p className="my-2">
+                <strong>Year:</strong> {user?.year || "Not specified"}
+              </p>
+              {user?.phone && (
                 <p className="my-2">
-                  <strong>Name:</strong> {user?.name}
+                  <strong>Phone:</strong> {user.phone}
                 </p>
-                <p className="my-2">
-                  <strong>Email:</strong> {user?.email}
-                </p>
-                <p className="my-2">
-                  <strong>Department:</strong>{" "}
-                  {user?.department || "Not specified"}
-                </p>
-                <p className="my-2">
-                  <strong>University ID:</strong>{" "}
-                  {user?.university_id || "Not specified"}
-                </p>
-                <p className="my-2">
-                  <strong>Year:</strong> {user?.year || "Not specified"}
-                </p>
-                {user?.phone && (
-                  <p className="my-2">
-                    <strong>Phone:</strong> {user.phone}
-                  </p>
-                )}
-                <p className="my-2">
-                  <strong>Role:</strong> {user?.role || "Student"}
-                </p>
-              </div>
-              <div className="flex gap-2 mt-4">
-                {isOwnProfile && (
-                  <button
-                    className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                    style={{ backgroundColor: styles.warmPrimary }}
-                    onClick={() => setIsEditing(true)}
-                  >
-                    Edit Profile
-                  </button>
-                )}
-              </div>
+              )}
+              <p className="my-2">
+                <strong>Role:</strong> {user?.role || "Student"}
+              </p>
             </div>
-          )}
+          </div>
 
           <h2
             className="text-xl font-semibold mt-8 mb-4"
