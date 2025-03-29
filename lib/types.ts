@@ -1,4 +1,7 @@
+import { ReactNode } from "react";
+
 export interface User {
+  id: any;
   userid: string;
   created_at: string;
   name: string | null;
