@@ -9,7 +9,7 @@ import { supabase } from "@/lib/supabase";
 interface Message {
   id: string;
   sent_at: string;
-  seller_id: string;
+  sender_id: string;
   reciver_id: string;
   message: string;
   created_at: string;
@@ -49,7 +49,7 @@ export default function MessagesPage() {
         const { data, error } = await supabase
           .from("messages")
           .select("*")
-          .or(`seller_id.eq.${userId},reciver_id.eq.${userId}`)
+          .or(`sender_id.eq.${userId},reciver_id.eq.${userId}`)
           .order("sent_at", { ascending: false });
 
         if (error) {
@@ -60,13 +60,13 @@ export default function MessagesPage() {
         const messagesWithNames = await Promise.all(
           data.map(async (message) => {
             // Get sender info
-            if (message.seller_id === userId) {
+            if (message.sender_id === userId) {
               message.sender_name = userName || "You";
-            } else if (message.seller_id) {
+            } else if (message.sender_id) {
               const { data: senderData } = await supabase
                 .from("profiles")
                 .select("name")
-                .eq("id", message.seller_id)
+                .eq("id", message.sender_id)
                 .single();
 
               message.sender_name = senderData?.name || "Unknown User";
@@ -107,12 +107,12 @@ export default function MessagesPage() {
     const userId = localStorage.getItem("userId");
     // Determine if the current user is the sender or receiver
     const receiverId =
-      message.seller_id === userId ? message.reciver_id : message.seller_id;
+      message.sender_id === userId ? message.reciver_id : message.sender_id;
 
     // Store IDs in sessionStorage instead of URL parameters
     sessionStorage.setItem("listing_id", message.listing_id);
     sessionStorage.setItem("receiver_id", receiverId);
-    sessionStorage.setItem("seller_id", userId || "");
+    sessionStorage.setItem("sender_id", userId || "");
 
     // Navigate to chat without parameters
     router.push(`/chat`);
@@ -191,7 +191,7 @@ export default function MessagesPage() {
                         className="font-medium"
                         style={{ color: styles.warmText }}
                       >
-                        {message.seller_id === message.reciver_id
+                        {message.sender_id === message.reciver_id
                           ? "Note to self"
                           : `${message.sender_name} → ${message.reciver_name}`}
                       </h3>

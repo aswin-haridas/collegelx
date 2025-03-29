@@ -9,7 +9,7 @@ import { styles } from "@/lib/styles";
 interface Message {
   id: string;
   message: string;
-  seller_id: string;
+  sender_id: string;
   reciver_id: string;
   sent_at: string;
   listing_id: string;
@@ -48,8 +48,8 @@ export default function ChatPage() {
         const { data, error } = await supabase
           .from("messages")
           .select("*")
-          .or(`seller_id.eq.${userId},reciver_id.eq.${userId}`)
-          .or(`seller_id.eq.${receiverId},reciver_id.eq.${receiverId}`)
+          .or(`sender_id.eq.${userId},reciver_id.eq.${userId}`)
+          .or(`sender_id.eq.${receiverId},reciver_id.eq.${receiverId}`)
           .order("sent_at", { ascending: true });
 
         if (error) {
@@ -59,8 +59,8 @@ export default function ChatPage() {
         // Filter messages client-side to ensure they're between these two users only
         const filteredMessages = (data || []).filter(
           (msg) =>
-            (msg.seller_id === userId && msg.reciver_id === receiverId) ||
-            (msg.seller_id === receiverId && msg.reciver_id === userId)
+            (msg.sender_id === userId && msg.reciver_id === receiverId) ||
+            (msg.sender_id === receiverId && msg.reciver_id === userId)
         );
 
         setMessages(filteredMessages);
@@ -110,9 +110,9 @@ export default function ChatPage() {
 
           // Only add message if it belongs to this conversation
           if (
-            (newMessage.seller_id === userId &&
+            (newMessage.sender_id === userId &&
               newMessage.reciver_id === receiverId) ||
-            (newMessage.seller_id === receiverId &&
+            (newMessage.sender_id === receiverId &&
               newMessage.reciver_id === userId)
           ) {
             setMessages((prev) => [...prev, newMessage]);
@@ -145,7 +145,7 @@ export default function ChatPage() {
 
       const messageData = {
         message: newMessage.trim(),
-        seller_id: userId,
+        sender_id: userId,
         reciver_id: receiverId,
         sent_at: new Date().toISOString(),
         listing_id: listingId || "",
@@ -223,22 +223,22 @@ export default function ChatPage() {
                 <div
                   key={message.id}
                   className={`flex mb-3 ${
-                    message.seller_id === userId
+                    message.sender_id === userId
                       ? "justify-end"
                       : "justify-start"
                   }`}
                 >
                   <div
                     className={`p-3 rounded-lg max-w-[70%] ${
-                      message.seller_id === userId
+                      message.sender_id === userId
                         ? "text-white"
                         : "bg-gray-100"
                     }`}
                     style={{
                       backgroundColor:
-                        message.seller_id === userId ? styles.warmPrimary : "",
+                        message.sender_id === userId ? styles.warmPrimary : "",
                       color:
-                        message.seller_id === userId
+                        message.sender_id === userId
                           ? "white"
                           : styles.warmText,
                     }}

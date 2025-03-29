@@ -25,7 +25,7 @@ export interface Item {
   title: string;
   category: string;
   description: string;
-  seller_id: string;
+  sender_id: string;
   price: number;
   status: string;
   images?: string[];
@@ -47,7 +47,7 @@ export interface FAQ {
 export interface Message {
   id: string;
   sent_at: string;
-  seller_id: string;
+  sender_id: string;
   reciver_id: string;
   listing_id: number;
   message: string;

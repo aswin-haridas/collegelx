@@ -26,17 +26,17 @@ export default function ItemPage() {
     error: itemError,
   } = useItem(itemId, true);
 
-  const { seller, loading: sellerLoading } = useSeller(item?.seller_id);
+  const { seller, loading: sellerLoading } = useSeller(item?.sender_id);
 
   const loading = authLoading || itemLoading;
 
-  const isOwner = userId && item?.seller_id === userId;
+  const isOwner = userId && item?.sender_id === userId;
 
   // Store item ID and seller ID in session storage on page load
   useEffect(() => {
     if (item && seller) {
       sessionStorage.setItem("listing_id", item.id);
-      sessionStorage.setItem("seller_id", seller.userid);
+      sessionStorage.setItem("sender_id", seller.userid);
     }
   }, []);
 
