@@ -44,19 +44,21 @@ export default function LoginPage() {
 
       const userData = data[0];
 
-      // Store in localStorage
-      localStorage.setItem("userRole", userData.role);
-      localStorage.setItem("userName", userData.name);
+      // Store all required user data in localStorage
+      localStorage.setItem("userRole", userData.role || "");
+      localStorage.setItem("userName", userData.name || "");
       localStorage.setItem("userId", userData.id);
+      localStorage.setItem("userUniversityId", userData.university_id || "");
+      localStorage.setItem("userDepartment", userData.department || "");
 
-      // Also store in localStorage for consistency
+      // Also store in localStorage for consistency (keeping existing items)
       localStorage.setItem("auth", "true");
       localStorage.setItem("id", userData.id);
-      localStorage.setItem("name", userData.name);
+      localStorage.setItem("name", userData.name || "");
       localStorage.setItem("user", JSON.stringify(userData));
 
       // ✅ Ensure proper redirection
-      if (userData.name.toLowerCase() === "admin") {
+      if (userData.name && userData.name.toLowerCase() === "admin") {
         router.push("/admin"); // Redirect admin users to "/admin"
       } else {
         router.push("/"); // Redirect regular users to "/"

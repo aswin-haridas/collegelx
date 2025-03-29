@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { styles } from "@/lib/styles";
-import Header from "@/components/Sidebar";
 import { supabase } from "@/lib/supabase";
-import { Loader2, Star, Edit, Trash2 } from "lucide-react";
+import { Star, Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ItemCard from "@/components/ItemCard";
 import { Item as ItemType } from "@/lib/types";
@@ -27,7 +26,6 @@ export default function ProfilePage() {
   const { isAuthenticated, userId, isLoading } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<ItemType[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -59,7 +57,7 @@ export default function ProfilePage() {
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {
-        setLoading(false);
+        console.log("User data fetched:", user);
       }
     }
 
@@ -136,22 +134,9 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading || isLoading) {
-    return (
-      <div className="h-screen">
-        <div className="flex justify-center items-center h-full ml-64">
-          <Loader2
-            className="h-8 w-8 animate-spin"
-            style={{ color: styles.warmPrimary }}
-          />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="h-screen">
-        <Sidebar />
+      <Sidebar />
 
       <div className="max-w-4xl mx-auto p-4 ml-64">
         <div className="bg-white rounded-lg shadow-md p-6">

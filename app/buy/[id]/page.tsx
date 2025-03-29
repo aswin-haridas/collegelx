@@ -7,7 +7,6 @@ import { useSeller } from "@/lib/hooks/useSeller";
 import { useState, useEffect } from "react";
 import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
-import Header from "@/components/Sidebar";
 import { Loader2, MessageSquare, ArrowLeft } from "lucide-react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";

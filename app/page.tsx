@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
-import Header from "@/components/Sidebar";
 import { styles } from "@/lib/styles";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";

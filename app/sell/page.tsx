@@ -41,7 +41,7 @@ export default function SellPage() {
       const imageUrls = await Promise.all(
         images.map(async (image) => {
           const fileName = `${Date.now()}-${image.name}`;
-          const { data, error } = await supabase.storage
+          const { error } = await supabase.storage
             .from("images")
             .upload(fileName, image);
 
@@ -107,7 +107,7 @@ export default function SellPage() {
 
   return (
     <div className="h-screen">
-        <Sidebar />
+      <Sidebar />
 
       <div className="max-w-4xl mx-auto p-4 ml-64">
         <div className="bg-white rounded-lg shadow-md p-6">

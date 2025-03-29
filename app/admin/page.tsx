@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { styles } from "@/lib/styles";
-import Header from "@/components/Sidebar";
 import { supabase } from "@/lib/supabase";
 import { Loader2, CircleCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -172,11 +171,9 @@ export default function AdminPage() {
   if (loading || isLoading) {
     return <LoadingSpinner />;
   }
-
   return (
     <div className="h-screen">
-        <Sidebar />
-
+      <Sidebar />
       <div className="max-w-4xl mx-auto p-4 ml-64">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h1

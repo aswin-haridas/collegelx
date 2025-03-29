@@ -74,7 +74,7 @@ const Sidebar = () => {
   const navItems: NavItemType[] = [
     { name: "Home", href: "/", icon: <Home size={18} /> },
     { name: "Sell", href: "/sell", icon: <ShoppingBag size={18} /> },
-    { name: "Messages", href: "/chat", icon: <MessageCircle size={18} /> },
+    { name: "Messages", href: "/messages", icon: <MessageCircle size={18} /> },
     { name: "Profile", href: "/profile", icon: <User size={18} /> },
   ];
 
@@ -132,6 +132,8 @@ const Sidebar = () => {
       ];
 
       itemsToClear.forEach((item) => localStorage.removeItem(item));
+      localStorage.clear();
+      sessionStorage.clear();
 
       router.push("/auth/login");
     } catch (error) {
