@@ -34,7 +34,12 @@ export default function SellPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (userId) console.log(userId);
+    // Check if userId exists
+    if (!userId) {
+      alert("You must be logged in to create a listing.");
+      return;
+    }
+
     setUploading(true);
     try {
       // Upload images to storage
@@ -54,10 +59,10 @@ export default function SellPage() {
           return publicUrl;
         })
       );
-      const userID = sessionStorage.getItem("userId");
-      // Insert item into database
+
+      // Insert item into database using userId from useAuth hook
       const { error: insertError } = await supabase.from("items").insert({
-        id: userID,
+        id: userId, // Use userId from useAuth hook instead of sessionStorage
         title,
         description,
         price: parseFloat(price),
@@ -65,14 +70,14 @@ export default function SellPage() {
         year,
         department,
         images: imageUrls,
-        tags: tags.split(",").map((tag) => tag.trim()), // Convert tags string to array
-        status: "unlisted", // Changed from availability: "false"
+        status: "unlisted",
         created_at: new Date().toISOString(),
       });
 
       if (insertError) {
         console.error("Insert Error:", insertError);
         alert("Failed to create listing. Please try again.");
+        return;
       }
 
       // Redirect to home page on success
@@ -216,7 +221,7 @@ export default function SellPage() {
                   }}
                 >
                   <option value="">Select Year</option>
-                  <option value="1st">1st</option>
+                  <option value="1st">1</option>
                   <option value="2">2</option>
                   <option value="3">3</option>
                   <option value="4">4</option>
@@ -248,24 +253,6 @@ export default function SellPage() {
                   <option value="all">All</option>
                 </select>
               </div>
-            </div>
-
-            {/* Tags Row */}
-            <div>
-              <label className="block text-sm font-medium text-gray-600">
-                Tags (comma separated)
-              </label>
-              <input
-                type="text"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder="e.g. engineering, first year, textbook"
-                className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
-                style={{
-                  borderColor: styles.warmBorder,
-                  color: styles.warmText,
-                }}
-              />
             </div>
 
             <div>
