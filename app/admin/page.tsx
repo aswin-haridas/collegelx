@@ -36,6 +36,7 @@ interface User {
   role: string;
   banned: boolean;
   created_at: string;
+  verified: boolean; // Add verified status
 }
 
 // Loading component for better reusability
@@ -157,10 +158,12 @@ const AllProductItem = ({
 const UserItem = ({
   user,
   onToggleBan,
+  onToggleVerify,
   isProcessing,
 }: {
   user: User;
   onToggleBan: (id: string, currentStatus: boolean) => Promise<void>;
+  onToggleVerify: (id: string, currentStatus: boolean) => Promise<void>;
   isProcessing: Record<string, boolean>;
 }) => (
   <div
@@ -173,17 +176,43 @@ const UserItem = ({
       <p className="text-xs text-gray-400">
         Joined: {new Date(user.created_at).toLocaleDateString()}
       </p>
-      <span
-        className={`px-2 py-1 rounded text-xs ${
-          user.banned
-            ? "bg-red-100 text-red-800"
-            : "bg-green-100 text-green-800"
-        }`}
-      >
-        {user.banned ? "Banned" : "Active"}
-      </span>
+      <div className="flex space-x-2 mt-1">
+        <span
+          className={`px-2 py-1 rounded text-xs ${
+            user.banned
+              ? "bg-red-100 text-red-800"
+              : "bg-green-100 text-green-800"
+          }`}
+        >
+          {user.banned ? "Banned" : "Active"}
+        </span>
+        <span
+          className={`px-2 py-1 rounded text-xs ${
+            user.verified
+              ? "bg-blue-100 text-blue-800"
+              : "bg-yellow-100 text-yellow-800"
+          }`}
+        >
+          {user.verified ? "Verified" : "Pending"}
+        </span>
+      </div>
     </div>
-    <div className="space-x-2">
+    <div className="space-x-2 flex">
+      <button
+        onClick={() => onToggleVerify(user.id, user.verified)}
+        disabled={isProcessing[`verify-${user.id}`] || user.role === "admin"}
+        className={`px-4 py-2 ${
+          user.verified
+            ? "bg-yellow-500 hover:bg-yellow-600"
+            : "bg-blue-500 hover:bg-blue-600"
+        } text-white rounded-lg disabled:bg-gray-300 flex items-center`}
+      >
+        {isProcessing[`verify-${user.id}`]
+          ? "Processing..."
+          : user.verified
+          ? "Unverify"
+          : "Verify"}
+      </button>
       <button
         onClick={() => onToggleBan(user.id, user.banned)}
         disabled={isProcessing[user.id] || user.role === "admin"}
@@ -218,7 +247,9 @@ export default function AdminPage() {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [processingItems, setProcessingItems] = useState<
@@ -227,6 +258,11 @@ export default function AdminPage() {
   const [activeSection, setActiveSection] = useState<
     "pendingItems" | "allItems" | "users" | "settings"
   >("pendingItems");
+
+  // Search and filter states
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [productSearchQuery, setProductSearchQuery] = useState("");
+  const [productStatusFilter, setProductStatusFilter] = useState("all");
 
   // Stats counters
   const [stats, setStats] = useState({
@@ -335,6 +371,7 @@ export default function AdminPage() {
       }
 
       setAllProducts(data || []);
+      setFilteredProducts(data || []);
     } catch (err) {
       setFetchError("Failed to fetch all products");
       console.error("Error fetching all products:", err);
@@ -356,7 +393,14 @@ export default function AdminPage() {
         return;
       }
 
-      setUsers(data || []);
+      // Map data to ensure verified field exists
+      const usersWithVerified = (data || []).map((user) => ({
+        ...user,
+        verified: user.verified !== undefined ? user.verified : false,
+      }));
+
+      setUsers(usersWithVerified);
+      setFilteredUsers(usersWithVerified);
     } catch (err) {
       setFetchError("Failed to fetch users");
       console.error("Error fetching users:", err);
@@ -386,6 +430,49 @@ export default function AdminPage() {
     fetchUsers,
     fetchStats,
   ]);
+
+  // Filter products based on search and status
+  useEffect(() => {
+    if (allProducts.length) {
+      let filtered = [...allProducts];
+
+      // Apply search filter
+      if (productSearchQuery) {
+        filtered = filtered.filter(
+          (product) =>
+            product.title
+              .toLowerCase()
+              .includes(productSearchQuery.toLowerCase()) ||
+            product.description
+              .toLowerCase()
+              .includes(productSearchQuery.toLowerCase())
+        );
+      }
+
+      // Apply status filter
+      if (productStatusFilter !== "all") {
+        filtered = filtered.filter(
+          (product) => product.status === productStatusFilter
+        );
+      }
+
+      setFilteredProducts(filtered);
+    }
+  }, [allProducts, productSearchQuery, productStatusFilter]);
+
+  // Filter users based on search
+  useEffect(() => {
+    if (users.length) {
+      if (userSearchQuery) {
+        const filtered = users.filter((user) =>
+          user.email.toLowerCase().includes(userSearchQuery.toLowerCase())
+        );
+        setFilteredUsers(filtered);
+      } else {
+        setFilteredUsers(users);
+      }
+    }
+  }, [users, userSearchQuery]);
 
   const handleApprove = async (productId: string) => {
     try {
@@ -487,6 +574,35 @@ export default function AdminPage() {
       console.error("Error updating user:", err);
     } finally {
       setProcessingItems((prev) => ({ ...prev, [userId]: false }));
+    }
+  };
+
+  const handleToggleUserVerify = async (
+    userId: string,
+    currentVerifyStatus: boolean
+  ) => {
+    try {
+      setActionError(null);
+      setProcessingItems((prev) => ({ ...prev, [`verify-${userId}`]: true }));
+
+      const { error } = await supabase
+        .from("users")
+        .update({ verified: !currentVerifyStatus })
+        .eq("id", userId);
+
+      if (error) {
+        setActionError(`Failed to update user verification: ${error.message}`);
+        return;
+      }
+
+      await fetchUsers();
+    } catch (err) {
+      setActionError(
+        "An unexpected error occurred while updating user verification"
+      );
+      console.error("Error updating user verification:", err);
+    } finally {
+      setProcessingItems((prev) => ({ ...prev, [`verify-${userId}`]: false }));
     }
   };
 
@@ -594,6 +710,45 @@ export default function AdminPage() {
 
           {/* Content Area */}
           <div className="bg-white rounded-lg shadow-md p-6">
+            {/* Search and filter bars */}
+            {activeSection === "users" && (
+              <div className="mb-6">
+                <div className="flex">
+                  <input
+                    type="text"
+                    placeholder="Search users by email"
+                    className="w-full p-2 border border-gray-300 rounded-md mb-4"
+                    value={userSearchQuery}
+                    onChange={(e) => setUserSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeSection === "allItems" && (
+              <div className="mb-6">
+                <div className="flex gap-4 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Search products by name or description"
+                    className="flex-1 p-2 border border-gray-300 rounded-md"
+                    value={productSearchQuery}
+                    onChange={(e) => setProductSearchQuery(e.target.value)}
+                  />
+                  <select
+                    className="p-2 border border-gray-300 rounded-md bg-white"
+                    value={productStatusFilter}
+                    onChange={(e) => setProductStatusFilter(e.target.value)}
+                  >
+                    <option value="all">All Status</option>
+                    <option value="available">Available</option>
+                    <option value="unlisted">Pending</option>
+                    <option value="sold">Sold</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-4">
               {activeSection === "pendingItems" && (
                 <>
@@ -617,7 +772,7 @@ export default function AdminPage() {
 
               {activeSection === "allItems" && (
                 <>
-                  {allProducts.map((product) => (
+                  {filteredProducts.map((product) => (
                     <AllProductItem
                       key={product.id}
                       product={product}
@@ -626,24 +781,27 @@ export default function AdminPage() {
                     />
                   ))}
 
-                  {allProducts.length === 0 && (
-                    <p className="text-gray-500">No products available</p>
+                  {filteredProducts.length === 0 && (
+                    <p className="text-gray-500">
+                      No products match your filters
+                    </p>
                   )}
                 </>
               )}
 
               {activeSection === "users" && (
                 <>
-                  {users.map((user) => (
+                  {filteredUsers.map((user) => (
                     <UserItem
                       key={user.id}
                       user={user}
                       onToggleBan={handleToggleUserBan}
+                      onToggleVerify={handleToggleUserVerify}
                       isProcessing={processingItems}
                     />
                   ))}
 
-                  {users.length === 0 && (
+                  {filteredUsers.length === 0 && (
                     <p className="text-gray-500">No users found</p>
                   )}
                 </>

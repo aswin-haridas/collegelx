@@ -294,32 +294,35 @@ export default function ChatPage() {
                     }`}
                   >
                     {message.sender_id !== userId && (
-                      <div className="w-8 h-8 rounded-full bg-gray-300 mr-2 flex items-center justify-center text-white text-sm">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm"
+                        style={{ backgroundColor: styles.warmPrimary }}
+                      >
                         {receiverName
                           ? receiverName.charAt(0).toUpperCase()
                           : "?"}
                       </div>
                     )}
                     <div
-                      className={`rounded-lg max-w-[70%] ${
+                      className={`rounded-lg max-w-[70%] shadow-sm ${
                         message.sender_id === userId
-                          ? "rounded-tr-none"
-                          : "rounded-tl-none"
+                          ? "rounded-tr-none ml-2"
+                          : "rounded-tl-none mr-2"
                       }`}
                       style={{
                         backgroundColor:
                           message.sender_id === userId
                             ? styles.warmPrimary
-                            : "#E5E5EA",
+                            : "#F5F5F7",
                         color:
                           message.sender_id === userId
                             ? "white"
                             : styles.warmText,
-                        padding: "10px 14px",
+                        padding: "12px 16px",
                       }}
                     >
                       <p className="break-words">{message.message}</p>
-                      <div className="text-xs mt-1 opacity-70 text-right">
+                      <div className="text-xs mt-1 opacity-80 text-right">
                         {new Date(message.sent_at).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -327,7 +330,10 @@ export default function ChatPage() {
                       </div>
                     </div>
                     {message.sender_id === userId && (
-                      <div className="w-8 h-8 rounded-full bg-blue-500 ml-2 flex items-center justify-center text-white text-sm">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm"
+                        style={{ backgroundColor: "#4F46E5" }}
+                      >
                         {localStorage
                           .getItem("name")
                           ?.charAt(0)

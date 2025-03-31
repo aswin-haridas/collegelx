@@ -11,6 +11,7 @@ import {
   LogIn,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { styles } from "@/lib/styles";
@@ -20,6 +21,15 @@ const Header = () => {
   const { isAuthenticated, userId, loading } = useAuth();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    // Clear the user session
+    sessionStorage.removeItem("userId");
+    // Redirect to home page
+    router.push("/");
+    // Refresh the page to update auth state
+    window.location.reload();
+  };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -70,6 +80,13 @@ const Header = () => {
                 >
                   <UserCircle className="h-6 w-6" />
                 </Link>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 rounded-full hover:bg-amber-50 text-amber-700"
+                  title="Logout"
+                >
+                  <LogOut className="h-6 w-6" />
+                </button>
               </>
             ) : (
               <Link
@@ -145,6 +162,15 @@ const Header = () => {
                     Profile
                   </div>
                 </Link>
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-amber-700 hover:bg-amber-50"
+                >
+                  <div className="flex items-center">
+                    <LogOut className="h-5 w-5 mr-2" />
+                    Logout
+                  </div>
+                </button>
               </>
             ) : (
               <Link
