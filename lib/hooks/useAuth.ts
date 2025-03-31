@@ -1,61 +1,63 @@
 import { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
 
-interface AuthData {
-  name: string | null;
-  userId: string | null;
-  role: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-}
-
-export function useAuth(requireAuth: boolean = true) {
-  const [authData, setAuthData] = useState<AuthData>({
-    name: null,
-    userId: null,
-    role: null,
-    isAuthenticated: false,
-    isLoading: true,
-  });
-  const router = useRouter();
-  const pathname = usePathname();
+export function useAuth() {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    // Check authentication status from sessionStorage
+    const checkAuth = () => {
+      setLoading(true);
+
+      // Get from session storage
+      const storedUserId = sessionStorage.getItem("user_id");
+
+      if (storedUserId) {
+        setUserId(storedUserId);
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+        setUserId(null);
+      }
+
+      setLoading(false);
+    };
+
+    // Run initial check
     checkAuth();
-  }, [pathname]);
 
-  const checkAuth = () => {
-    // Use a safe way to access localStorage (only in client)
-    if (typeof window !== "undefined") {
-      // Get auth data from localStorage
-      const name = localStorage.getItem("name");
-      const userId = localStorage.getItem("id");
-      const role = localStorage.getItem("role");
-      const isAuthenticated = localStorage.getItem("auth") === "true";
-
-      setAuthData({
-        name,
-        userId,
-        role,
-        isAuthenticated,
-        isLoading: false,
-      });
-
-      // Check if authentication is required and user is not authenticated
-      if (requireAuth && !isAuthenticated) {
-        // Don't redirect if on public pages
-        if (
-          !pathname?.includes("/auth") &&
-          pathname !== "/" &&
-          !pathname?.includes("/buy/")
-        ) {
-          router.push(
-            `/auth/login?redirect=${encodeURIComponent(pathname || "/")}`
-          );
+    // Set up storage event listener to detect changes in other tabs/windows
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "user_id") {
+        if (event.newValue) {
+          setUserId(event.newValue);
+          setIsAuthenticated(true);
+        } else {
+          setUserId(null);
+          setIsAuthenticated(false);
         }
       }
-    }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  // Helper function to log out
+  const logout = () => {
+    sessionStorage.removeItem("user_id");
+    setUserId(null);
+    setIsAuthenticated(false);
   };
 
-  return authData;
+  return {
+    userId,
+    isAuthenticated,
+    loading,
+    logout,
+  };
 }

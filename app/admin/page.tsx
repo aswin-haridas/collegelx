@@ -4,7 +4,19 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { styles } from "@/lib/styles";
 import { supabase } from "@/lib/supabase";
-import { Loader2, CircleCheck, UserX, UserCheck } from "lucide-react";
+import {
+  Loader2,
+  CircleCheck,
+  UserX,
+  UserCheck,
+  LayoutDashboard,
+  Package,
+  Users,
+  Settings,
+  ShoppingBag,
+  ClipboardCheck,
+  UserCircle,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { playfair } from "@/lib/fonts";
 import Sidebar from "@/components/Sidebar";
@@ -29,11 +41,32 @@ interface User {
 // Loading component for better reusability
 const LoadingSpinner = () => (
   <div className="h-screen">
-    <div className="flex justify-center items-center h-full ml-64">
+    <div className="flex justify-center items-center h-full ">
       <Loader2
         className="h-8 w-8 animate-spin"
         style={{ color: styles.warmPrimary }}
       />
+    </div>
+  </div>
+);
+
+// Stats Card Component
+const StatCard = ({
+  icon,
+  title,
+  count,
+  bgColor,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  count: number;
+  bgColor: string;
+}) => (
+  <div className={`${bgColor} rounded-lg shadow-md p-4 flex items-center`}>
+    <div className="p-3 bg-white bg-opacity-30 rounded-full mr-4">{icon}</div>
+    <div>
+      <h3 className="text-xl font-bold text-white">{count}</h3>
+      <p className="text-white text-opacity-90">{title}</p>
     </div>
   </div>
 );
@@ -179,9 +212,10 @@ const UserItem = ({
 );
 
 export default function AdminPage() {
-  const { isAuthenticated, role, isLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, logout } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -191,19 +225,77 @@ export default function AdminPage() {
     Record<string, boolean>
   >({});
   const [activeSection, setActiveSection] = useState<
-    "pendingItems" | "allItems" | "users"
+    "pendingItems" | "allItems" | "users" | "settings"
   >("pendingItems");
+
+  // Stats counters
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    pendingApprovals: 0,
+    registeredUsers: 0,
+  });
 
   // Check authentication and admin role
   useEffect(() => {
-    console.log("Auth Status:", { isAuthenticated, role, isLoading });
-    const adminrole = localStorage.getItem("userRole");
-    if (adminrole !== "admin") {
-      router.push("/");
-    } else {
-      setLoading(false);
+    const checkAdminRole = () => {
+      const storedRole = localStorage.getItem("userRole");
+      setUserRole(storedRole);
+
+      console.log("Auth Status:", {
+        isAuthenticated,
+        userRole: storedRole,
+        loading: authLoading,
+      });
+
+      if (!authLoading) {
+        if (!isAuthenticated || storedRole !== "admin") {
+          router.push("/");
+        } else {
+          setPageLoading(false);
+        }
+      }
+    };
+
+    checkAdminRole();
+  }, [isAuthenticated, authLoading, router]);
+
+  // Fetch stats
+  const fetchStats = useCallback(async () => {
+    try {
+      // Fetch total products count
+      const { count: totalProducts, error: productsError } = await supabase
+        .from("items")
+        .select("*", { count: "exact", head: true });
+
+      // Fetch pending approvals count
+      const { count: pendingApprovals, error: pendingError } = await supabase
+        .from("items")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "unlisted");
+
+      // Fetch registered users count
+      const { count: registeredUsers, error: usersError } = await supabase
+        .from("users")
+        .select("*", { count: "exact", head: true });
+
+      if (productsError || pendingError || usersError) {
+        console.error("Error fetching stats", {
+          productsError,
+          pendingError,
+          usersError,
+        });
+        return;
+      }
+
+      setStats({
+        totalProducts: totalProducts || 0,
+        pendingApprovals: pendingApprovals || 0,
+        registeredUsers: registeredUsers || 0,
+      });
+    } catch (err) {
+      console.error("Error fetching stats:", err);
     }
-  }, [isAuthenticated, role, isLoading, router]);
+  }, []);
 
   // Fetch unapproved products
   const fetchUnsoldProducts = useCallback(async () => {
@@ -272,7 +364,10 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
+    if (!pageLoading && isAuthenticated && userRole === "admin") {
+      // Always fetch stats
+      fetchStats();
+
       if (activeSection === "pendingItems") {
         fetchUnsoldProducts();
       } else if (activeSection === "allItems") {
@@ -282,12 +377,14 @@ export default function AdminPage() {
       }
     }
   }, [
-    loading,
+    pageLoading,
     isAuthenticated,
+    userRole,
     activeSection,
     fetchUnsoldProducts,
     fetchAllProducts,
     fetchUsers,
+    fetchStats,
   ]);
 
   const handleApprove = async (productId: string) => {
@@ -306,6 +403,7 @@ export default function AdminPage() {
       }
 
       await fetchUnsoldProducts();
+      await fetchStats(); // Refresh stats after changes
     } catch (err) {
       setActionError("An unexpected error occurred while approving");
       console.error("Error approving product:", err);
@@ -330,6 +428,7 @@ export default function AdminPage() {
       }
 
       await fetchUnsoldProducts();
+      await fetchStats(); // Refresh stats after changes
     } catch (err) {
       setActionError("An unexpected error occurred while rejecting");
       console.error("Error rejecting product:", err);
@@ -354,6 +453,7 @@ export default function AdminPage() {
       }
 
       await fetchAllProducts();
+      await fetchStats(); // Refresh stats after changes
     } catch (err) {
       setActionError("An unexpected error occurred while removing the product");
       console.error("Error removing product:", err);
@@ -381,6 +481,7 @@ export default function AdminPage() {
       }
 
       await fetchUsers();
+      await fetchStats(); // Refresh stats after changes
     } catch (err) {
       setActionError("An unexpected error occurred while updating user");
       console.error("Error updating user:", err);
@@ -389,21 +490,90 @@ export default function AdminPage() {
     }
   };
 
-  if (loading || isLoading) {
+  if (pageLoading || authLoading) {
     return <LoadingSpinner />;
   }
 
+  // Sidebar navigation items
+  const navItems = [
+    {
+      icon: <LayoutDashboard size={24} />,
+      label: "Dashboard",
+      action: () => setActiveSection("pendingItems"),
+      active: activeSection === "pendingItems",
+    },
+    {
+      icon: <Package size={24} />,
+      label: "Products",
+      action: () => setActiveSection("allItems"),
+      active: activeSection === "allItems",
+    },
+    {
+      icon: <Users size={24} />,
+      label: "Users",
+      action: () => setActiveSection("users"),
+      active: activeSection === "users",
+    },
+    {
+      icon: <Settings size={24} />,
+      label: "Settings",
+      action: () => setActiveSection("settings"),
+      active: activeSection === "settings",
+    },
+  ];
+
   return (
-    <div className="h-screen">
-      <Sidebar />
-      <div className="max-w-4xl mx-auto p-4 ml-64">
-        <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <div className="w-20 bg-white shadow-md flex flex-col items-center py-8 space-y-8">
+        {navItems.map((item, index) => (
+          <div
+            key={index}
+            className={`cursor-pointer p-3 rounded-xl transition-all
+              ${
+                item.active
+                  ? "bg-blue-100 text-blue-600"
+                  : "text-gray-500 hover:bg-gray-100"
+              }`}
+            onClick={item.action}
+            title={item.label}
+          >
+            {item.icon}
+          </div>
+        ))}
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto p-8">
+        <div className="max-w-6xl mx-auto">
           <h1
-            className={`text-5xl font-base mb-6 mt-9 ${playfair.className}`}
+            className={`text-4xl font-base mb-8 ${playfair.className}`}
             style={{ color: styles.warmPrimaryDark }}
           >
             Admin Dashboard
           </h1>
+
+          {/* Stats Section */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <StatCard
+              icon={<ShoppingBag size={24} color="white" />}
+              title="Total Products"
+              count={stats.totalProducts}
+              bgColor="bg-blue-500"
+            />
+            <StatCard
+              icon={<ClipboardCheck size={24} color="white" />}
+              title="Pending Approvals"
+              count={stats.pendingApprovals}
+              bgColor="bg-amber-500"
+            />
+            <StatCard
+              icon={<UserCircle size={24} color="white" />}
+              title="Registered Users"
+              count={stats.registeredUsers}
+              bgColor="bg-green-500"
+            />
+          </div>
 
           {(fetchError || actionError) && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-center">
@@ -412,92 +582,79 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Navigation tabs */}
-          <div className="flex border-b mb-6">
-            <button
-              onClick={() => setActiveSection("pendingItems")}
-              className={`px-4 py-2 mr-2 ${
-                activeSection === "pendingItems"
-                  ? "border-b-2 border-blue-500 text-blue-600"
-                  : "text-gray-500"
-              }`}
-            >
-              Pending Items
-            </button>
-            <button
-              onClick={() => setActiveSection("allItems")}
-              className={`px-4 py-2 mr-2 ${
-                activeSection === "allItems"
-                  ? "border-b-2 border-blue-500 text-blue-600"
-                  : "text-gray-500"
-              }`}
-            >
-              All Items
-            </button>
-            <button
-              onClick={() => setActiveSection("users")}
-              className={`px-4 py-2 ${
-                activeSection === "users"
-                  ? "border-b-2 border-blue-500 text-blue-600"
-                  : "text-gray-500"
-              }`}
-            >
-              Users
-            </button>
+          {/* Content Section Title */}
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold text-gray-800">
+              {activeSection === "pendingItems" && "Pending Approvals"}
+              {activeSection === "allItems" && "All Products"}
+              {activeSection === "users" && "User Management"}
+              {activeSection === "settings" && "Settings"}
+            </h2>
           </div>
 
-          <div className="space-y-4">
-            {activeSection === "pendingItems" && (
-              <>
-                {products.map((product) => (
-                  <ProductItem
-                    key={product.id}
-                    product={product}
-                    onApprove={handleApprove}
-                    onReject={handleReject}
-                    isProcessing={processingItems}
-                  />
-                ))}
+          {/* Content Area */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="space-y-4">
+              {activeSection === "pendingItems" && (
+                <>
+                  {products.map((product) => (
+                    <ProductItem
+                      key={product.id}
+                      product={product}
+                      onApprove={handleApprove}
+                      onReject={handleReject}
+                      isProcessing={processingItems}
+                    />
+                  ))}
 
-                {products.length === 0 && (
-                  <p className="text-gray-500">No products pending approval</p>
-                )}
-              </>
-            )}
+                  {products.length === 0 && (
+                    <p className="text-gray-500">
+                      No products pending approval
+                    </p>
+                  )}
+                </>
+              )}
 
-            {activeSection === "allItems" && (
-              <>
-                {allProducts.map((product) => (
-                  <AllProductItem
-                    key={product.id}
-                    product={product}
-                    onRemove={handleRemoveProduct}
-                    isProcessing={processingItems}
-                  />
-                ))}
+              {activeSection === "allItems" && (
+                <>
+                  {allProducts.map((product) => (
+                    <AllProductItem
+                      key={product.id}
+                      product={product}
+                      onRemove={handleRemoveProduct}
+                      isProcessing={processingItems}
+                    />
+                  ))}
 
-                {allProducts.length === 0 && (
-                  <p className="text-gray-500">No products available</p>
-                )}
-              </>
-            )}
+                  {allProducts.length === 0 && (
+                    <p className="text-gray-500">No products available</p>
+                  )}
+                </>
+              )}
 
-            {activeSection === "users" && (
-              <>
-                {users.map((user) => (
-                  <UserItem
-                    key={user.id}
-                    user={user}
-                    onToggleBan={handleToggleUserBan}
-                    isProcessing={processingItems}
-                  />
-                ))}
+              {activeSection === "users" && (
+                <>
+                  {users.map((user) => (
+                    <UserItem
+                      key={user.id}
+                      user={user}
+                      onToggleBan={handleToggleUserBan}
+                      isProcessing={processingItems}
+                    />
+                  ))}
 
-                {users.length === 0 && (
-                  <p className="text-gray-500">No users found</p>
-                )}
-              </>
-            )}
+                  {users.length === 0 && (
+                    <p className="text-gray-500">No users found</p>
+                  )}
+                </>
+              )}
+
+              {activeSection === "settings" && (
+                <div className="text-gray-500">
+                  <p>Settings panel coming soon.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

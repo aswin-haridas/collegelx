@@ -252,6 +252,29 @@ export default function SignupPage() {
 
               <div>
                 <label
+                  htmlFor="phone"
+                  className="block text-sm font-medium mb-1"
+                  style={{ color: styles.warmText }}
+                >
+                  Phone Number
+                </label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  className="appearance-none relative block w-full px-3 py-2 border-2 rounded-md placeholder-warmText/50 focus:outline-none focus:ring-warmAccent focus:border-warmAccent sm:text-sm"
+                  style={{
+                    borderColor: styles.warmBorder,
+                    color: styles.warmText,
+                  }}
+                  placeholder="Phone Number"
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div>
+                <label
                   htmlFor="universityNumber"
                   className="block text-sm font-medium mb-1"
                   style={{ color: styles.warmText }}

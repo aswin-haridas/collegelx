@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { styles } from "@/lib/styles";
@@ -10,21 +10,13 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function LoginPage() {
-  const { isAuthenticated, isLoading } = useAuth(false);
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/";
 
-  const [email, setEmail] = useState("");
+  const [collegeId, setCollegeId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push(redirect);
-    }
-  }, [isAuthenticated, redirect, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,33 +27,26 @@ export default function LoginPage() {
       const { data, error } = await supabase
         .from("users")
         .select("*")
-        .eq("email", email)
+        .eq("university_id", collegeId)
         .eq("password", password);
 
       if (error || !data || data.length === 0) {
-        throw new Error("Invalid email or password");
+        throw new Error("Invalid college ID or password");
       }
 
       const userData = data[0];
 
-      // Store all required user data in localStorage
-      localStorage.setItem("userRole", userData.role || "");
-      localStorage.setItem("userName", userData.name || "");
-      localStorage.setItem("userId", userData.id);
-      localStorage.setItem("userUniversityId", userData.university_id || "");
-      localStorage.setItem("userDepartment", userData.department || "");
+      // Store user name in sessionStorage
+      sessionStorage.setItem("name", userData.name);
+      sessionStorage.setItem("user_id", userData.id);
+      sessionStorage.setItem("role", userData.role);
+      sessionStorage.setItem("isLoggedIn", "true");
 
-      // Also store in localStorage for consistency (keeping existing items)
-      localStorage.setItem("auth", "true");
-      localStorage.setItem("id", userData.id);
-      localStorage.setItem("name", userData.name || "");
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      // ✅ Ensure proper redirection
-      if (userData.name && userData.name.toLowerCase() === "admin") {
-        router.push("/admin"); // Redirect admin users to "/admin"
+      // Redirect based on user role
+      if (userData.role === "admin") {
+        router.push("/admin");
       } else {
-        router.push("/"); // Redirect regular users to "/"
+        router.push("/");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
@@ -70,7 +55,7 @@ export default function LoginPage() {
     }
   };
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
         <Loader2
@@ -79,6 +64,17 @@ export default function LoginPage() {
         />
       </div>
     );
+  }
+
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    const role = sessionStorage.getItem("role");
+    if (role === "admin") {
+      router.push("/admin");
+    } else {
+      router.push("/");
+    }
+    return null;
   }
 
   return (
@@ -118,12 +114,12 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
+                College ID
               </label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                value={collegeId}
+                onChange={(e) => setCollegeId(e.target.value)}
                 required
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                 style={{
@@ -170,11 +166,7 @@ export default function LoginPage() {
           <p className="mt-4 text-center text-sm text-gray-600">
             Don't have an account?{" "}
             <Link
-              href={`/auth/signup${
-                redirect !== "/"
-                  ? `?redirect=${encodeURIComponent(redirect)}`
-                  : ""
-              }`}
+              href="/auth/signup"
               className="font-medium hover:underline"
               style={{ color: styles.warmPrimary }}
             >

@@ -212,9 +212,7 @@ export default function ChatPage() {
 
   return (
     <div className="h-screen flex">
-      <Sidebar />
-
-      <div className="flex-1 ml-64 flex flex-col">
+      <div className="flex-1  flex flex-col">
         {/* Chat header */}
         <div
           className="p-4 border-b flex items-center justify-between"
@@ -289,30 +287,38 @@ export default function ChatPage() {
                 messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex mb-3 ${
+                    className={`flex mb-4 ${
                       message.sender_id === userId
                         ? "justify-end"
                         : "justify-start"
                     }`}
                   >
+                    {message.sender_id !== userId && (
+                      <div className="w-8 h-8 rounded-full bg-gray-300 mr-2 flex items-center justify-center text-white text-sm">
+                        {receiverName
+                          ? receiverName.charAt(0).toUpperCase()
+                          : "?"}
+                      </div>
+                    )}
                     <div
-                      className={`p-3 rounded-lg max-w-[70%] ${
+                      className={`rounded-lg max-w-[70%] ${
                         message.sender_id === userId
-                          ? "text-white"
-                          : "bg-gray-100"
+                          ? "rounded-tr-none"
+                          : "rounded-tl-none"
                       }`}
                       style={{
                         backgroundColor:
                           message.sender_id === userId
                             ? styles.warmPrimary
-                            : "",
+                            : "#E5E5EA",
                         color:
                           message.sender_id === userId
                             ? "white"
                             : styles.warmText,
+                        padding: "10px 14px",
                       }}
                     >
-                      <p>{message.message}</p>
+                      <p className="break-words">{message.message}</p>
                       <div className="text-xs mt-1 opacity-70 text-right">
                         {new Date(message.sent_at).toLocaleTimeString([], {
                           hour: "2-digit",
@@ -320,6 +326,14 @@ export default function ChatPage() {
                         })}
                       </div>
                     </div>
+                    {message.sender_id === userId && (
+                      <div className="w-8 h-8 rounded-full bg-blue-500 ml-2 flex items-center justify-center text-white text-sm">
+                        {localStorage
+                          .getItem("name")
+                          ?.charAt(0)
+                          .toUpperCase() || "Me"}
+                      </div>
+                    )}
                   </div>
                 ))
               )}

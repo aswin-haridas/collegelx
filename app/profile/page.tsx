@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/lib/hooks/useAuth";
 import { styles } from "@/lib/styles";
 import { supabase } from "@/lib/supabase";
 import { Star, Edit, Trash2 } from "lucide-react";
@@ -23,7 +22,6 @@ interface User {
 }
 
 export default function ProfilePage() {
-  const { isAuthenticated, userId, isLoading } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<ItemType[]>([]);
   const [isEditing, setIsEditing] = useState(false);
@@ -35,6 +33,8 @@ export default function ProfilePage() {
     year: "",
   });
   const router = useRouter();
+
+  const userId = sessionStorage.getItem("user_id");
 
   useEffect(() => {
     async function fetchUserData() {
@@ -61,10 +61,8 @@ export default function ProfilePage() {
       }
     }
 
-    if (!isLoading && isAuthenticated) {
-      fetchUserData();
-    }
-  }, [userId, isAuthenticated, isLoading]);
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     async function fetchUserItems() {
@@ -136,9 +134,7 @@ export default function ProfilePage() {
 
   return (
     <div className="h-screen">
-      <Sidebar />
-
-      <div className="max-w-4xl mx-auto p-4 ml-64">
+      <div className="max-w-4xl mx-auto p-4 ">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center mb-6">
             <div className="mr-4">

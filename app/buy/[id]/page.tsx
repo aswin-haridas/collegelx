@@ -1,13 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/hooks/useAuth";
 import { useItem } from "@/lib/hooks/useItem";
 import { useSeller } from "@/lib/hooks/useSeller";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
-import { Loader2, MessageSquare, ArrowLeft } from "lucide-react";
+import { Loader2, MessageSquare, ArrowLeft, Heart } from "lucide-react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Item } from "@/lib/types";
@@ -15,13 +15,15 @@ import Sidebar from "@/components/Sidebar";
 import Link from "next/link";
 
 export default function ItemPage() {
-  const { isAuthenticated, isLoading: authLoading, userId } = useAuth(false);
   const router = useRouter();
   const params = useParams();
   const itemId = params?.id as string;
   const [ownerData, setOwnerData] = useState<{ name: string } | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { item, loading: itemLoading } = useItem(itemId, true);
+  const { userId, isAuthenticated, loading: authLoading } = useAuth();
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   const { seller, loading: sellerLoading } = useSeller(item?.sender_id);
 
@@ -39,6 +41,32 @@ export default function ItemPage() {
       sessionStorage.setItem("sender_id", seller.userid);
     }
   }, [item, seller]);
+
+  // Check if item is in wishlist
+  useEffect(() => {
+    const checkWishlist = async () => {
+      if (!userId || !itemId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("wishlist")
+          .select("*")
+          .eq("user_id", userId)
+          .eq("item_id", itemId)
+          .single();
+
+        if (data) {
+          setIsInWishlist(true);
+        }
+      } catch (error) {
+        console.error("Error checking wishlist status:", error);
+      }
+    };
+
+    if (isAuthenticated) {
+      checkWishlist();
+    }
+  }, [userId, itemId, isAuthenticated]);
 
   // Fetch owner data separately when item is loaded
   useEffect(() => {
@@ -85,10 +113,49 @@ export default function ItemPage() {
     router.push(`/chat?listingId=${chatItemId}&receiverId=${chatSellerId}`);
   };
 
+  const handleWishlist = async () => {
+    if (!isAuthenticated) {
+      router.push(
+        `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`
+      );
+      return;
+    }
+
+    if (!userId || !itemId) return;
+
+    setWishlistLoading(true);
+
+    try {
+      if (isInWishlist) {
+        // Remove from wishlist
+        const { error } = await supabase
+          .from("wishlist")
+          .delete()
+          .eq("user_id", userId)
+          .eq("item_id", itemId);
+
+        if (error) throw error;
+        setIsInWishlist(false);
+      } else {
+        // Add to wishlist
+        const { error } = await supabase
+          .from("wishlist")
+          .insert([{ user_id: userId, item_id: itemId }]);
+
+        if (error) throw error;
+        setIsInWishlist(true);
+      }
+    } catch (error) {
+      console.error("Error updating wishlist:", error);
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="h-screen">
-        <div className="flex justify-center items-center h-full ml-64">
+        <div className="flex justify-center items-center h-full ">
           <Loader2
             className="h-8 w-8 animate-spin"
             style={{ color: styles.warmPrimary }}
@@ -101,8 +168,7 @@ export default function ItemPage() {
   if (!item) {
     return (
       <div className="h-screen">
-        <Sidebar />
-        <div className="flex justify-center items-center h-full ml-64">
+        <div className="flex justify-center items-center h-full ">
           <div className="text-center">
             <h2
               className="text-xl font-semibold mb-2"
@@ -125,8 +191,7 @@ export default function ItemPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar />
-      <div className="max-w-6xl mx-auto p-4 ml-64 py-10">
+      <div className="max-w-6xl mx-auto p-4  py-10">
         {/* Back button */}
         <button
           onClick={() => router.back()}
@@ -203,21 +268,55 @@ export default function ItemPage() {
                   </span>
                 </div>
 
-                <button
-                  onClick={handleChat}
-                  className={`w-full py-3 px-4 rounded-lg flex items-center justify-center transition-colors ${
-                    isOwner
-                      ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                      : "text-white hover:bg-opacity-90"
-                  }`}
-                  style={{
-                    backgroundColor: isOwner ? undefined : styles.warmPrimary,
-                  }}
-                  disabled={!!isOwner}
-                >
-                  <MessageSquare className="mr-2 h-5 w-5" />
-                  {isOwner ? "You own this item" : "Chat with Seller"}
-                </button>
+                <div className="flex gap-2 mb-2">
+                  <button
+                    onClick={handleChat}
+                    className={`flex-grow py-3 px-4 rounded-lg flex items-center justify-center transition-colors ${
+                      isOwner
+                        ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                        : "text-white hover:bg-opacity-90"
+                    }`}
+                    style={{
+                      backgroundColor: isOwner ? undefined : styles.warmPrimary,
+                    }}
+                    disabled={!!isOwner}
+                  >
+                    <MessageSquare className="mr-2 h-5 w-5" />
+                    {isOwner ? "You own this item" : "Chat with Seller"}
+                  </button>
+
+                  <button
+                    onClick={handleWishlist}
+                    disabled={isOwner || wishlistLoading}
+                    className={`px-4 py-3 rounded-lg flex items-center justify-center transition-colors ${
+                      isOwner
+                        ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                        : isInWishlist
+                        ? "bg-pink-100 text-pink-600 hover:bg-pink-200"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    <Heart
+                      className={`h-5 w-5 ${
+                        isInWishlist ? "fill-current" : ""
+                      }`}
+                      style={{ color: isInWishlist ? "#e11d48" : undefined }}
+                    />
+                  </button>
+                </div>
+
+                {ownerData && (
+                  <div className="text-sm text-gray-600 flex items-center">
+                    <span className="mr-1">Posted by:</span>
+                    <span
+                      className="font-medium cursor-pointer hover:underline"
+                      onClick={() => router.push(`/profile/${item.owner}`)}
+                      style={{ color: styles.warmPrimary }}
+                    >
+                      {ownerData.name}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="mb-6">
