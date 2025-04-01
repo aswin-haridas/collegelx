@@ -71,7 +71,7 @@ export default function SellPage() {
         year,
         department,
         images: imageUrls,
-        status: "available",
+        status: "unlisted",
         created_at: new Date().toISOString(),
         // Note: tags field has been removed as it's not in the database schema
       });

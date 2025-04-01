@@ -63,7 +63,10 @@ const StatCard = ({
   count: number;
   bgColor: string;
 }) => (
-  <div className={`${bgColor} rounded-lg shadow-md p-4 flex items-center`}>
+  <div
+    className={`rounded-lg shadow-md p-4 flex items-center`}
+    style={{ backgroundColor: bgColor }}
+  >
     <div className="p-3 bg-white bg-opacity-30 rounded-full mr-4">{icon}</div>
     <div>
       <h3 className="text-xl font-bold text-white">{count}</h3>
@@ -86,7 +89,7 @@ const ProductItem = ({
 }) => (
   <div
     key={product.id}
-    className="border border-gray-50 shadow-xl  p-4 rounded-lg flex justify-between items-center"
+    className="border border-gray-50 shadow-xl p-4 rounded-lg flex justify-between items-center"
   >
     <div>
       <h3 className="font-semibold">{product.title}</h3>
@@ -97,14 +100,23 @@ const ProductItem = ({
       <button
         onClick={() => onApprove(product.id)}
         disabled={isProcessing[product.id]}
-        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-green-300"
+        className={`px-4 py-2 text-white rounded-lg disabled:opacity-50 ${
+          isProcessing[product.id]
+            ? "bg-green-300"
+            : "bg-green-600 hover:bg-green-700"
+        }`}
       >
         {isProcessing[product.id] ? "Processing..." : "Approve"}
       </button>
       <button
         onClick={() => onReject(product.id)}
         disabled={isProcessing[product.id]}
-        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-red-300"
+        className={`px-4 py-2 text-white rounded-lg disabled:opacity-50 ${
+          isProcessing[product.id] ? "opacity-70" : "hover:opacity-80"
+        }`}
+        style={{
+          backgroundColor: styles.warmPrimary,
+        }}
       >
         {isProcessing[product.id] ? "Processing..." : "Reject"}
       </button>
@@ -241,7 +253,7 @@ const UserItem = ({
 );
 
 export default function AdminPage() {
-  const { isAuthenticated, loading: authLoading, logout } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const router = useRouter();
   const [pageLoading, setPageLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -271,29 +283,12 @@ export default function AdminPage() {
     registeredUsers: 0,
   });
 
-  // Check authentication and admin role
+  // Set page loading state when auth is complete
   useEffect(() => {
-    const checkAdminRole = () => {
-      const storedRole = localStorage.getItem("userRole");
-      setUserRole(storedRole);
-
-      console.log("Auth Status:", {
-        isAuthenticated,
-        userRole: storedRole,
-        loading: authLoading,
-      });
-
-      if (!authLoading) {
-        if (!isAuthenticated || storedRole !== "admin") {
-          router.push("/");
-        } else {
-          setPageLoading(false);
-        }
-      }
-    };
-
-    checkAdminRole();
-  }, [isAuthenticated, authLoading, router]);
+    if (!authLoading) {
+      setPageLoading(false);
+    }
+  }, [authLoading]);
 
   // Fetch stats
   const fetchStats = useCallback(async () => {
@@ -639,18 +634,23 @@ export default function AdminPage() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen" style={{ backgroundColor: styles.warmBg }}>
       {/* Sidebar */}
-      <div className="w-20 bg-white shadow-md flex flex-col items-center py-8 space-y-8">
+      <div
+        className="w-20 flex flex-col items-center py-8 space-y-8 shadow-md"
+        style={{
+          backgroundColor: "white",
+          borderRight: `1px solid ${styles.warmBorder}`,
+        }}
+      >
         {navItems.map((item, index) => (
           <div
             key={index}
-            className={`cursor-pointer p-3 rounded-xl transition-all
-              ${
-                item.active
-                  ? "bg-blue-100 text-blue-600"
-                  : "text-gray-500 hover:bg-gray-100"
-              }`}
+            className={`cursor-pointer p-3 rounded-xl transition-all`}
+            style={{
+              backgroundColor: item.active ? "#F2E6DC" : "transparent",
+              color: item.active ? styles.warmPrimaryDark : styles.warmText,
+            }}
             onClick={item.action}
             title={item.label}
           >
@@ -675,24 +675,27 @@ export default function AdminPage() {
               icon={<ShoppingBag size={24} color="white" />}
               title="Total Products"
               count={stats.totalProducts}
-              bgColor="bg-blue-500"
+              bgColor={styles.warmPrimary}
             />
             <StatCard
               icon={<ClipboardCheck size={24} color="white" />}
               title="Pending Approvals"
               count={stats.pendingApprovals}
-              bgColor="bg-amber-500"
+              bgColor={styles.warmAccent}
             />
             <StatCard
               icon={<UserCircle size={24} color="white" />}
               title="Registered Users"
               count={stats.registeredUsers}
-              bgColor="bg-green-500"
+              bgColor={styles.warmPrimaryDark}
             />
           </div>
 
           {(fetchError || actionError) && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-center">
+            <div
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-center"
+              style={{ borderColor: styles.warmBorder }}
+            >
               <CircleCheck className="h-5 w-5 mr-2" />
               <span>{fetchError || actionError}</span>
             </div>
@@ -700,7 +703,10 @@ export default function AdminPage() {
 
           {/* Content Section Title */}
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800">
+            <h2
+              className="text-2xl font-semibold"
+              style={{ color: styles.warmText }}
+            >
               {activeSection === "pendingItems" && "Pending Approvals"}
               {activeSection === "allItems" && "All Products"}
               {activeSection === "users" && "User Management"}
@@ -709,7 +715,13 @@ export default function AdminPage() {
           </div>
 
           {/* Content Area */}
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div
+            className="rounded-lg shadow-md p-6"
+            style={{
+              backgroundColor: "white",
+              borderColor: styles.warmBorder,
+            }}
+          >
             {/* Search and filter bars */}
             {activeSection === "users" && (
               <div className="mb-6">

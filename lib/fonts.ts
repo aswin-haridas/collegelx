@@ -1,4 +1,4 @@
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inter, Playfair_Display, Montserrat } from "next/font/google";
 
 const playfair = Playfair_Display({
   weight: "600",
@@ -10,4 +10,10 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export { playfair, inter };
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-montserrat",
+});
+
+export { playfair, inter, montserrat };

@@ -83,7 +83,7 @@ const Sidebar = () => {
   ];
 
   // Public pages that don't require authentication
-  const publicPages = ["/", "/login", "/auth/register"];
+  const publicPages = ["/", "/login", "/signup"];
 
   useEffect(() => {
     // Safely access localStorage after component mounts

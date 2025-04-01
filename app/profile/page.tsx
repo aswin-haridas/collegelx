@@ -98,7 +98,7 @@ export default function ProfilePage() {
         const { data, error } = await supabase
           .from("items")
           .select("*")
-          .eq("seller_id", userId);
+          .or(`seller_id.eq.${userId},owner.eq.${userId}`);
         if (error) throw error;
 
         const transformedItems = data.map((item) => ({

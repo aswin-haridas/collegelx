@@ -44,6 +44,7 @@ export default function LoginPage() {
 
       // Redirect based on user role
       if (userData.role === "admin") {
+        console.log("Admin logged in");
         router.push("/admin");
       } else {
         router.push("/");
@@ -166,7 +167,7 @@ export default function LoginPage() {
           <p className="mt-4 text-center text-sm text-gray-600">
             Don't have an account?{" "}
             <Link
-              href="/auth/signup"
+              href="/signup"
               className="font-medium hover:underline"
               style={{ color: styles.warmPrimary }}
             >
