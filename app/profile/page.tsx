@@ -12,6 +12,7 @@ import {
   Settings,
   Eye,
   EyeOff,
+  Heart,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ItemCard from "@/components/ItemCard";
@@ -41,11 +42,17 @@ interface Review {
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<ItemType[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<ItemType[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [activeTab, setActiveTab] = useState("products");
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isPostingReview, setIsPostingReview] = useState(false);
+  const [reviewData, setReviewData] = useState({
+    rating: 5,
+    comment: "",
+  });
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -102,8 +109,21 @@ export default function ProfilePage() {
         const transformedItems = data.map((item) => ({
           ...item,
           title: item.name || item.title,
-          images: item.image ? [item.image] : [],
-          imageUrl: item.image,
+          name: item.name || item.title,
+          user_id:
+            item.user_id || item.sender_id || item.seller_id || item.owner,
+          sender_id:
+            item.sender_id || item.user_id || item.seller_id || item.owner,
+          seller_id:
+            item.seller_id || item.user_id || item.sender_id || item.owner,
+          owner: item.owner || item.user_id || item.sender_id || item.seller_id,
+          images: item.images || (item.image ? [item.image] : []),
+          image:
+            item.image ||
+            (item.images && item.images.length > 0 ? item.images[0] : null),
+          imageUrl:
+            item.image ||
+            (item.images && item.images.length > 0 ? item.images[0] : null),
         }));
 
         setItems(transformedItems);
@@ -139,12 +159,76 @@ export default function ProfilePage() {
     }
   }, [userId, activeTab]);
 
+  useEffect(() => {
+    async function fetchUserWishlist() {
+      if (!userId) return;
+      try {
+        const { data: wishlistData, error: wishlistError } = await supabase
+          .from("wishlist")
+          .select("item_id")
+          .eq("user_id", userId);
+
+        if (wishlistError) throw wishlistError;
+
+        if (wishlistData && wishlistData.length > 0) {
+          const itemIds = wishlistData.map((entry) => entry.item_id);
+
+          const { data: itemsData, error: itemsError } = await supabase
+            .from("items")
+            .select("*")
+            .in("id", itemIds);
+
+          if (itemsError) throw itemsError;
+
+          const transformedItems = itemsData.map((item) => ({
+            ...item,
+            title: item.name || item.title,
+            name: item.name || item.title,
+            user_id:
+              item.user_id || item.sender_id || item.seller_id || item.owner,
+            sender_id:
+              item.sender_id || item.user_id || item.seller_id || item.owner,
+            seller_id:
+              item.seller_id || item.user_id || item.sender_id || item.owner,
+            owner:
+              item.owner || item.user_id || item.sender_id || item.seller_id,
+            images: item.images || (item.image ? [item.image] : []),
+            image:
+              item.image ||
+              (item.images && item.images.length > 0 ? item.images[0] : null),
+            imageUrl:
+              item.image ||
+              (item.images && item.images.length > 0 ? item.images[0] : null),
+          }));
+
+          setWishlistItems(transformedItems);
+        } else {
+          setWishlistItems([]);
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+      }
+    }
+
+    if (userId && activeTab === "wishlist") {
+      fetchUserWishlist();
+    }
+  }, [userId, activeTab]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+  };
+
+  const handleReviewInputChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) => {
+    const value =
+      e.target.name === "rating" ? parseInt(e.target.value) : e.target.value;
+    setReviewData({ ...reviewData, [e.target.name]: value });
   };
 
   const handleSave = async () => {
@@ -176,8 +260,6 @@ export default function ProfilePage() {
     }
 
     try {
-      // This is a simplified implementation. In a real app, you would need to
-      // verify the current password with your authentication system
       const { error } = await supabase.auth.updateUser({
         password: passwordData.newPassword,
       });
@@ -194,6 +276,37 @@ export default function ProfilePage() {
     } catch (error: any) {
       setPasswordError(error.message || "Failed to update password");
       console.error("Error changing password:", error);
+    }
+  };
+
+  const handlePostReview = async () => {
+    if (!userId) return;
+
+    try {
+      const reviewerName = user?.name || "Anonymous";
+
+      const { data, error } = await supabase
+        .from("reviews")
+        .insert([
+          {
+            user_id: userId,
+            reviewer_name: reviewerName,
+            rating: reviewData.rating,
+            comment: reviewData.comment,
+            created_at: new Date().toISOString(),
+          },
+        ])
+        .select();
+
+      if (error) throw error;
+
+      if (data) {
+        setReviews([...data, ...reviews]);
+        setReviewData({ rating: 5, comment: "" });
+        setIsPostingReview(false);
+      }
+    } catch (error) {
+      console.error("Error posting review:", error);
     }
   };
 
@@ -230,7 +343,6 @@ export default function ProfilePage() {
 
         if (error) throw error;
 
-        // Update local state
         setItems(
           items.map((item) =>
             item.id === itemId ? { ...item, status: "sold" } : item
@@ -238,6 +350,24 @@ export default function ProfilePage() {
         );
       } catch (error) {
         console.error("Error marking item as sold:", error);
+      }
+    }
+  };
+
+  const handleRemoveFromWishlist = async (itemId: string) => {
+    if (confirm("Remove this item from your wishlist?")) {
+      try {
+        const { error } = await supabase
+          .from("wishlist")
+          .delete()
+          .eq("user_id", userId)
+          .eq("item_id", itemId);
+
+        if (error) throw error;
+
+        setWishlistItems(wishlistItems.filter((item) => item.id !== itemId));
+      } catch (error) {
+        console.error("Error removing from wishlist:", error);
       }
     }
   };
@@ -259,9 +389,6 @@ export default function ProfilePage() {
       </div>
     );
   };
-
-
- 
 
   return (
     <>
@@ -312,6 +439,17 @@ export default function ProfilePage() {
                 >
                   <Package size={18} className="mr-2" />
                   My Products
+                </button>
+                <button
+                  className={`py-3 px-4 font-medium flex items-center ${
+                    activeTab === "wishlist"
+                      ? "border-b-2 border-yellow-800 text-yellow-800"
+                      : "text-gray-500 hover:text-yellow-800"
+                  }`}
+                  onClick={() => setActiveTab("wishlist")}
+                >
+                  <Heart size={18} className="mr-2" />
+                  Wishlist
                 </button>
                 <button
                   className={`py-3 px-4 font-medium flex items-center ${
@@ -447,14 +585,133 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {activeTab === "wishlist" && (
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2
+                  className="text-xl font-semibold"
+                  style={{ color: styles.warmText }}
+                >
+                  Your Wishlist
+                </h2>
+              </div>
+
+              {wishlistItems.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {wishlistItems.map((item) => (
+                    <div key={item.id} className="relative group">
+                      <ItemCard item={item} />
+                      <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          className="p-2 bg-white rounded-full shadow-md"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleRemoveFromWishlist(item.id);
+                          }}
+                          style={{ color: "#ef4444" }}
+                          title="Remove from wishlist"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center p-8 bg-gray-50 rounded-lg">
+                  <p className="text-gray-500">
+                    No items in your wishlist yet.
+                  </p>
+                  <button
+                    onClick={() => router.push("/")}
+                    className="mt-4 px-4 py-2 text-white rounded-lg hover:brightness-110"
+                    style={{ backgroundColor: styles.warmPrimary }}
+                  >
+                    Browse Items
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {activeTab === "reviews" && (
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2
-                className="text-xl font-semibold mb-4"
-                style={{ color: styles.warmText }}
-              >
-                Your Reviews
-              </h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2
+                  className="text-xl font-semibold"
+                  style={{ color: styles.warmText }}
+                >
+                  Your Reviews
+                </h2>
+                <button
+                  onClick={() => setIsPostingReview(true)}
+                  className="px-4 py-2 text-white rounded-lg hover:brightness-110"
+                  style={{ backgroundColor: styles.warmPrimary }}
+                >
+                  Post Review
+                </button>
+              </div>
+
+              {isPostingReview && (
+                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                  <h3 className="font-medium mb-3">Post a Review</h3>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Rating
+                    </label>
+                    <div className="flex items-center">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <label key={star} className="cursor-pointer mr-2">
+                          <input
+                            type="radio"
+                            name="rating"
+                            value={star}
+                            checked={reviewData.rating === star}
+                            onChange={handleReviewInputChange}
+                            className="sr-only"
+                          />
+                          <Star
+                            size={24}
+                            className={`${
+                              star <= reviewData.rating
+                                ? "fill-yellow-500 text-yellow-500"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Comment
+                    </label>
+                    <textarea
+                      name="comment"
+                      value={reviewData.comment}
+                      onChange={handleReviewInputChange}
+                      placeholder="Write your review here..."
+                      className="w-full border p-2 rounded h-24"
+                      required
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      className="px-4 py-2 text-white rounded-lg hover:bg-green-600"
+                      onClick={handlePostReview}
+                      style={{ backgroundColor: styles.warmPrimary }}
+                    >
+                      Submit Review
+                    </button>
+                    <button
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsPostingReview(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {reviews.length > 0 ? (
                 <div className="space-y-4">

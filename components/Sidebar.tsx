@@ -83,7 +83,7 @@ const Sidebar = () => {
   ];
 
   // Public pages that don't require authentication
-  const publicPages = ["/", "/auth/login", "/auth/register"];
+  const publicPages = ["/", "/login", "/auth/register"];
 
   useEffect(() => {
     // Safely access localStorage after component mounts
@@ -105,7 +105,7 @@ const Sidebar = () => {
             currentPath.startsWith("/buy/");
 
           if (!isPublicPage) {
-            router.push("/auth/login");
+            router.push("/login");
           }
         }
       } catch (error) {
@@ -135,7 +135,7 @@ const Sidebar = () => {
       localStorage.clear();
       sessionStorage.clear();
 
-      router.push("/auth/login");
+      router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -184,7 +184,7 @@ const Sidebar = () => {
                 item.href !== "/" && !item.href.startsWith("/buy/");
               const linkHref =
                 requiresAuth && !userName
-                  ? `/auth/login?redirect=${encodeURIComponent(item.href)}`
+                  ? `/login?redirect=${encodeURIComponent(item.href)}`
                   : item.href;
 
               // Replace the item href for the NavItem component
@@ -236,7 +236,7 @@ const Sidebar = () => {
             style={{ borderColor: styles.warmBorder }}
           >
             <Link
-              href="/auth/login"
+              href="/login"
               className="flex w-full items-center py-2.5 px-3 rounded-lg transition-all duration-200 hover:bg-opacity-10"
               style={{
                 color: styles.warmPrimary,

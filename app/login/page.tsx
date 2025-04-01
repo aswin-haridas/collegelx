@@ -10,7 +10,7 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function LoginPage() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
   const [collegeId, setCollegeId] = useState("");

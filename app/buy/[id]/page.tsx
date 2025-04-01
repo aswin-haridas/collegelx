@@ -21,7 +21,7 @@ export default function ItemPage() {
   const [ownerData, setOwnerData] = useState<{ name: string } | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { item, loading: itemLoading } = useItem(itemId, true);
-  const { userId, isAuthenticated, loading: authLoading } = useAuth();
+  const { userId, isAuthenticated, isLoading: authLoading } = useAuth();
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
@@ -35,6 +35,13 @@ export default function ItemPage() {
   useEffect(() => {
     if (item) {
       sessionStorage.setItem("listing_id", item.id);
+
+      // Handle potential field name differences
+      const ownerId =
+        item.owner || item.user_id || item.sender_id || item.seller_id;
+      if (ownerId) {
+        sessionStorage.setItem("sender_id", ownerId);
+      }
     }
 
     if (seller?.userid) {
@@ -71,35 +78,60 @@ export default function ItemPage() {
   // Fetch owner data separately when item is loaded
   useEffect(() => {
     const fetchOwnerName = async () => {
-      if (!item?.owner) return;
+      // Try all possible owner ID fields
+      const ownerId =
+        item?.owner || item?.user_id || item?.sender_id || item?.seller_id;
+      if (!ownerId) return;
 
-      const { data } = await supabase
-        .from("users")
-        .select("name")
-        .eq("id", item.owner)
-        .single();
+      try {
+        console.log("Fetching owner data for:", ownerId);
+        const { data, error } = await supabase
+          .from("users")
+          .select("name")
+          .eq("id", ownerId)
+          .single();
 
-      if (data) {
-        setOwnerData(data);
+        if (error) {
+          console.error("Error fetching owner data:", error);
+          return;
+        }
+
+        if (data) {
+          console.log("Owner data fetched successfully:", data);
+          setOwnerData(data);
+        } else {
+          console.warn("No owner data found for ID:", ownerId);
+          setOwnerData({ name: "Unknown User" });
+        }
+      } catch (err) {
+        console.error("Exception while fetching owner data:", err);
+        setOwnerData({ name: "Unknown User" });
       }
     };
 
-    if (item?.owner) {
+    if (item) {
       fetchOwnerName();
+    } else {
+      console.log("No item available for fetching owner data");
+      setOwnerData(null);
     }
   }, [item]);
 
   const handleChat = () => {
     if (!isAuthenticated) {
-      router.push(
-        `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`
-      );
+      router.push(`/login`);
       return;
     }
 
     const chatItemId = item?.id || sessionStorage.getItem("listing_id");
+    // Try all possible seller ID fields
     let chatSellerId =
-      seller?.userid || sessionStorage.getItem("sender_id") || item?.sender_id;
+      seller?.userid ||
+      sessionStorage.getItem("sender_id") ||
+      item?.sender_id ||
+      item?.user_id ||
+      item?.owner ||
+      item?.sender_id;
 
     if (!chatItemId || !chatSellerId) {
       return;
@@ -115,9 +147,7 @@ export default function ItemPage() {
 
   const handleWishlist = async () => {
     if (!isAuthenticated) {
-      router.push(
-        `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`
-      );
+      router.push(`/login`);
       return;
     }
 
@@ -140,7 +170,8 @@ export default function ItemPage() {
         // Add to wishlist
         const { error } = await supabase
           .from("wishlist")
-          .insert([{ user_id: userId, item_id: itemId }]);
+          .insert({ user_id: userId, item_id: itemId })
+          .select();
 
         if (error) throw error;
         setIsInWishlist(true);
@@ -310,10 +341,12 @@ export default function ItemPage() {
                     <span className="mr-1">Posted by:</span>
                     <span
                       className="font-medium cursor-pointer hover:underline"
-                      onClick={() => router.push(`/profile/${item.owner}`)}
+                      onClick={() =>
+                        router.push(`/profile/${item.sender_id || item.owner}`)
+                      }
                       style={{ color: styles.warmPrimary }}
                     >
-                      {ownerData.name}
+                      {ownerData?.name}
                     </span>
                   </div>
                 )}
@@ -349,23 +382,24 @@ export default function ItemPage() {
                       {new Date(item.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                  {ownerData && (
-                    <div>
-                      <p className="text-gray-500">Owner</p>
-                      <p
-                        className="font-medium cursor-pointer hover:underline"
-                        onClick={() => router.push(`/profile/${item.owner}`)}
-                        style={{ color: styles.warmPrimary }}
-                      >
-                        {ownerData.name}
-                      </p>
-                    </div>
-                  )}
+
+                  <div>
+                    <p className="text-gray-500">Owner</p>
+                    <p
+                      className="font-medium cursor-pointer hover:underline"
+                      onClick={() =>
+                        router.push(`/profile/${item.sender_id || item.owner}`)
+                      }
+                      style={{ color: styles.warmPrimary }}
+                    >
+                      {ownerData?.name || "Unknown"}
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* Seller information */}
-              {!sellerLoading && seller && (
+              {!sellerLoading && (
                 <div className="border-t border-gray-200 pt-6">
                   <h2
                     className="text-xl font-semibold mb-4"
@@ -375,18 +409,26 @@ export default function ItemPage() {
                   </h2>
                   <div
                     className="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                    onClick={() => router.push(`/profile/${seller.userid}`)}
+                    onClick={() =>
+                      router.push(
+                        `/profile/${
+                          item.sender_id || item.owner || seller?.userid
+                        }`
+                      )
+                    }
                   >
                     <div className="h-12 w-12 rounded-full bg-gray-200 overflow-hidden mr-4 flex items-center justify-center">
-                      {seller.profile_image ? (
+                      {seller?.profile_image ? (
                         <img
                           src={seller.profile_image}
-                          alt={seller.name || "Seller"}
+                          alt={ownerData?.name || seller?.name || "Seller"}
                           className="h-full w-full object-cover"
                         />
                       ) : (
                         <span className="text-lg font-medium text-gray-500">
-                          {seller.name?.charAt(0).toUpperCase() || "?"}
+                          {(ownerData?.name || seller?.name || "?")
+                            .charAt(0)
+                            .toUpperCase()}
                         </span>
                       )}
                     </div>
@@ -394,15 +436,11 @@ export default function ItemPage() {
                       <div
                         className="font-medium hover:underline"
                         style={{ color: styles.warmText }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/profile/${seller.userid}`);
-                        }}
                       >
-                        {ownerData?.name || seller.name || "Anonymous Seller"}
+                        {ownerData?.name || seller?.name || "Anonymous Seller"}
                       </div>
                       <p className="text-sm text-gray-500">
-                        {seller.department ? `${seller.department}` : ""}
+                        {seller?.department ? `${seller.department}` : ""}
                       </p>
                     </div>
                   </div>

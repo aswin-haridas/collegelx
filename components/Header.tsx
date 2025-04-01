@@ -18,15 +18,15 @@ import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
 
 const Header = () => {
-  const { isAuthenticated, userId, loading } = useAuth();
+  const { isAuthenticated, userId, isLoading } = useAuth();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     // Clear the user session
-    sessionStorage.removeItem("userId");
+    sessionStorage.clear();
     // Redirect to home page
-    router.push("/");
+    router.push("/login");
     // Refresh the page to update auth state
     window.location.reload();
   };

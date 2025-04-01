@@ -19,6 +19,7 @@ export interface AuthState {
 }
 
 export interface Item {
+  seller_id: string;
   id: string;
   created_at: string;
   user_id: string;

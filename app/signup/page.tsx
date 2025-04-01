@@ -181,7 +181,7 @@ export default function SignupPage() {
             >
               Already have an account?{" "}
               <Link
-                href="/auth/login"
+                href="/login"
                 className="font-medium hover:text-warmAccentDark transition-colors"
                 style={{ color: styles.warmAccent }}
               >

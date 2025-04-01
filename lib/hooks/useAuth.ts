@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 export function useAuth() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [isLoading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     // Check authentication status from sessionStorage
@@ -57,7 +57,7 @@ export function useAuth() {
   return {
     userId,
     isAuthenticated,
-    loading,
+    isLoading,
     logout,
   };
 }
