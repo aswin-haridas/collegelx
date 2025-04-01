@@ -33,8 +33,7 @@ export default function ChatPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const userId =
-    typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+  const userId = sessionStorage.getItem("user_id");
 
   // Get IDs from URL params first, then fallback to session storage
   const receiverId =
@@ -54,7 +53,6 @@ export default function ChatPage() {
       router.push("/messages");
       return;
     }
-
     // Save to session storage for persistence
     if (receiverId) sessionStorage.setItem("receiver_id", receiverId);
     if (listingId) sessionStorage.setItem("listing_id", listingId);
@@ -329,17 +327,6 @@ export default function ChatPage() {
                         })}
                       </div>
                     </div>
-                    {message.sender_id === userId && (
-                      <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm"
-                        style={{ backgroundColor: "#4F46E5" }}
-                      >
-                        {localStorage
-                          .getItem("name")
-                          ?.charAt(0)
-                          .toUpperCase() || "Me"}
-                      </div>
-                    )}
                   </div>
                 ))
               )}

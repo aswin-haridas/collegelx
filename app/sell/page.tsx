@@ -61,22 +61,19 @@ export default function SellPage() {
         })
       );
 
-      // Insert item into database with correct seller_id field
+      // Insert item into database with owner field instead of user_id
       const { error: insertError } = await supabase.from("items").insert({
-        seller_id: userId, // Use seller_id instead of id to properly associate with user
+        owner: userId, // Changed to owner field to match the database schema
         title,
         description,
         price: parseFloat(price),
         category: category,
         year,
         department,
-        tags: tags
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter((tag) => tag),
         images: imageUrls,
-        status: "available", // Changed from "unlisted" to "available"
+        status: "available",
         created_at: new Date().toISOString(),
+        // Note: tags field has been removed as it's not in the database schema
       });
 
       if (insertError) {

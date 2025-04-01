@@ -3,17 +3,7 @@
 import { useEffect, useState } from "react";
 import { styles } from "@/lib/styles";
 import { supabase } from "@/lib/supabase";
-import {
-  Star,
-  Edit,
-  Trash2,
-  Package,
-  MessageSquare,
-  Settings,
-  Eye,
-  EyeOff,
-  Heart,
-} from "lucide-react";
+import { Star, Edit, Trash2, Package, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ItemCard from "@/components/ItemCard";
 import { Item as ItemType } from "@/lib/types";
@@ -42,33 +32,19 @@ interface Review {
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<ItemType[]>([]);
-  const [wishlistItems, setWishlistItems] = useState<ItemType[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [activeTab, setActiveTab] = useState("products");
-  const [isEditing, setIsEditing] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [isPostingReview, setIsPostingReview] = useState(false);
   const [reviewData, setReviewData] = useState({
     rating: 5,
     comment: "",
   });
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    department: "",
-    university_id: "",
-    year: "",
-  });
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [passwordError, setPasswordError] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
 
-  const userId = sessionStorage.getItem("user_id");
+  useEffect(() => {
+    setUserId(sessionStorage.getItem("sender_id"));
+  }, []);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -81,13 +57,6 @@ export default function ProfilePage() {
           .single();
         if (error) throw error;
         setUser(data);
-        setFormData({
-          name: data.name,
-          email: data.email,
-          department: data.department || "",
-          university_id: data.university_id || "",
-          year: data.year || "",
-        });
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -159,124 +128,12 @@ export default function ProfilePage() {
     }
   }, [userId, activeTab]);
 
-  useEffect(() => {
-    async function fetchUserWishlist() {
-      if (!userId) return;
-      try {
-        const { data: wishlistData, error: wishlistError } = await supabase
-          .from("wishlist")
-          .select("item_id")
-          .eq("user_id", userId);
-
-        if (wishlistError) throw wishlistError;
-
-        if (wishlistData && wishlistData.length > 0) {
-          const itemIds = wishlistData.map((entry) => entry.item_id);
-
-          const { data: itemsData, error: itemsError } = await supabase
-            .from("items")
-            .select("*")
-            .in("id", itemIds);
-
-          if (itemsError) throw itemsError;
-
-          const transformedItems = itemsData.map((item) => ({
-            ...item,
-            title: item.name || item.title,
-            name: item.name || item.title,
-            user_id:
-              item.user_id || item.sender_id || item.seller_id || item.owner,
-            sender_id:
-              item.sender_id || item.user_id || item.seller_id || item.owner,
-            seller_id:
-              item.seller_id || item.user_id || item.sender_id || item.owner,
-            owner:
-              item.owner || item.user_id || item.sender_id || item.seller_id,
-            images: item.images || (item.image ? [item.image] : []),
-            image:
-              item.image ||
-              (item.images && item.images.length > 0 ? item.images[0] : null),
-            imageUrl:
-              item.image ||
-              (item.images && item.images.length > 0 ? item.images[0] : null),
-          }));
-
-          setWishlistItems(transformedItems);
-        } else {
-          setWishlistItems([]);
-        }
-      } catch (error) {
-        console.error("Error fetching wishlist:", error);
-      }
-    }
-
-    if (userId && activeTab === "wishlist") {
-      fetchUserWishlist();
-    }
-  }, [userId, activeTab]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
-  };
-
   const handleReviewInputChange = (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
   ) => {
     const value =
       e.target.name === "rating" ? parseInt(e.target.value) : e.target.value;
     setReviewData({ ...reviewData, [e.target.name]: value });
-  };
-
-  const handleSave = async () => {
-    if (!userId) return;
-    try {
-      const { error } = await supabase
-        .from("users")
-        .update(formData)
-        .eq("id", userId);
-      if (error) throw error;
-      setUser({ ...user, ...formData } as User);
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Error updating user data:", error);
-    }
-  };
-
-  const handleChangePassword = async () => {
-    setPasswordError("");
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError("New passwords don't match");
-      return;
-    }
-
-    if (passwordData.newPassword.length < 6) {
-      setPasswordError("Password must be at least 6 characters");
-      return;
-    }
-
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: passwordData.newPassword,
-      });
-
-      if (error) throw error;
-
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-      setIsChangingPassword(false);
-      alert("Password changed successfully");
-    } catch (error: any) {
-      setPasswordError(error.message || "Failed to update password");
-      console.error("Error changing password:", error);
-    }
   };
 
   const handlePostReview = async () => {
@@ -354,24 +211,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleRemoveFromWishlist = async (itemId: string) => {
-    if (confirm("Remove this item from your wishlist?")) {
-      try {
-        const { error } = await supabase
-          .from("wishlist")
-          .delete()
-          .eq("user_id", userId)
-          .eq("item_id", itemId);
-
-        if (error) throw error;
-
-        setWishlistItems(wishlistItems.filter((item) => item.id !== itemId));
-      } catch (error) {
-        console.error("Error removing from wishlist:", error);
-      }
-    }
-  };
-
   const renderStars = (rating: number) => {
     return (
       <div className="flex">
@@ -425,7 +264,6 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-
             {/* Tabs */}
             <div className="border-b border-gray-200">
               <div className="flex">
@@ -438,18 +276,7 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab("products")}
                 >
                   <Package size={18} className="mr-2" />
-                  My Products
-                </button>
-                <button
-                  className={`py-3 px-4 font-medium flex items-center ${
-                    activeTab === "wishlist"
-                      ? "border-b-2 border-yellow-800 text-yellow-800"
-                      : "text-gray-500 hover:text-yellow-800"
-                  }`}
-                  onClick={() => setActiveTab("wishlist")}
-                >
-                  <Heart size={18} className="mr-2" />
-                  Wishlist
+                  Products
                 </button>
                 <button
                   className={`py-3 px-4 font-medium flex items-center ${
@@ -461,17 +288,6 @@ export default function ProfilePage() {
                 >
                   <MessageSquare size={18} className="mr-2" />
                   Reviews
-                </button>
-                <button
-                  className={`py-3 px-4 font-medium flex items-center ${
-                    activeTab === "settings"
-                      ? "border-b-2 border-yellow-800 text-yellow-800"
-                      : "text-gray-500 hover:text-yellow-800"
-                  }`}
-                  onClick={() => setActiveTab("settings")}
-                >
-                  <Settings size={18} className="mr-2" />
-                  Account Settings
                 </button>
               </div>
             </div>
@@ -585,55 +401,6 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {activeTab === "wishlist" && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2
-                  className="text-xl font-semibold"
-                  style={{ color: styles.warmText }}
-                >
-                  Your Wishlist
-                </h2>
-              </div>
-
-              {wishlistItems.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {wishlistItems.map((item) => (
-                    <div key={item.id} className="relative group">
-                      <ItemCard item={item} />
-                      <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          className="p-2 bg-white rounded-full shadow-md"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleRemoveFromWishlist(item.id);
-                          }}
-                          style={{ color: "#ef4444" }}
-                          title="Remove from wishlist"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center p-8 bg-gray-50 rounded-lg">
-                  <p className="text-gray-500">
-                    No items in your wishlist yet.
-                  </p>
-                  <button
-                    onClick={() => router.push("/")}
-                    className="mt-4 px-4 py-2 text-white rounded-lg hover:brightness-110"
-                    style={{ backgroundColor: styles.warmPrimary }}
-                  >
-                    Browse Items
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
           {activeTab === "reviews" && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-center mb-4">
@@ -738,203 +505,6 @@ export default function ProfilePage() {
               ) : (
                 <div className="text-center p-8 bg-gray-50 rounded-lg">
                   <p className="text-gray-500">No reviews yet.</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === "settings" && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2
-                className="text-xl font-semibold mb-4"
-                style={{ color: styles.warmText }}
-              >
-                Account Settings
-              </h2>
-
-              {isEditing ? (
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                  <h3 className="font-medium mb-3">Edit Profile</h3>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Full Name"
-                    className="w-full border p-2 my-2 rounded"
-                  />
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="Email"
-                    className="w-full border p-2 my-2 rounded"
-                  />
-                  <input
-                    type="text"
-                    name="department"
-                    value={formData.department}
-                    onChange={handleInputChange}
-                    placeholder="Department"
-                    className="w-full border p-2 my-2 rounded"
-                  />
-                  <input
-                    type="text"
-                    name="university_id"
-                    value={formData.university_id}
-                    onChange={handleInputChange}
-                    placeholder="University ID"
-                    className="w-full border p-2 my-2 rounded"
-                  />
-                  <input
-                    type="text"
-                    name="year"
-                    value={formData.year || ""}
-                    onChange={handleInputChange}
-                    className="w-full border p-2 my-2 rounded"
-                    placeholder="Year of Study"
-                  />
-                  <div className="flex gap-2 mt-4">
-                    <button
-                      className="px-4 py-2 text-white rounded-lg hover:bg-green-600"
-                      onClick={handleSave}
-                      style={{ backgroundColor: styles.warmPrimary }}
-                    >
-                      Save
-                    </button>
-                    <button
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsEditing(false)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                  <h3 className="font-medium mb-3">Profile Information</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <p className="my-2">
-                      <strong>Name:</strong> {user?.name}
-                    </p>
-                    <p className="my-2">
-                      <strong>Email:</strong> {user?.email}
-                    </p>
-                    <p className="my-2">
-                      <strong>Department:</strong>{" "}
-                      {user?.department || "Not specified"}
-                    </p>
-                    <p className="my-2">
-                      <strong>University ID:</strong>{" "}
-                      {user?.university_id || "Not specified"}
-                    </p>
-                    <p className="my-2">
-                      <strong>Year:</strong> {user?.year || "Not specified"}
-                    </p>
-                    {user?.phone && (
-                      <p className="my-2">
-                        <strong>Phone:</strong> {user.phone}
-                      </p>
-                    )}
-                    <p className="my-2">
-                      <strong>Role:</strong> {user?.role || "Student"}
-                    </p>
-                  </div>
-                  <div className="mt-4">
-                    <button
-                      className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                      style={{ backgroundColor: styles.warmPrimary }}
-                      onClick={() => setIsEditing(true)}
-                    >
-                      Edit Profile
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {isChangingPassword ? (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-medium mb-3">Change Password</h3>
-                  {passwordError && (
-                    <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
-                      {passwordError}
-                    </div>
-                  )}
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="currentPassword"
-                      value={passwordData.currentPassword}
-                      onChange={handlePasswordChange}
-                      placeholder="Current Password"
-                      className="w-full border p-2 my-2 rounded pr-10"
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-3"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="newPassword"
-                      value={passwordData.newPassword}
-                      onChange={handlePasswordChange}
-                      placeholder="New Password"
-                      className="w-full border p-2 my-2 rounded pr-10"
-                    />
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      value={passwordData.confirmPassword}
-                      onChange={handlePasswordChange}
-                      placeholder="Confirm New Password"
-                      className="w-full border p-2 my-2 rounded pr-10"
-                    />
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <button
-                      className="px-4 py-2 text-white rounded-lg hover:bg-green-600"
-                      onClick={handleChangePassword}
-                      style={{ backgroundColor: styles.warmPrimary }}
-                    >
-                      Update Password
-                    </button>
-                    <button
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
-                      onClick={() => {
-                        setIsChangingPassword(false);
-                        setPasswordData({
-                          currentPassword: "",
-                          newPassword: "",
-                          confirmPassword: "",
-                        });
-                        setPasswordError("");
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-medium mb-3">Password</h3>
-                  <p className="text-gray-600 mb-4">
-                    Set a strong password to protect your account
-                  </p>
-                  <button
-                    className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                    style={{ backgroundColor: styles.warmPrimary }}
-                    onClick={() => setIsChangingPassword(true)}
-                  >
-                    Change Password
-                  </button>
                 </div>
               )}
             </div>

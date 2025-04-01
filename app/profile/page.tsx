@@ -48,11 +48,6 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isPostingReview, setIsPostingReview] = useState(false);
-  const [reviewData, setReviewData] = useState({
-    rating: 5,
-    comment: "",
-  });
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -223,14 +218,6 @@ export default function ProfilePage() {
     setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
   };
 
-  const handleReviewInputChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) => {
-    const value =
-      e.target.name === "rating" ? parseInt(e.target.value) : e.target.value;
-    setReviewData({ ...reviewData, [e.target.name]: value });
-  };
-
   const handleSave = async () => {
     if (!userId) return;
     try {
@@ -276,37 +263,6 @@ export default function ProfilePage() {
     } catch (error: any) {
       setPasswordError(error.message || "Failed to update password");
       console.error("Error changing password:", error);
-    }
-  };
-
-  const handlePostReview = async () => {
-    if (!userId) return;
-
-    try {
-      const reviewerName = user?.name || "Anonymous";
-
-      const { data, error } = await supabase
-        .from("reviews")
-        .insert([
-          {
-            user_id: userId,
-            reviewer_name: reviewerName,
-            rating: reviewData.rating,
-            comment: reviewData.comment,
-            created_at: new Date().toISOString(),
-          },
-        ])
-        .select();
-
-      if (error) throw error;
-
-      if (data) {
-        setReviews([...data, ...reviews]);
-        setReviewData({ rating: 5, comment: "" });
-        setIsPostingReview(false);
-      }
-    } catch (error) {
-      console.error("Error posting review:", error);
     }
   };
 
@@ -643,75 +599,7 @@ export default function ProfilePage() {
                 >
                   Your Reviews
                 </h2>
-                <button
-                  onClick={() => setIsPostingReview(true)}
-                  className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                  style={{ backgroundColor: styles.warmPrimary }}
-                >
-                  Post Review
-                </button>
               </div>
-
-              {isPostingReview && (
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                  <h3 className="font-medium mb-3">Post a Review</h3>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Rating
-                    </label>
-                    <div className="flex items-center">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <label key={star} className="cursor-pointer mr-2">
-                          <input
-                            type="radio"
-                            name="rating"
-                            value={star}
-                            checked={reviewData.rating === star}
-                            onChange={handleReviewInputChange}
-                            className="sr-only"
-                          />
-                          <Star
-                            size={24}
-                            className={`${
-                              star <= reviewData.rating
-                                ? "fill-yellow-500 text-yellow-500"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Comment
-                    </label>
-                    <textarea
-                      name="comment"
-                      value={reviewData.comment}
-                      onChange={handleReviewInputChange}
-                      placeholder="Write your review here..."
-                      className="w-full border p-2 rounded h-24"
-                      required
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      className="px-4 py-2 text-white rounded-lg hover:bg-green-600"
-                      onClick={handlePostReview}
-                      style={{ backgroundColor: styles.warmPrimary }}
-                    >
-                      Submit Review
-                    </button>
-                    <button
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsPostingReview(false)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
 
               {reviews.length > 0 ? (
                 <div className="space-y-4">

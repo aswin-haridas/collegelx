@@ -36,11 +36,10 @@ export default function ItemPage() {
     if (item) {
       sessionStorage.setItem("listing_id", item.id);
 
-      // Handle potential field name differences
-      const ownerId =
-        item.owner || item.user_id || item.sender_id || item.seller_id;
-      if (ownerId) {
-        sessionStorage.setItem("sender_id", ownerId);
+      // Handle potential field name differences consistently
+      const sellerId = item.sender_id || item.owner || item.user_id;
+      if (sellerId) {
+        sessionStorage.setItem("sender_id", sellerId);
       }
     }
 
@@ -118,31 +117,31 @@ export default function ItemPage() {
   }, [item]);
 
   const handleChat = () => {
-    if (!isAuthenticated) {
-      router.push(`/login`);
-      return;
-    }
-
     const chatItemId = item?.id || sessionStorage.getItem("listing_id");
-    // Try all possible seller ID fields
-    let chatSellerId =
+    // Get seller ID consistently with no duplicates
+    const sellerId =
       seller?.userid ||
-      sessionStorage.getItem("sender_id") ||
       item?.sender_id ||
-      item?.user_id ||
       item?.owner ||
-      item?.sender_id;
+      item?.user_id ||
+      sessionStorage.getItem("sender_id");
 
-    if (!chatItemId || !chatSellerId) {
+    if (!chatItemId || !sellerId) {
+      console.error("Missing required data for chat:", {
+        chatItemId,
+        sellerId,
+      });
       return;
     }
+
+    console.log("Navigating to chat with:", { sellerId, chatItemId });
 
     // Store in session storage before navigation
     sessionStorage.setItem("listing_id", chatItemId);
-    sessionStorage.setItem("receiver_id", chatSellerId);
+    sessionStorage.setItem("receiver_id", sellerId);
 
-    // Navigate with query parameters
-    router.push(`/chat?listingId=${chatItemId}&receiverId=${chatSellerId}`);
+    // Navigate with query parameters to ensure data persistence
+    router.push(`/chat?receiverId=${sellerId}&listingId=${chatItemId}`);
   };
 
   const handleWishlist = async () => {
