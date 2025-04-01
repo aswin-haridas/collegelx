@@ -1,833 +1,573 @@
 "use client";
-
-import { useEffect, useState, useCallback } from "react";
-import { useAuth } from "@/lib/hooks/useAuth";
-import { styles } from "@/lib/styles";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import {
-  Loader2,
-  CircleCheck,
-  UserX,
-  UserCheck,
-  LayoutDashboard,
-  Package,
-  Users,
-  Settings,
-  ShoppingBag,
-  ClipboardCheck,
-  UserCircle,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { playfair } from "@/lib/fonts";
-import Sidebar from "@/components/Sidebar";
+import { User, Item } from "@/lib/types";
 
-// Define types for better type safety
-interface Product {
-  id: string;
-  title: string;
-  price: number;
-  description: string;
-  status: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  role: string;
-  banned: boolean;
-  created_at: string;
-  verified: boolean; // Add verified status
-}
-
-// Loading component for better reusability
-const LoadingSpinner = () => (
-  <div className="h-screen">
-    <div className="flex justify-center items-center h-full ">
-      <Loader2
-        className="h-8 w-8 animate-spin"
-        style={{ color: styles.warmPrimary }}
-      />
-    </div>
-  </div>
-);
-
-// Stats Card Component
-const StatCard = ({
-  icon,
-  title,
-  count,
-  bgColor,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  count: number;
-  bgColor: string;
-}) => (
-  <div
-    className={`rounded-lg shadow-md p-4 flex items-center`}
-    style={{ backgroundColor: bgColor }}
-  >
-    <div className="p-3 bg-white bg-opacity-30 rounded-full mr-4">{icon}</div>
-    <div>
-      <h3 className="text-xl font-bold text-white">{count}</h3>
-      <p className="text-white text-opacity-90">{title}</p>
-    </div>
-  </div>
-);
-
-// Product item component
-const ProductItem = ({
-  product,
-  onApprove,
-  onReject,
-  isProcessing,
-}: {
-  product: Product;
-  onApprove: (id: string) => Promise<void>;
-  onReject: (id: string) => Promise<void>;
-  isProcessing: Record<string, boolean>;
-}) => (
-  <div
-    key={product.id}
-    className="border border-gray-50 shadow-xl p-4 rounded-lg flex justify-between items-center"
-  >
-    <div>
-      <h3 className="font-semibold">{product.title}</h3>
-      <p className="text-sm text-gray-600">{product.description}</p>
-      <p className="text-gray-600">₹{product.price}</p>
-    </div>
-    <div className="space-x-2">
-      <button
-        onClick={() => onApprove(product.id)}
-        disabled={isProcessing[product.id]}
-        className={`px-4 py-2 text-white rounded-lg disabled:opacity-50 ${
-          isProcessing[product.id]
-            ? "bg-green-300"
-            : "bg-green-600 hover:bg-green-700"
-        }`}
-      >
-        {isProcessing[product.id] ? "Processing..." : "Approve"}
-      </button>
-      <button
-        onClick={() => onReject(product.id)}
-        disabled={isProcessing[product.id]}
-        className={`px-4 py-2 text-white rounded-lg disabled:opacity-50 ${
-          isProcessing[product.id] ? "opacity-70" : "hover:opacity-80"
-        }`}
-        style={{
-          backgroundColor: styles.warmPrimary,
-        }}
-      >
-        {isProcessing[product.id] ? "Processing..." : "Reject"}
-      </button>
-    </div>
-  </div>
-);
-
-// All Products item component
-const AllProductItem = ({
-  product,
-  onRemove,
-  isProcessing,
-}: {
-  product: Product;
-  onRemove: (id: string) => Promise<void>;
-  isProcessing: Record<string, boolean>;
-}) => (
-  <div
-    key={product.id}
-    className="border border-gray-50 shadow-xl p-4 rounded-lg flex justify-between items-center"
-  >
-    <div>
-      <h3 className="font-semibold">{product.title}</h3>
-      <p className="text-sm text-gray-600">{product.description}</p>
-      <p className="text-gray-600">₹{product.price}</p>
-      <span
-        className={`px-2 py-1 rounded text-xs ${
-          product.status === "available"
-            ? "bg-green-100 text-green-800"
-            : product.status === "sold"
-            ? "bg-blue-100 text-blue-800"
-            : "bg-yellow-100 text-yellow-800"
-        }`}
-      >
-        {product.status}
-      </span>
-    </div>
-    <div className="space-x-2">
-      <button
-        onClick={() => onRemove(product.id)}
-        disabled={isProcessing[product.id]}
-        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-red-300"
-      >
-        {isProcessing[product.id] ? "Processing..." : "Remove"}
-      </button>
-    </div>
-  </div>
-);
-
-// User item component
-const UserItem = ({
-  user,
-  onToggleBan,
-  onToggleVerify,
-  isProcessing,
-}: {
-  user: User;
-  onToggleBan: (id: string, currentStatus: boolean) => Promise<void>;
-  onToggleVerify: (id: string, currentStatus: boolean) => Promise<void>;
-  isProcessing: Record<string, boolean>;
-}) => (
-  <div
-    key={user.id}
-    className="border border-gray-50 shadow-xl p-4 rounded-lg flex justify-between items-center"
-  >
-    <div>
-      <h3 className="font-semibold">{user.email}</h3>
-      <p className="text-sm text-gray-600">Role: {user.role}</p>
-      <p className="text-xs text-gray-400">
-        Joined: {new Date(user.created_at).toLocaleDateString()}
-      </p>
-      <div className="flex space-x-2 mt-1">
-        <span
-          className={`px-2 py-1 rounded text-xs ${
-            user.banned
-              ? "bg-red-100 text-red-800"
-              : "bg-green-100 text-green-800"
-          }`}
-        >
-          {user.banned ? "Banned" : "Active"}
-        </span>
-        <span
-          className={`px-2 py-1 rounded text-xs ${
-            user.verified
-              ? "bg-blue-100 text-blue-800"
-              : "bg-yellow-100 text-yellow-800"
-          }`}
-        >
-          {user.verified ? "Verified" : "Pending"}
-        </span>
-      </div>
-    </div>
-    <div className="space-x-2 flex">
-      <button
-        onClick={() => onToggleVerify(user.id, user.verified)}
-        disabled={isProcessing[`verify-${user.id}`] || user.role === "admin"}
-        className={`px-4 py-2 ${
-          user.verified
-            ? "bg-yellow-500 hover:bg-yellow-600"
-            : "bg-blue-500 hover:bg-blue-600"
-        } text-white rounded-lg disabled:bg-gray-300 flex items-center`}
-      >
-        {isProcessing[`verify-${user.id}`]
-          ? "Processing..."
-          : user.verified
-          ? "Unverify"
-          : "Verify"}
-      </button>
-      <button
-        onClick={() => onToggleBan(user.id, user.banned)}
-        disabled={isProcessing[user.id] || user.role === "admin"}
-        className={`px-4 py-2 ${
-          user.banned
-            ? "bg-green-500 hover:bg-green-600"
-            : "bg-red-500 hover:bg-red-600"
-        } text-white rounded-lg disabled:bg-gray-300 flex items-center`}
-      >
-        {isProcessing[user.id] ? (
-          "Processing..."
-        ) : user.banned ? (
-          <>
-            <UserCheck className="h-4 w-4 mr-1" />
-            Unban
-          </>
-        ) : (
-          <>
-            <UserX className="h-4 w-4 mr-1" />
-            Ban
-          </>
-        )}
-      </button>
-    </div>
-  </div>
-);
-
-export default function AdminPage() {
-  const { isAuthenticated, isLoading: authLoading, logout } = useAuth();
-  const router = useRouter();
-  const [pageLoading, setPageLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+const AdminDashboard: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<
+    "users" | "allItems" | "unlistedItems"
+  >("users");
   const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [processingItems, setProcessingItems] = useState<
-    Record<string, boolean>
-  >({});
-  const [activeSection, setActiveSection] = useState<
-    "pendingItems" | "allItems" | "users" | "settings"
-  >("pendingItems");
+  const [items, setItems] = useState<Item[]>([]);
+  const [unlistedItems, setUnlistedItems] = useState<Item[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
-  // Search and filter states
-  const [userSearchQuery, setUserSearchQuery] = useState("");
-  const [productSearchQuery, setProductSearchQuery] = useState("");
-  const [productStatusFilter, setProductStatusFilter] = useState("all");
-
-  // Stats counters
-  const [stats, setStats] = useState({
-    totalProducts: 0,
-    pendingApprovals: 0,
-    registeredUsers: 0,
-  });
-
-  // Set page loading state when auth is complete
+  // Fetch users from Supabase
   useEffect(() => {
-    if (!authLoading) {
-      setPageLoading(false);
-    }
-  }, [authLoading]);
+    const fetchUsers = async () => {
+      try {
+        const { data, error } = await supabase.from("users").select("*");
 
-  // Fetch stats
-  const fetchStats = useCallback(async () => {
-    try {
-      // Fetch total products count
-      const { count: totalProducts, error: productsError } = await supabase
-        .from("items")
-        .select("*", { count: "exact", head: true });
-
-      // Fetch pending approvals count
-      const { count: pendingApprovals, error: pendingError } = await supabase
-        .from("items")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "unlisted");
-
-      // Fetch registered users count
-      const { count: registeredUsers, error: usersError } = await supabase
-        .from("users")
-        .select("*", { count: "exact", head: true });
-
-      if (productsError || pendingError || usersError) {
-        console.error("Error fetching stats", {
-          productsError,
-          pendingError,
-          usersError,
-        });
-        return;
+        if (error) throw error;
+        setUsers(data || []);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+        setError("Failed to load users");
       }
+    };
 
-      setStats({
-        totalProducts: totalProducts || 0,
-        pendingApprovals: pendingApprovals || 0,
-        registeredUsers: registeredUsers || 0,
-      });
-    } catch (err) {
-      console.error("Error fetching stats:", err);
-    }
+    fetchUsers();
   }, []);
 
-  // Fetch unapproved products
-  const fetchUnsoldProducts = useCallback(async () => {
-    try {
-      setFetchError(null);
+  // Fetch all items from Supabase
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const { data, error } = await supabase.from("items").select("*");
 
-      const { data, error } = await supabase
-        .from("items")
-        .select("*")
-        .eq("status", "unlisted");
-
-      if (error) {
-        setFetchError(error.message);
-        return;
+        if (error) throw error;
+        setItems(data || []);
+      } catch (err) {
+        console.error("Error fetching items:", err);
+        setError("Failed to load items");
       }
+    };
 
-      setProducts(data || []);
-    } catch (err) {
-      setFetchError("Failed to fetch products");
-      console.error("Error fetching products:", err);
-    }
+    fetchItems();
   }, []);
 
-  // Fetch all products
-  const fetchAllProducts = useCallback(async () => {
-    try {
-      setFetchError(null);
+  // Fetch unlisted items from Supabase
+  useEffect(() => {
+    const fetchUnlistedItems = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("items")
+          .select("*")
+          .eq("status", "unlisted");
 
-      const { data, error } = await supabase
-        .from("items")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        setFetchError(error.message);
-        return;
+        if (error) throw error;
+        setUnlistedItems(data || []);
+        setIsLoading(false);
+      } catch (err) {
+        console.error("Error fetching unlisted items:", err);
+        setError("Failed to load unlisted items");
+        setIsLoading(false);
       }
+    };
 
-      setAllProducts(data || []);
-      setFilteredProducts(data || []);
-    } catch (err) {
-      setFetchError("Failed to fetch all products");
-      console.error("Error fetching all products:", err);
-    }
+    fetchUnlistedItems();
   }, []);
 
-  // Fetch users
-  const fetchUsers = useCallback(async () => {
+  // Function to update user
+  const updateUser = async (updatedUser: User) => {
     try {
-      setFetchError(null);
-
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        setFetchError(error.message);
-        return;
-      }
-
-      // Map data to ensure verified field exists
-      const usersWithVerified = (data || []).map((user) => ({
-        ...user,
-        verified: user.verified !== undefined ? user.verified : false,
-      }));
-
-      setUsers(usersWithVerified);
-      setFilteredUsers(usersWithVerified);
-    } catch (err) {
-      setFetchError("Failed to fetch users");
-      console.error("Error fetching users:", err);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!pageLoading && isAuthenticated && userRole === "admin") {
-      // Always fetch stats
-      fetchStats();
-
-      if (activeSection === "pendingItems") {
-        fetchUnsoldProducts();
-      } else if (activeSection === "allItems") {
-        fetchAllProducts();
-      } else if (activeSection === "users") {
-        fetchUsers();
-      }
-    }
-  }, [
-    pageLoading,
-    isAuthenticated,
-    userRole,
-    activeSection,
-    fetchUnsoldProducts,
-    fetchAllProducts,
-    fetchUsers,
-    fetchStats,
-  ]);
-
-  // Filter products based on search and status
-  useEffect(() => {
-    if (allProducts.length) {
-      let filtered = [...allProducts];
-
-      // Apply search filter
-      if (productSearchQuery) {
-        filtered = filtered.filter(
-          (product) =>
-            product.title
-              .toLowerCase()
-              .includes(productSearchQuery.toLowerCase()) ||
-            product.description
-              .toLowerCase()
-              .includes(productSearchQuery.toLowerCase())
-        );
-      }
-
-      // Apply status filter
-      if (productStatusFilter !== "all") {
-        filtered = filtered.filter(
-          (product) => product.status === productStatusFilter
-        );
-      }
-
-      setFilteredProducts(filtered);
-    }
-  }, [allProducts, productSearchQuery, productStatusFilter]);
-
-  // Filter users based on search
-  useEffect(() => {
-    if (users.length) {
-      if (userSearchQuery) {
-        const filtered = users.filter((user) =>
-          user.email.toLowerCase().includes(userSearchQuery.toLowerCase())
-        );
-        setFilteredUsers(filtered);
-      } else {
-        setFilteredUsers(users);
-      }
-    }
-  }, [users, userSearchQuery]);
-
-  const handleApprove = async (productId: string) => {
-    try {
-      setActionError(null);
-      setProcessingItems((prev) => ({ ...prev, [productId]: true }));
-
-      const { error } = await supabase
-        .from("items")
-        .update({ status: "available" })
-        .eq("id", productId);
-
-      if (error) {
-        setActionError(`Failed to approve: ${error.message}`);
-        return;
-      }
-
-      await fetchUnsoldProducts();
-      await fetchStats(); // Refresh stats after changes
-    } catch (err) {
-      setActionError("An unexpected error occurred while approving");
-      console.error("Error approving product:", err);
-    } finally {
-      setProcessingItems((prev) => ({ ...prev, [productId]: false }));
-    }
-  };
-
-  const handleReject = async (productId: string) => {
-    try {
-      setActionError(null);
-      setProcessingItems((prev) => ({ ...prev, [productId]: true }));
-
-      const { error } = await supabase
-        .from("items")
-        .delete()
-        .eq("id", productId);
-
-      if (error) {
-        setActionError(`Failed to reject: ${error.message}`);
-        return;
-      }
-
-      await fetchUnsoldProducts();
-      await fetchStats(); // Refresh stats after changes
-    } catch (err) {
-      setActionError("An unexpected error occurred while rejecting");
-      console.error("Error rejecting product:", err);
-    } finally {
-      setProcessingItems((prev) => ({ ...prev, [productId]: false }));
-    }
-  };
-
-  const handleRemoveProduct = async (productId: string) => {
-    try {
-      setActionError(null);
-      setProcessingItems((prev) => ({ ...prev, [productId]: true }));
-
-      const { error } = await supabase
-        .from("items")
-        .delete()
-        .eq("id", productId);
-
-      if (error) {
-        setActionError(`Failed to remove: ${error.message}`);
-        return;
-      }
-
-      await fetchAllProducts();
-      await fetchStats(); // Refresh stats after changes
-    } catch (err) {
-      setActionError("An unexpected error occurred while removing the product");
-      console.error("Error removing product:", err);
-    } finally {
-      setProcessingItems((prev) => ({ ...prev, [productId]: false }));
-    }
-  };
-
-  const handleToggleUserBan = async (
-    userId: string,
-    currentBanStatus: boolean
-  ) => {
-    try {
-      setActionError(null);
-      setProcessingItems((prev) => ({ ...prev, [userId]: true }));
-
       const { error } = await supabase
         .from("users")
-        .update({ banned: !currentBanStatus })
-        .eq("id", userId);
+        .update(updatedUser)
+        .eq("id", updatedUser.id);
 
-      if (error) {
-        setActionError(`Failed to update user: ${error.message}`);
-        return;
-      }
+      if (error) throw error;
 
-      await fetchUsers();
-      await fetchStats(); // Refresh stats after changes
-    } catch (err) {
-      setActionError("An unexpected error occurred while updating user");
-      console.error("Error updating user:", err);
-    } finally {
-      setProcessingItems((prev) => ({ ...prev, [userId]: false }));
-    }
-  };
-
-  const handleToggleUserVerify = async (
-    userId: string,
-    currentVerifyStatus: boolean
-  ) => {
-    try {
-      setActionError(null);
-      setProcessingItems((prev) => ({ ...prev, [`verify-${userId}`]: true }));
-
-      const { error } = await supabase
-        .from("users")
-        .update({ verified: !currentVerifyStatus })
-        .eq("id", userId);
-
-      if (error) {
-        setActionError(`Failed to update user verification: ${error.message}`);
-        return;
-      }
-
-      await fetchUsers();
-    } catch (err) {
-      setActionError(
-        "An unexpected error occurred while updating user verification"
+      // Update local state
+      setUsers(
+        users.map((user) => (user.id === updatedUser.id ? updatedUser : user))
       );
-      console.error("Error updating user verification:", err);
-    } finally {
-      setProcessingItems((prev) => ({ ...prev, [`verify-${userId}`]: false }));
+      setEditingUser(null);
+      showSuccess("User updated successfully!");
+    } catch (err) {
+      console.error("Error updating user:", err);
+      setError("Failed to update user");
     }
   };
 
-  if (pageLoading || authLoading) {
-    return <LoadingSpinner />;
-  }
+  // Function to update item
+  const updateItem = async (updatedItem: Item) => {
+    try {
+      const { error } = await supabase
+        .from("items")
+        .update(updatedItem)
+        .eq("id", updatedItem.id);
 
-  // Sidebar navigation items
-  const navItems = [
-    {
-      icon: <LayoutDashboard size={24} />,
-      label: "Dashboard",
-      action: () => setActiveSection("pendingItems"),
-      active: activeSection === "pendingItems",
-    },
-    {
-      icon: <Package size={24} />,
-      label: "Products",
-      action: () => setActiveSection("allItems"),
-      active: activeSection === "allItems",
-    },
-    {
-      icon: <Users size={24} />,
-      label: "Users",
-      action: () => setActiveSection("users"),
-      active: activeSection === "users",
-    },
-    {
-      icon: <Settings size={24} />,
-      label: "Settings",
-      action: () => setActiveSection("settings"),
-      active: activeSection === "settings",
-    },
-  ];
+      if (error) throw error;
+
+      // Update local state
+      setItems(
+        items.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+      );
+      if (updatedItem.status === "unlisted") {
+        setUnlistedItems(
+          unlistedItems.map((item) =>
+            item.id === updatedItem.id ? updatedItem : item
+          )
+        );
+      } else {
+        setUnlistedItems(
+          unlistedItems.filter((item) => item.id !== updatedItem.id)
+        );
+      }
+      setEditingItem(null);
+      showSuccess("Item updated successfully!");
+    } catch (err) {
+      console.error("Error updating item:", err);
+      setError("Failed to update item");
+    }
+  };
+
+  // Show success message
+  const showSuccess = (message: string) => {
+    setSuccessMessage(message);
+    setShowSuccessMessage(true);
+    setTimeout(() => setShowSuccessMessage(false), 3000);
+  };
+
+  // Filter users based on search query
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Filter items based on search query
+  const filteredItems = items.filter((item) =>
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Filter unlisted items based on search query
+  const filteredUnlistedItems = unlistedItems.filter((item) =>
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="flex h-screen" style={{ backgroundColor: styles.warmBg }}>
+    <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <div
-        className="w-20 flex flex-col items-center py-8 space-y-8 shadow-md"
-        style={{
-          backgroundColor: "white",
-          borderRight: `1px solid ${styles.warmBorder}`,
-        }}
-      >
-        {navItems.map((item, index) => (
-          <div
-            key={index}
-            className={`cursor-pointer p-3 rounded-xl transition-all`}
-            style={{
-              backgroundColor: item.active ? "#F2E6DC" : "transparent",
-              color: item.active ? styles.warmPrimaryDark : styles.warmText,
-            }}
-            onClick={item.action}
-            title={item.label}
-          >
-            {item.icon}
-          </div>
-        ))}
+      <div className="w-64 bg-white shadow-md">
+        <div className="p-4">
+          <h2 className="text-lg font-bold">Admin</h2>
+        </div>
+        <nav className="mt-4">
+          <a href="#" className="flex items-center p-4 bg-gray-200">
+            <span className="mr-2">🏠</span> Dashboard
+          </a>
+          <a href="#" className="flex items-center p-4 hover:bg-gray-100">
+            <span className="mr-2">📦</span> Products
+          </a>
+          <a href="#" className="flex items-center p-4 hover:bg-gray-100">
+            <span className="mr-2">👤</span> Users
+          </a>
+          <a href="#" className="flex items-center p-4 hover:bg-gray-100">
+            <span className="mr-2">⚙️</span> Settings
+          </a>
+        </nav>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto p-8">
-        <div className="max-w-6xl mx-auto">
-          <h1
-            className={`text-4xl font-base mb-8 ${playfair.className}`}
-            style={{ color: styles.warmPrimaryDark }}
-          >
-            Admin Dashboard
-          </h1>
-
-          {/* Stats Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <StatCard
-              icon={<ShoppingBag size={24} color="white" />}
-              title="Total Products"
-              count={stats.totalProducts}
-              bgColor={styles.warmPrimary}
-            />
-            <StatCard
-              icon={<ClipboardCheck size={24} color="white" />}
-              title="Pending Approvals"
-              count={stats.pendingApprovals}
-              bgColor={styles.warmAccent}
-            />
-            <StatCard
-              icon={<UserCircle size={24} color="white" />}
-              title="Registered Users"
-              count={stats.registeredUsers}
-              bgColor={styles.warmPrimaryDark}
-            />
-          </div>
-
-          {(fetchError || actionError) && (
-            <div
-              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-center"
-              style={{ borderColor: styles.warmBorder }}
+      <div className="flex-1 p-6 overflow-auto">
+        {/* Success Message */}
+        {showSuccessMessage && (
+          <div className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50">
+            <span>{successMessage}</span>
+            <button
+              className="ml-4 font-bold"
+              onClick={() => setShowSuccessMessage(false)}
             >
-              <CircleCheck className="h-5 w-5 mr-2" />
-              <span>{fetchError || actionError}</span>
-            </div>
-          )}
-
-          {/* Content Section Title */}
-          <div className="flex justify-between items-center mb-6">
-            <h2
-              className="text-2xl font-semibold"
-              style={{ color: styles.warmText }}
-            >
-              {activeSection === "pendingItems" && "Pending Approvals"}
-              {activeSection === "allItems" && "All Products"}
-              {activeSection === "users" && "User Management"}
-              {activeSection === "settings" && "Settings"}
-            </h2>
+              ×
+            </button>
           </div>
+        )}
 
-          {/* Content Area */}
-          <div
-            className="rounded-lg shadow-md p-6"
-            style={{
-              backgroundColor: "white",
-              borderColor: styles.warmBorder,
-            }}
-          >
-            {/* Search and filter bars */}
-            {activeSection === "users" && (
-              <div className="mb-6">
-                <div className="flex">
-                  <input
-                    type="text"
-                    placeholder="Search users by email"
-                    className="w-full p-2 border border-gray-300 rounded-md mb-4"
-                    value={userSearchQuery}
-                    onChange={(e) => setUserSearchQuery(e.target.value)}
-                  />
-                </div>
-              </div>
-            )}
+        {/* Search Bar */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full p-2 border rounded-lg"
+          />
+        </div>
 
-            {activeSection === "allItems" && (
-              <div className="mb-6">
-                <div className="flex gap-4 mb-4">
-                  <input
-                    type="text"
-                    placeholder="Search products by name or description"
-                    className="flex-1 p-2 border border-gray-300 rounded-md"
-                    value={productSearchQuery}
-                    onChange={(e) => setProductSearchQuery(e.target.value)}
-                  />
-                  <select
-                    className="p-2 border border-gray-300 rounded-md bg-white"
-                    value={productStatusFilter}
-                    onChange={(e) => setProductStatusFilter(e.target.value)}
-                  >
-                    <option value="all">All Status</option>
-                    <option value="available">Available</option>
-                    <option value="unlisted">Pending</option>
-                    <option value="sold">Sold</option>
-                  </select>
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              {activeSection === "pendingItems" && (
-                <>
-                  {products.map((product) => (
-                    <ProductItem
-                      key={product.id}
-                      product={product}
-                      onApprove={handleApprove}
-                      onReject={handleReject}
-                      isProcessing={processingItems}
-                    />
-                  ))}
-
-                  {products.length === 0 && (
-                    <p className="text-gray-500">
-                      No products pending approval
-                    </p>
-                  )}
-                </>
-              )}
-
-              {activeSection === "allItems" && (
-                <>
-                  {filteredProducts.map((product) => (
-                    <AllProductItem
-                      key={product.id}
-                      product={product}
-                      onRemove={handleRemoveProduct}
-                      isProcessing={processingItems}
-                    />
-                  ))}
-
-                  {filteredProducts.length === 0 && (
-                    <p className="text-gray-500">
-                      No products match your filters
-                    </p>
-                  )}
-                </>
-              )}
-
-              {activeSection === "users" && (
-                <>
-                  {filteredUsers.map((user) => (
-                    <UserItem
-                      key={user.id}
-                      user={user}
-                      onToggleBan={handleToggleUserBan}
-                      onToggleVerify={handleToggleUserVerify}
-                      isProcessing={processingItems}
-                    />
-                  ))}
-
-                  {filteredUsers.length === 0 && (
-                    <p className="text-gray-500">No users found</p>
-                  )}
-                </>
-              )}
-
-              {activeSection === "settings" && (
-                <div className="text-gray-500">
-                  <p>Settings panel coming soon.</p>
-                </div>
-              )}
-            </div>
+        {/* Summary Counts */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="p-4 bg-white rounded-lg shadow">
+            <h3 className="text-2xl font-bold">{users.length}</h3>
+            <p className="text-gray-600">Total Users</p>
+          </div>
+          <div className="p-4 bg-white rounded-lg shadow">
+            <h3 className="text-2xl font-bold">{items.length}</h3>
+            <p className="text-gray-600">Total Products</p>
+          </div>
+          <div className="p-4 bg-white rounded-lg shadow">
+            <h3 className="text-2xl font-bold">{unlistedItems.length}</h3>
+            <p className="text-gray-600">Unlisted Products</p>
           </div>
         </div>
+
+        {/* Tabs */}
+        <div className="mb-4">
+          <div className="flex border-b">
+            <button
+              className={`py-2 px-4 ${
+                activeTab === "users"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-600 hover:text-blue-500"
+              }`}
+              onClick={() => setActiveTab("users")}
+            >
+              Users
+            </button>
+            <button
+              className={`py-2 px-4 ${
+                activeTab === "allItems"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-600 hover:text-blue-500"
+              }`}
+              onClick={() => setActiveTab("allItems")}
+            >
+              All Items
+            </button>
+            <button
+              className={`py-2 px-4 ${
+                activeTab === "unlistedItems"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-600 hover:text-blue-500"
+              }`}
+              onClick={() => setActiveTab("unlistedItems")}
+            >
+              Unlisted Items
+            </button>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <div className="bg-white rounded-lg shadow">
+          {isLoading ? (
+            <div className="p-4 text-center">Loading data...</div>
+          ) : error ? (
+            <div className="p-4 text-center text-red-500">{error}</div>
+          ) : (
+            <>
+              {/* Users Tab */}
+              {activeTab === "users" && (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-200">
+                        <th className="p-2 text-left">ID</th>
+                        <th className="p-2 text-left">Name</th>
+                        <th className="p-2 text-left">Email</th>
+                        <th className="p-2 text-left">University</th>
+                        <th className="p-2 text-left">Department</th>
+                        <th className="p-2 text-left">Role</th>
+                        <th className="p-2 text-left">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.map((user) => (
+                        <tr key={user.id} className="border-t">
+                          <td className="p-2">{user.userid}</td>
+                          <td className="p-2">{user.name || "N/A"}</td>
+                          <td className="p-2">{user.email || "N/A"}</td>
+                          <td className="p-2">{user.university_id || "N/A"}</td>
+                          <td className="p-2">{user.department || "N/A"}</td>
+                          <td className="p-2">
+                            <span
+                              className={`px-2 py-1 rounded ${
+                                user.role === "admin"
+                                  ? "bg-purple-100 text-purple-800"
+                                  : "bg-blue-100 text-blue-800"
+                              }`}
+                            >
+                              {user.role || "User"}
+                            </span>
+                          </td>
+                          <td className="p-2">
+                            <button
+                              onClick={() => setEditingUser(user)}
+                              className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded text-sm"
+                            >
+                              Edit
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* All Items Tab */}
+              {activeTab === "allItems" && (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-200">
+                        <th className="p-2 text-left">ID</th>
+                        <th className="p-2 text-left">Title</th>
+                        <th className="p-2 text-left">Category</th>
+                        <th className="p-2 text-left">Price</th>
+                        <th className="p-2 text-left">Status</th>
+                        <th className="p-2 text-left">Seller</th>
+                        <th className="p-2 text-left">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredItems.map((item) => (
+                        <tr key={item.id} className="border-t">
+                          <td className="p-2">{item.id}</td>
+                          <td className="p-2">{item.title}</td>
+                          <td className="p-2">{item.category}</td>
+                          <td className="p-2">${item.price}</td>
+                          <td className="p-2">
+                            <span
+                              className={`px-2 py-1 rounded ${
+                                item.status === "avalailable"
+                                  ? "bg-green-100 text-green-800"
+                                  : item.status === "pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="p-2">{item.seller_id}</td>
+                          <td className="p-2">
+                            <button
+                              onClick={() => setEditingItem(item)}
+                              className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded text-sm"
+                            >
+                              Edit
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Unlisted Items Tab */}
+              {activeTab === "unlistedItems" && (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-200">
+                        <th className="p-2 text-left">ID</th>
+                        <th className="p-2 text-left">Title</th>
+                        <th className="p-2 text-left">Category</th>
+                        <th className="p-2 text-left">Price</th>
+                        <th className="p-2 text-left">Seller</th>
+                        <th className="p-2 text-left">Created At</th>
+                        <th className="p-2 text-left">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUnlistedItems.map((item) => (
+                        <tr key={item.id} className="border-t">
+                          <td className="p-2">{item.id}</td>
+                          <td className="p-2">{item.title}</td>
+                          <td className="p-2">{item.category}</td>
+                          <td className="p-2">${item.price}</td>
+                          <td className="p-2">{item.seller_id}</td>
+                          <td className="p-2">
+                            {new Date(item.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="p-2">
+                            <button
+                              onClick={() => setEditingItem(item)}
+                              className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded text-sm"
+                            >
+                              Edit
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Edit User</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateUser(editingUser);
+              }}
+            >
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  value={editingUser.name || ""}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, name: e.target.value })
+                  }
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={editingUser.email || ""}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, email: e.target.value })
+                  }
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Department</label>
+                <input
+                  type="text"
+                  value={editingUser.department || ""}
+                  onChange={(e) =>
+                    setEditingUser({
+                      ...editingUser,
+                      department: e.target.value,
+                    })
+                  }
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Role</label>
+                <select
+                  value={editingUser.role || "user"}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, role: e.target.value })
+                  }
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  className="px-4 py-2 border rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-500 text-white rounded"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Item Modal */}
+      {editingItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Edit Item</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateItem(editingItem);
+              }}
+            >
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Title</label>
+                <input
+                  type="text"
+                  value={editingItem.title}
+                  onChange={(e) =>
+                    setEditingItem({ ...editingItem, title: e.target.value })
+                  }
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Category</label>
+                <input
+                  type="text"
+                  value={editingItem.category}
+                  onChange={(e) =>
+                    setEditingItem({ ...editingItem, category: e.target.value })
+                  }
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Price</label>
+                <input
+                  type="number"
+                  value={editingItem.price}
+                  onChange={(e) =>
+                    setEditingItem({
+                      ...editingItem,
+                      price: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Status</label>
+                <select
+                  value={editingItem.status}
+                  onChange={(e) =>
+                    setEditingItem({ ...editingItem, status: e.target.value })
+                  }
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="available">available</option>
+                  <option value="unlisted">Unlisted</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingItem(null)}
+                  className="px-4 py-2 border rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-500 text-white rounded"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default AdminDashboard;

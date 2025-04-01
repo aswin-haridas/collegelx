@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { styles } from "@/lib/styles";
 import { supabase } from "@/lib/supabase";
 import { Star, Edit, Trash2, Package, MessageSquare } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import ItemCard from "@/components/ItemCard";
 import { Item as ItemType } from "@/lib/types";
 import Header from "@/components/Header";
@@ -39,21 +39,23 @@ export default function ProfilePage() {
     rating: 5,
     comment: "",
   });
-  const [userId, setUserId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const router = useRouter();
+  const params = useParams();
+  const profileId = params.id as string;
 
   useEffect(() => {
-    setUserId(sessionStorage.getItem("sender_id"));
+    setCurrentUserId(sessionStorage.getItem("sender_id"));
   }, []);
 
   useEffect(() => {
     async function fetchUserData() {
-      if (!userId) return;
+      if (!profileId) return;
       try {
         const { data, error } = await supabase
           .from("users")
           .select("*")
-          .eq("id", userId)
+          .eq("id", profileId)
           .single();
         if (error) throw error;
         setUser(data);
@@ -63,16 +65,16 @@ export default function ProfilePage() {
     }
 
     fetchUserData();
-  }, [userId]);
+  }, [profileId]);
 
   useEffect(() => {
     async function fetchUserItems() {
-      if (!userId) return;
+      if (!profileId) return;
       try {
         const { data, error } = await supabase
           .from("items")
           .select("*")
-          .eq("seller_id", userId);
+          .eq("seller_id", profileId);
         if (error) throw error;
 
         const transformedItems = data.map((item) => ({
@@ -101,19 +103,19 @@ export default function ProfilePage() {
       }
     }
 
-    if (userId) {
+    if (profileId) {
       fetchUserItems();
     }
-  }, [userId]);
+  }, [profileId]);
 
   useEffect(() => {
     async function fetchUserReviews() {
-      if (!userId) return;
+      if (!profileId) return;
       try {
         const { data, error } = await supabase
           .from("reviews")
           .select("*")
-          .eq("user_id", userId)
+          .eq("user_id", profileId)
           .order("created_at", { ascending: false });
 
         if (error) throw error;
@@ -123,10 +125,10 @@ export default function ProfilePage() {
       }
     }
 
-    if (userId && activeTab === "reviews") {
+    if (profileId && activeTab === "reviews") {
       fetchUserReviews();
     }
-  }, [userId, activeTab]);
+  }, [profileId, activeTab]);
 
   const handleReviewInputChange = (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
@@ -137,7 +139,7 @@ export default function ProfilePage() {
   };
 
   const handlePostReview = async () => {
-    if (!userId) return;
+    if (!currentUserId || !profileId) return;
 
     try {
       const reviewerName = user?.name || "Anonymous";
@@ -146,7 +148,8 @@ export default function ProfilePage() {
         .from("reviews")
         .insert([
           {
-            user_id: userId,
+            user_id: profileId,
+            reviewer_id: currentUserId,
             reviewer_name: reviewerName,
             rating: reviewData.rating,
             comment: reviewData.comment,
@@ -229,6 +232,8 @@ export default function ProfilePage() {
     );
   };
 
+  const isOwnProfile = currentUserId === profileId;
+
   return (
     <>
       <Header />
@@ -301,15 +306,17 @@ export default function ProfilePage() {
                   className="text-xl font-semibold"
                   style={{ color: styles.warmText }}
                 >
-                  Your Items
+                  {isOwnProfile ? "Your Items" : `${user?.name}'s Items`}
                 </h2>
-                <button
-                  onClick={() => router.push("/sell")}
-                  className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                  style={{ backgroundColor: styles.warmPrimary }}
-                >
-                  Add New Item
-                </button>
+                {isOwnProfile && (
+                  <button
+                    onClick={() => router.push("/sell")}
+                    className="px-4 py-2 text-white rounded-lg hover:brightness-110"
+                    style={{ backgroundColor: styles.warmPrimary }}
+                  >
+                    Add New Item
+                  </button>
+                )}
               </div>
 
               {items.length > 0 ? (
@@ -317,43 +324,45 @@ export default function ProfilePage() {
                   {items.map((item) => (
                     <div key={item.id} className="relative group">
                       <ItemCard item={item} />
-                      <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          className="p-2 bg-white rounded-full shadow-md"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleEditItem(item.id);
-                          }}
-                          style={{ color: styles.warmPrimary }}
-                          title="Edit item"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        {item.status !== "sold" && (
+                      {isOwnProfile && (
+                        <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             className="p-2 bg-white rounded-full shadow-md"
                             onClick={(e) => {
                               e.preventDefault();
-                              handleMarkAsSold(item.id);
+                              handleEditItem(item.id);
                             }}
-                            style={{ color: "#16a34a" }}
-                            title="Mark as sold"
+                            style={{ color: styles.warmPrimary }}
+                            title="Edit item"
                           >
-                            <Star size={16} />
+                            <Edit size={16} />
                           </button>
-                        )}
-                        <button
-                          className="p-2 bg-white rounded-full shadow-md"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleDeleteItem(item.id);
-                          }}
-                          style={{ color: "#ef4444" }}
-                          title="Delete item"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                          {item.status !== "sold" && (
+                            <button
+                              className="p-2 bg-white rounded-full shadow-md"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleMarkAsSold(item.id);
+                              }}
+                              style={{ color: "#16a34a" }}
+                              title="Mark as sold"
+                            >
+                              <Star size={16} />
+                            </button>
+                          )}
+                          <button
+                            className="p-2 bg-white rounded-full shadow-md"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDeleteItem(item.id);
+                            }}
+                            style={{ color: "#ef4444" }}
+                            title="Delete item"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      )}
                       <div
                         className="absolute bottom-2 right-2 px-2 py-1 text-xs font-medium rounded-full"
                         style={{
@@ -389,13 +398,15 @@ export default function ProfilePage() {
               ) : (
                 <div className="text-center p-8 bg-gray-50 rounded-lg">
                   <p className="text-gray-500">No items added yet.</p>
-                  <button
-                    onClick={() => router.push("/sell")}
-                    className="mt-4 px-4 py-2 text-white rounded-lg hover:brightness-110"
-                    style={{ backgroundColor: styles.warmPrimary }}
-                  >
-                    Add an Item
-                  </button>
+                  {isOwnProfile && (
+                    <button
+                      onClick={() => router.push("/sell")}
+                      className="mt-4 px-4 py-2 text-white rounded-lg hover:brightness-110"
+                      style={{ backgroundColor: styles.warmPrimary }}
+                    >
+                      Add an Item
+                    </button>
+                  )}
                 </div>
               )}
             </div>

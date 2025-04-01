@@ -76,7 +76,7 @@ export default function MessagesPage() {
           // Determine who the other participant is
           const isUserSender = message.sender_id === userId;
           const participantId = isUserSender
-            ? message.reciver_id
+            ? message.reciever_id
             : message.sender_id;
 
           // Create a unique key for the conversation: listing_id + participant_id
