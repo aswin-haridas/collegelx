@@ -54,7 +54,7 @@ export default function ItemPage() {
     // Get seller ID consistently with no duplicates
     const sellerId =
       item?.sender_id ||
-      item?.seller ||
+      item?.seller_id ||
       item?.user_id ||
       sessionStorage.getItem("sender_id");
 

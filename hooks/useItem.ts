@@ -37,7 +37,7 @@ export function useItem(itemId: string, includeSellerInfo = false) {
           if (includeSellerInfo) {
             setSellerLoading(true);
             const sellerId =
-              data.sender_id || data.seller || data.user_id || data.seller_id;
+              data.seller_id || data.user_id || data.sender_id || data.seller;
 
             if (sellerId) {
               const { data: userData, error: userError } = await supabase
