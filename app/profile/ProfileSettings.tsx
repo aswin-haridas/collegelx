@@ -2,6 +2,7 @@
 
 import { styles } from "@/lib/styles";
 import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 
 interface ProfileSettingsProps {
   user: any;
@@ -18,6 +19,7 @@ interface ProfileSettingsProps {
   handlePasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSave: () => void;
   handleChangePassword: () => void;
+  resetPasswordData?: () => void; // Add optional reset function
 }
 
 export default function ProfileSettings({
@@ -35,17 +37,35 @@ export default function ProfileSettings({
   handlePasswordChange,
   handleSave,
   handleChangePassword,
+  resetPasswordData,
 }: ProfileSettingsProps) {
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Wrapper for handleSave to show success message
+  const handleSaveWithFeedback = () => {
+    handleSave();
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4" style={{ color: styles.warmText }}>
+        <h2
+          className="text-xl font-semibold mb-4"
+          style={{ color: styles.warmText }}
+        >
           Account Settings
         </h2>
 
         {isEditing ? (
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
             <h3 className="font-medium mb-3">Edit Profile</h3>
+            {saveSuccess && (
+              <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">
+                Profile updated successfully!
+              </div>
+            )}
             <input
               type="text"
               name="name"
@@ -89,7 +109,7 @@ export default function ProfileSettings({
             <div className="flex gap-2 mt-4">
               <button
                 className="px-4 py-2 text-white rounded-lg hover:bg-green-600"
-                onClick={handleSave}
+                onClick={handleSaveWithFeedback}
                 style={{ backgroundColor: styles.warmPrimary }}
               >
                 Save
@@ -106,19 +126,31 @@ export default function ProfileSettings({
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
             <h3 className="font-medium mb-3">Profile Information</h3>
             <div className="grid grid-cols-2 gap-4">
-              <p className="my-2"><strong>Name:</strong> {user?.name}</p>
-              <p className="my-2"><strong>Email:</strong> {user?.email}</p>
               <p className="my-2">
-                <strong>Department:</strong> {user?.department || "Not specified"}
+                <strong>Name:</strong> {user?.name}
               </p>
               <p className="my-2">
-                <strong>University ID:</strong> {user?.university_id || "Not specified"}
+                <strong>Email:</strong> {user?.email}
               </p>
-              <p className="my-2"><strong>Year:</strong> {user?.year || "Not specified"}</p>
+              <p className="my-2">
+                <strong>Department:</strong>{" "}
+                {user?.department || "Not specified"}
+              </p>
+              <p className="my-2">
+                <strong>University ID:</strong>{" "}
+                {user?.university_id || "Not specified"}
+              </p>
+              <p className="my-2">
+                <strong>Year:</strong> {user?.year || "Not specified"}
+              </p>
               {user?.phone && (
-                <p className="my-2"><strong>Phone:</strong> {user.phone}</p>
+                <p className="my-2">
+                  <strong>Phone:</strong> {user.phone}
+                </p>
               )}
-              <p className="my-2"><strong>Role:</strong> {user?.role || "Student"}</p>
+              <p className="my-2">
+                <strong>Role:</strong> {user?.role || "Student"}
+              </p>
             </div>
             <div className="mt-4">
               <button
@@ -166,6 +198,13 @@ export default function ProfileSettings({
                 placeholder="New Password"
                 className="w-full border p-2 my-2 rounded pr-10"
               />
+              <button
+                type="button"
+                className="absolute right-3 top-3"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
             <div className="relative">
               <input
@@ -176,6 +215,13 @@ export default function ProfileSettings({
                 placeholder="Confirm New Password"
                 className="w-full border p-2 my-2 rounded pr-10"
               />
+              <button
+                type="button"
+                className="absolute right-3 top-3"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
             <div className="flex gap-2 mt-4">
               <button
@@ -189,7 +235,20 @@ export default function ProfileSettings({
                 className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
                 onClick={() => {
                   setIsChangingPassword(false);
-                  // Reset password data would need to be passed as a prop or handled differently
+                  if (resetPasswordData) {
+                    resetPasswordData(); // Reset password form if function is provided
+                  } else {
+                    // Fallback reset if no function provided
+                    handlePasswordChange({
+                      target: { name: "currentPassword", value: "" },
+                    } as React.ChangeEvent<HTMLInputElement>);
+                    handlePasswordChange({
+                      target: { name: "newPassword", value: "" },
+                    } as React.ChangeEvent<HTMLInputElement>);
+                    handlePasswordChange({
+                      target: { name: "confirmPassword", value: "" },
+                    } as React.ChangeEvent<HTMLInputElement>);
+                  }
                 }}
               >
                 Cancel

@@ -8,6 +8,8 @@ import { useRouter, useParams } from "next/navigation";
 import ItemCard from "@/components/ItemCard";
 import { Item as ItemType } from "@/lib/types";
 import Header from "@/components/Header";
+import { useAuth } from "@/hooks/useAuth";
+import { useReview } from "@/hooks/useReview";
 
 interface User {
   name: string;
@@ -32,21 +34,23 @@ interface Review {
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<ItemType[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [activeTab, setActiveTab] = useState("products");
-  const [isPostingReview, setIsPostingReview] = useState(false);
-  const [reviewData, setReviewData] = useState({
-    rating: 5,
-    comment: "",
-  });
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { userId: currentUserId } = useAuth();
   const router = useRouter();
   const params = useParams();
   const profileId = params.id as string;
 
-  useEffect(() => {
-    setCurrentUserId(sessionStorage.getItem("sender_id"));
-  }, []);
+  // Use our custom review hook
+  const {
+    reviews,
+    isPostingReview,
+    setIsPostingReview,
+    reviewData,
+    handleReviewInputChange,
+    handlePostReview,
+    fetchUserReviews,
+    averageRating, // Include the averageRating from the hook
+  } = useReview(profileId, currentUserId);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -122,66 +126,10 @@ export default function ProfilePage() {
   }, [profileId]);
 
   useEffect(() => {
-    async function fetchUserReviews() {
-      if (!profileId) return;
-      try {
-        const { data, error } = await supabase
-          .from("reviews")
-          .select("*")
-          .eq("user_id", profileId)
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-        setReviews(data || []);
-      } catch (error) {
-        console.error("Error fetching user reviews:", error);
-      }
-    }
-
     if (profileId && activeTab === "reviews") {
       fetchUserReviews();
     }
-  }, [profileId, activeTab]);
-
-  const handleReviewInputChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) => {
-    const value =
-      e.target.name === "rating" ? parseInt(e.target.value) : e.target.value;
-    setReviewData({ ...reviewData, [e.target.name]: value });
-  };
-
-  const handlePostReview = async () => {
-    if (!currentUserId || !profileId) return;
-
-    try {
-      const reviewerName = user?.name || "Anonymous";
-
-      const { data, error } = await supabase
-        .from("reviews")
-        .insert([
-          {
-            user_id: profileId,
-            reviewer_id: currentUserId,
-            reviewer_name: reviewerName,
-            rating: reviewData.rating,
-            comment: reviewData.comment,
-            created_at: new Date().toISOString(),
-          },
-        ])
-        .select();
-
-      if (error) throw error;
-
-      if (data) {
-        setReviews([...data, ...reviews]);
-        setReviewData({ rating: 5, comment: "" });
-        setIsPostingReview(false);
-      }
-    } catch (error) {
-      console.error("Error posting review:", error);
-    }
-  };
+  }, [profileId, activeTab, fetchUserReviews]);
 
   const handleEditItem = (itemId: string) => {
     router.push(`/sell/edit/${itemId}`);
@@ -275,9 +223,9 @@ export default function ProfilePage() {
                   {user?.name}
                 </h1>
                 <div className="flex items-center mt-2">
-                  {renderStars(user?.rating || 0)}
+                  {renderStars(averageRating || 0)}
                   <span className="ml-2 text-sm text-gray-600">
-                    {user?.rating ? `${user.rating}/5` : "No ratings yet"}
+                    {averageRating ? `${averageRating}/5` : "No ratings yet"}
                   </span>
                 </div>
               </div>
@@ -434,17 +382,22 @@ export default function ProfilePage() {
                 >
                   Your Reviews
                 </h2>
-                <button
-                  onClick={() => setIsPostingReview(true)}
-                  className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                  style={{ backgroundColor: styles.warmPrimary }}
-                >
-                  Post Review
-                </button>
+                {!isOwnProfile && currentUserId && (
+                  <button
+                    onClick={() => setIsPostingReview(true)}
+                    className="px-4 py-2 text-white rounded-lg hover:brightness-110"
+                    style={{ backgroundColor: styles.warmPrimary }}
+                  >
+                    Post Review
+                  </button>
+                )}
               </div>
 
               {isPostingReview && (
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <form
+                  onSubmit={handlePostReview}
+                  className="bg-gray-50 p-4 rounded-lg mb-6"
+                >
                   <h3 className="font-medium mb-3">Post a Review</h3>
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -488,20 +441,21 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex gap-2">
                     <button
+                      type="submit"
                       className="px-4 py-2 text-white rounded-lg hover:bg-green-600"
-                      onClick={handlePostReview}
                       style={{ backgroundColor: styles.warmPrimary }}
                     >
                       Submit Review
                     </button>
                     <button
+                      type="button"
                       className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
                       onClick={() => setIsPostingReview(false)}
                     >
                       Cancel
                     </button>
                   </div>
-                </div>
+                </form>
               )}
 
               {reviews.length > 0 ? (

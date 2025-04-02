@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 export function useAuth() {
   const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(true);
 
@@ -12,13 +13,16 @@ export function useAuth() {
 
       // Get from session storage
       const storedUserId = sessionStorage.getItem("user_id");
+      const storedUserName = sessionStorage.getItem("name");
 
       if (storedUserId) {
         setUserId(storedUserId);
+        setUserName(storedUserName);
         setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
         setUserId(null);
+        setUserName(null);
       }
 
       setLoading(false);
@@ -35,8 +39,11 @@ export function useAuth() {
           setIsAuthenticated(true);
         } else {
           setUserId(null);
+          setUserName(null);
           setIsAuthenticated(false);
         }
+      } else if (event.key === "user_name") {
+        setUserName(event.newValue);
       }
     };
 
@@ -50,12 +57,15 @@ export function useAuth() {
   // Helper function to log out
   const logout = () => {
     sessionStorage.removeItem("user_id");
+    sessionStorage.removeItem("user_name");
     setUserId(null);
+    setUserName(null);
     setIsAuthenticated(false);
   };
 
   return {
     userId,
+    userName,
     isAuthenticated,
     isLoading,
     logout,
