@@ -82,12 +82,25 @@ export default function ProfilePage() {
           title: item.name || item.title,
           name: item.name || item.title,
           user_id:
-            item.user_id || item.sender_id || item.seller_id || item.owner,
+            item.user_id ||
+            item.sender_id ||
+            item.seller_id_id ||
+            item.seller_id,
           sender_id:
-            item.sender_id || item.user_id || item.seller_id || item.owner,
+            item.sender_id ||
+            item.user_id ||
+            item.seller_id_id ||
+            item.seller_id,
           seller_id:
-            item.seller_id || item.user_id || item.sender_id || item.owner,
-          owner: item.owner || item.user_id || item.sender_id || item.seller_id,
+            item.seller_id_id ||
+            item.user_id ||
+            item.sender_id ||
+            item.seller_id,
+          seller:
+            item.seller_id ||
+            item.user_id ||
+            item.sender_id ||
+            item.seller_id_id,
           images: item.images || (item.image ? [item.image] : []),
           image:
             item.image ||

@@ -1,141 +1,29 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import React, { useState } from "react";
 import { User, Item } from "@/lib/types";
 import Header from "@/components/Header";
+import { useAdmin } from "@/hooks/useAdmin";
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     "users" | "allItems" | "unlistedItems"
   >("users");
-  const [users, setUsers] = useState<User[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
-  const [unlistedItems, setUnlistedItems] = useState<Item[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
-  // Fetch users from Supabase
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const { data, error } = await supabase.from("users").select("*");
-
-        if (error) throw error;
-        setUsers(data || []);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-        setError("Failed to load users");
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
-  // Fetch all items from Supabase
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const { data, error } = await supabase.from("items").select("*");
-
-        if (error) throw error;
-        setItems(data || []);
-      } catch (err) {
-        console.error("Error fetching items:", err);
-        setError("Failed to load items");
-      }
-    };
-
-    fetchItems();
-  }, []);
-
-  // Fetch unlisted items from Supabase
-  useEffect(() => {
-    const fetchUnlistedItems = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("items")
-          .select("*")
-          .eq("status", "unlisted");
-
-        if (error) throw error;
-        setUnlistedItems(data || []);
-        setIsLoading(false);
-      } catch (err) {
-        console.error("Error fetching unlisted items:", err);
-        setError("Failed to load unlisted items");
-        setIsLoading(false);
-      }
-    };
-
-    fetchUnlistedItems();
-  }, []);
-
-  // Function to update user
-  const updateUser = async (updatedUser: User) => {
-    try {
-      const { error } = await supabase
-        .from("users")
-        .update(updatedUser)
-        .eq("id", updatedUser.id);
-
-      if (error) throw error;
-
-      // Update local state
-      setUsers(
-        users.map((user) => (user.id === updatedUser.id ? updatedUser : user))
-      );
-      setEditingUser(null);
-      showSuccess("User updated successfully!");
-    } catch (err) {
-      console.error("Error updating user:", err);
-      setError("Failed to update user");
-    }
-  };
-
-  // Function to update item
-  const updateItem = async (updatedItem: Item) => {
-    try {
-      const { error } = await supabase
-        .from("items")
-        .update(updatedItem)
-        .eq("id", updatedItem.id);
-
-      if (error) throw error;
-
-      // Update local state
-      setItems(
-        items.map((item) => (item.id === updatedItem.id ? updatedItem : item))
-      );
-      if (updatedItem.status === "unlisted") {
-        setUnlistedItems(
-          unlistedItems.map((item) =>
-            item.id === updatedItem.id ? updatedItem : item
-          )
-        );
-      } else {
-        setUnlistedItems(
-          unlistedItems.filter((item) => item.id !== updatedItem.id)
-        );
-      }
-      setEditingItem(null);
-      showSuccess("Item updated successfully!");
-    } catch (err) {
-      console.error("Error updating item:", err);
-      setError("Failed to update item");
-    }
-  };
-
-  // Show success message
-  const showSuccess = (message: string) => {
-    setSuccessMessage(message);
-    setShowSuccessMessage(true);
-    setTimeout(() => setShowSuccessMessage(false), 3000);
-  };
+  const {
+    users,
+    items,
+    unlistedItems,
+    isLoading,
+    error,
+    showSuccessMessage,
+    successMessage,
+    setShowSuccessMessage,
+    updateUser,
+    updateItem,
+  } = useAdmin();
 
   // Filter users based on search query
   const filteredUsers = users.filter(
@@ -400,6 +288,7 @@ const AdminDashboard: React.FC = () => {
                 onSubmit={(e) => {
                   e.preventDefault();
                   updateUser(editingUser);
+                  setEditingUser(null);
                 }}
               >
                 <div className="mb-4">
@@ -480,6 +369,7 @@ const AdminDashboard: React.FC = () => {
                 onSubmit={(e) => {
                   e.preventDefault();
                   updateItem(editingItem);
+                  setEditingItem(null);
                 }}
               >
                 <div className="mb-4">

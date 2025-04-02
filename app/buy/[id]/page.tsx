@@ -1,9 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useItem } from "@/lib/hooks/useItem";
-import { useSeller } from "@/lib/hooks/useSeller";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
@@ -13,106 +11,41 @@ import { supabase } from "@/lib/supabase";
 import { Item } from "@/lib/types";
 import Sidebar from "@/components/Sidebar";
 import Link from "next/link";
+import { useItem } from "@/hooks/useItem";
+import { useWishlist } from "@/hooks/useWishlist";
 
 export default function ItemPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params?.id as string;
-  const [ownerData, setOwnerData] = useState<{ name: string } | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const { item, loading: itemLoading } = useItem(itemId, true);
+  const {
+    item,
+    loading: itemLoading,
+    seller,
+    sellerLoading,
+  } = useItem(itemId, true);
   const { userId, isAuthenticated, isLoading: authLoading } = useAuth();
-  const [isInWishlist, setIsInWishlist] = useState(false);
-  const [wishlistLoading, setWishlistLoading] = useState(false);
 
-  const { seller, loading: sellerLoading } = useSeller(item?.sender_id);
+  // Use the wishlist hook instead of managing state manually
+  const {
+    isInWishlist,
+    toggleWishlist,
+    loading: wishlistLoading,
+  } = useWishlist({
+    userId: userId ?? undefined,
+    itemId,
+    isAuthenticated,
+  });
 
   const loading = authLoading || itemLoading;
 
-  const isOwner = userId && item?.sender_id === userId;
+  const isseller = userId && item?.sender_id === userId;
 
-  // Store item ID and seller ID in session storage whenever they become available
+  // Store item ID in session storage when it becomes available
   useEffect(() => {
     if (item) {
       sessionStorage.setItem("listing_id", item.id);
-
-      // Handle potential field name differences consistently
-      const sellerId = item.sender_id || item.owner || item.user_id;
-      if (sellerId) {
-        sessionStorage.setItem("sender_id", sellerId);
-      }
-    }
-
-    if (seller?.userid) {
-      sessionStorage.setItem("sender_id", seller.userid);
-    }
-  }, [item, seller]);
-
-  // Check if item is in wishlist
-  useEffect(() => {
-    const checkWishlist = async () => {
-      if (!userId || !itemId) return;
-
-      try {
-        const { data, error } = await supabase
-          .from("wishlist")
-          .select("*")
-          .eq("user_id", userId)
-          .eq("item_id", itemId)
-          .single();
-
-        if (data) {
-          setIsInWishlist(true);
-        }
-      } catch (error) {
-        console.error("Error checking wishlist status:", error);
-      }
-    };
-
-    if (isAuthenticated) {
-      checkWishlist();
-    }
-  }, [userId, itemId, isAuthenticated]);
-
-  // Fetch owner data separately when item is loaded
-  useEffect(() => {
-    const fetchOwnerName = async () => {
-      // Try all possible owner ID fields
-      const ownerId =
-        item?.owner || item?.user_id || item?.sender_id || item?.seller_id;
-      if (!ownerId) return;
-
-      try {
-        console.log("Fetching owner data for:", ownerId);
-        const { data, error } = await supabase
-          .from("users")
-          .select("name")
-          .eq("id", ownerId)
-          .single();
-
-        if (error) {
-          console.error("Error fetching owner data:", error);
-          return;
-        }
-
-        if (data) {
-          console.log("Owner data fetched successfully:", data);
-          setOwnerData(data);
-        } else {
-          console.warn("No owner data found for ID:", ownerId);
-          setOwnerData({ name: "Unknown User" });
-        }
-      } catch (err) {
-        console.error("Exception while fetching owner data:", err);
-        setOwnerData({ name: "Unknown User" });
-      }
-    };
-
-    if (item) {
-      fetchOwnerName();
-    } else {
-      console.log("No item available for fetching owner data");
-      setOwnerData(null);
     }
   }, [item]);
 
@@ -120,9 +53,8 @@ export default function ItemPage() {
     const chatItemId = item?.id || sessionStorage.getItem("listing_id");
     // Get seller ID consistently with no duplicates
     const sellerId =
-      seller?.userid ||
       item?.sender_id ||
-      item?.owner ||
+      item?.seller ||
       item?.user_id ||
       sessionStorage.getItem("sender_id");
 
@@ -150,36 +82,7 @@ export default function ItemPage() {
       return;
     }
 
-    if (!userId || !itemId) return;
-
-    setWishlistLoading(true);
-
-    try {
-      if (isInWishlist) {
-        // Remove from wishlist
-        const { error } = await supabase
-          .from("wishlist")
-          .delete()
-          .eq("user_id", userId)
-          .eq("item_id", itemId);
-
-        if (error) throw error;
-        setIsInWishlist(false);
-      } else {
-        // Add to wishlist
-        const { error } = await supabase
-          .from("wishlist")
-          .insert({ user_id: userId, item_id: itemId })
-          .select();
-
-        if (error) throw error;
-        setIsInWishlist(true);
-      }
-    } catch (error) {
-      console.error("Error updating wishlist:", error);
-    } finally {
-      setWishlistLoading(false);
-    }
+    toggleWishlist();
   };
 
   if (loading) {
@@ -302,24 +205,26 @@ export default function ItemPage() {
                   <button
                     onClick={handleChat}
                     className={`flex-grow py-3 px-4 rounded-lg flex items-center justify-center transition-colors ${
-                      isOwner
+                      isseller
                         ? "bg-gray-300 cursor-not-allowed text-gray-500"
                         : "text-white hover:bg-opacity-90"
                     }`}
                     style={{
-                      backgroundColor: isOwner ? undefined : styles.warmPrimary,
+                      backgroundColor: isseller
+                        ? undefined
+                        : styles.warmPrimary,
                     }}
-                    disabled={!!isOwner}
+                    disabled={!!isseller}
                   >
                     <MessageSquare className="mr-2 h-5 w-5" />
-                    {isOwner ? "You own this item" : "Chat with Seller"}
+                    {isseller ? "You own this item" : "Chat with Seller"}
                   </button>
 
                   <button
                     onClick={handleWishlist}
-                    disabled={isOwner || wishlistLoading}
+                    disabled={isseller || wishlistLoading}
                     className={`px-4 py-3 rounded-lg flex items-center justify-center transition-colors ${
-                      isOwner
+                      isseller
                         ? "bg-gray-300 cursor-not-allowed text-gray-500"
                         : isInWishlist
                         ? "bg-pink-100 text-pink-600 hover:bg-pink-200"
@@ -335,17 +240,19 @@ export default function ItemPage() {
                   </button>
                 </div>
 
-                {ownerData && (
+                {seller && (
                   <div className="text-sm text-gray-600 flex items-center">
                     <span className="mr-1">Posted by:</span>
                     <span
                       className="font-medium cursor-pointer hover:underline"
                       onClick={() =>
-                        router.push(`/profile/${item.sender_id || item.owner}`)
+                        router.push(
+                          `/profile/${item.sender_id || item.seller_id}`
+                        )
                       }
                       style={{ color: styles.warmPrimary }}
                     >
-                      {ownerData?.name}
+                      {seller?.name}
                     </span>
                   </div>
                 )}
@@ -383,22 +290,24 @@ export default function ItemPage() {
                   </div>
 
                   <div>
-                    <p className="text-gray-500">Owner</p>
+                    <p className="text-gray-500">Seller</p>
                     <p
                       className="font-medium cursor-pointer hover:underline"
                       onClick={() =>
-                        router.push(`/profile/${item.sender_id || item.owner}`)
+                        router.push(
+                          `/profile/${item.sender_id || item.seller_id}`
+                        )
                       }
                       style={{ color: styles.warmPrimary }}
                     >
-                      {ownerData?.name || "Unknown"}
+                      {seller?.name || "Unknown"}
                     </p>
                   </div>
                 </div>
               </div>
 
               {/* Seller information */}
-              {!sellerLoading && (
+              {!sellerLoading && seller && (
                 <div className="border-t border-gray-200 pt-6">
                   <h2
                     className="text-xl font-semibold mb-4"
@@ -411,7 +320,7 @@ export default function ItemPage() {
                     onClick={() =>
                       router.push(
                         `/profile/${
-                          item.sender_id || item.owner || seller?.userid
+                          item.sender_id || item.seller_id || seller?.userid
                         }`
                       )
                     }
@@ -420,14 +329,12 @@ export default function ItemPage() {
                       {seller?.profile_image ? (
                         <img
                           src={seller.profile_image}
-                          alt={ownerData?.name || seller?.name || "Seller"}
+                          alt={seller?.name || "Seller"}
                           className="h-full w-full object-cover"
                         />
                       ) : (
                         <span className="text-lg font-medium text-gray-500">
-                          {(ownerData?.name || seller?.name || "?")
-                            .charAt(0)
-                            .toUpperCase()}
+                          {(seller?.name || "?").charAt(0).toUpperCase()}
                         </span>
                       )}
                     </div>
@@ -436,7 +343,7 @@ export default function ItemPage() {
                         className="font-medium hover:underline"
                         style={{ color: styles.warmText }}
                       >
-                        {ownerData?.name || seller?.name || "Anonymous Seller"}
+                        {seller?.name || "Anonymous Seller"}
                       </div>
                       <p className="text-sm text-gray-500">
                         {seller?.department ? `${seller.department}` : ""}

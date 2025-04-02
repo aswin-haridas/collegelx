@@ -30,7 +30,7 @@ export interface Item {
   price: number;
   status: string;
   images?: string[];
-  owner: string;
+  seller: string;
 }
 
 export interface FAQ {

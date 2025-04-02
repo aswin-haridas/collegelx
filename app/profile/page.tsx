@@ -16,8 +16,9 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ItemCard from "@/components/ItemCard";
-import { Item as ItemType } from "@/lib/types";
 import Header from "@/components/Header";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 interface User {
   name: string;
@@ -31,19 +32,7 @@ interface User {
   rating?: number;
 }
 
-interface Review {
-  id: string;
-  reviewer_name: string;
-  rating: number;
-  comment: string;
-  created_at: string;
-}
-
-export default function ProfilePage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [items, setItems] = useState<ItemType[]>([]);
-  const [wishlistItems, setWishlistItems] = useState<ItemType[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
+export default function ProfilePage()  {
   const [activeTab, setActiveTab] = useState("products");
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -63,152 +52,52 @@ export default function ProfilePage() {
   const [passwordError, setPasswordError] = useState("");
   const router = useRouter();
 
-  const userId = sessionStorage.getItem("user_id");
+  const { userId } = useAuth();
+  const {
+    user,
+    items,
+    reviews,
+    wishlistItems,
+    loading,
+    fetchUserData,
+    fetchUserItems,
+    fetchUserReviews,
+    fetchUserWishlist,
+    updateUserProfile,
+  } = useProfile(userId);
 
+  // Initialize form data when user data is available
   useEffect(() => {
-    async function fetchUserData() {
-      if (!userId) return;
-      try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", userId)
-          .single();
-        if (error) throw error;
-        setUser(data);
-        setFormData({
-          name: data.name,
-          email: data.email,
-          department: data.department || "",
-          university_id: data.university_id || "",
-          year: data.year || "",
-        });
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
+    if (user) {
+      setFormData({
+        name: user.name,
+        email: user.email,
+        department: user.department || "",
+        university_id: user.university_id || "",
+        year: user.year || "",
+      });
     }
+  }, [user]);
 
-    fetchUserData();
-  }, [userId]);
-
+  // Load data based on active tab
   useEffect(() => {
-    async function fetchUserItems() {
-      if (!userId) return;
-      try {
-        const { data, error } = await supabase
-          .from("items")
-          .select("*")
-          .or(`seller_id.eq.${userId},owner.eq.${userId}`);
-        if (error) throw error;
+    if (!userId) return;
 
-        const transformedItems = data.map((item) => ({
-          ...item,
-          title: item.name || item.title,
-          name: item.name || item.title,
-          user_id:
-            item.user_id || item.sender_id || item.seller_id || item.owner,
-          sender_id:
-            item.sender_id || item.user_id || item.seller_id || item.owner,
-          seller_id:
-            item.seller_id || item.user_id || item.sender_id || item.owner,
-          owner: item.owner || item.user_id || item.sender_id || item.seller_id,
-          images: item.images || (item.image ? [item.image] : []),
-          image:
-            item.image ||
-            (item.images && item.images.length > 0 ? item.images[0] : null),
-          imageUrl:
-            item.image ||
-            (item.images && item.images.length > 0 ? item.images[0] : null),
-        }));
-
-        setItems(transformedItems);
-      } catch (error) {
-        console.error("Error fetching user items:", error);
-      }
-    }
-
-    if (userId) {
+    if (activeTab === "products") {
       fetchUserItems();
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    async function fetchUserReviews() {
-      if (!userId) return;
-      try {
-        const { data, error } = await supabase
-          .from("reviews")
-          .select("*")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-        setReviews(data || []);
-      } catch (error) {
-        console.error("Error fetching user reviews:", error);
-      }
-    }
-
-    if (userId && activeTab === "reviews") {
+    } else if (activeTab === "reviews") {
       fetchUserReviews();
-    }
-  }, [userId, activeTab]);
-
-  useEffect(() => {
-    async function fetchUserWishlist() {
-      if (!userId) return;
-      try {
-        const { data: wishlistData, error: wishlistError } = await supabase
-          .from("wishlist")
-          .select("item_id")
-          .eq("user_id", userId);
-
-        if (wishlistError) throw wishlistError;
-
-        if (wishlistData && wishlistData.length > 0) {
-          const itemIds = wishlistData.map((entry) => entry.item_id);
-
-          const { data: itemsData, error: itemsError } = await supabase
-            .from("items")
-            .select("*")
-            .in("id", itemIds);
-
-          if (itemsError) throw itemsError;
-
-          const transformedItems = itemsData.map((item) => ({
-            ...item,
-            title: item.name || item.title,
-            name: item.name || item.title,
-            user_id:
-              item.user_id || item.sender_id || item.seller_id || item.owner,
-            sender_id:
-              item.sender_id || item.user_id || item.seller_id || item.owner,
-            seller_id:
-              item.seller_id || item.user_id || item.sender_id || item.owner,
-            owner:
-              item.owner || item.user_id || item.sender_id || item.seller_id,
-            images: item.images || (item.image ? [item.image] : []),
-            image:
-              item.image ||
-              (item.images && item.images.length > 0 ? item.images[0] : null),
-            imageUrl:
-              item.image ||
-              (item.images && item.images.length > 0 ? item.images[0] : null),
-          }));
-
-          setWishlistItems(transformedItems);
-        } else {
-          setWishlistItems([]);
-        }
-      } catch (error) {
-        console.error("Error fetching wishlist:", error);
-      }
-    }
-
-    if (userId && activeTab === "wishlist") {
+    } else if (activeTab === "wishlist") {
       fetchUserWishlist();
     }
-  }, [userId, activeTab]);
+  }, [userId, activeTab, fetchUserItems, fetchUserReviews, fetchUserWishlist]);
+
+  // Initial data fetch
+  useEffect(() => {
+    if (userId) {
+      fetchUserData();
+    }
+  }, [userId, fetchUserData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -219,17 +108,9 @@ export default function ProfilePage() {
   };
 
   const handleSave = async () => {
-    if (!userId) return;
-    try {
-      const { error } = await supabase
-        .from("users")
-        .update(formData)
-        .eq("id", userId);
-      if (error) throw error;
-      setUser({ ...user, ...formData } as User);
+    const result = await updateUserProfile(formData);
+    if (result) {
       setIsEditing(false);
-    } catch (error) {
-      console.error("Error updating user data:", error);
     }
   };
 
@@ -280,7 +161,7 @@ export default function ProfilePage() {
 
         if (error) throw error;
 
-        setItems(items.filter((item) => item.id !== itemId));
+        fetchUserItems();
       } catch (error) {
         console.error("Error deleting item:", error);
       }
@@ -299,11 +180,7 @@ export default function ProfilePage() {
 
         if (error) throw error;
 
-        setItems(
-          items.map((item) =>
-            item.id === itemId ? { ...item, status: "sold" } : item
-          )
-        );
+        fetchUserItems();
       } catch (error) {
         console.error("Error marking item as sold:", error);
       }
@@ -321,29 +198,11 @@ export default function ProfilePage() {
 
         if (error) throw error;
 
-        setWishlistItems(wishlistItems.filter((item) => item.id !== itemId));
+        fetchUserWishlist();
       } catch (error) {
         console.error("Error removing from wishlist:", error);
       }
     }
-  };
-
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            size={16}
-            className={`${
-              star <= rating
-                ? "fill-yellow-500 text-yellow-500"
-                : "text-gray-300"
-            }`}
-          />
-        ))}
-      </div>
-    );
   };
 
   return (
@@ -373,12 +232,6 @@ export default function ProfilePage() {
                 >
                   {user?.name}
                 </h1>
-                <div className="flex items-center mt-2">
-                  {renderStars(user?.rating || 0)}
-                  <span className="ml-2 text-sm text-gray-600">
-                    {user?.rating ? `${user.rating}/5` : "No ratings yet"}
-                  </span>
-                </div>
               </div>
             </div>
 
@@ -611,12 +464,6 @@ export default function ProfilePage() {
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <p className="font-medium">{review.reviewer_name}</p>
-                          <div className="flex mt-1">
-                            {renderStars(review.rating)}
-                            <span className="ml-2 text-sm text-gray-500">
-                              {new Date(review.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
                         </div>
                       </div>
                       <p className="text-gray-700 mt-2">{review.comment}</p>

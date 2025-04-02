@@ -14,7 +14,7 @@ import {
   ArrowRight,
   LogIn,
 } from "lucide-react";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 
 // Type definition for items

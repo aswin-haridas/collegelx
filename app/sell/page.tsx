@@ -61,9 +61,9 @@ export default function SellPage() {
         })
       );
 
-      // Insert item into database with owner field instead of user_id
+      // Insert item into database with seller field instead of user_id
       const { error: insertError } = await supabase.from("items").insert({
-        owner: userId, // Changed to owner field to match the database schema
+        seller: userId, // Changed to seller field to match the database schema
         title,
         description,
         price: parseFloat(price),

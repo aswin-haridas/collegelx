@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
 import { Loader2 } from "lucide-react";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
