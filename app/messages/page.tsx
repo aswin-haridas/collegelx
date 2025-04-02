@@ -12,7 +12,7 @@ interface Message {
   id: string;
   sent_at: string;
   sender_id: string;
-  reciver_id: string;
+  reciever_id: string;
   message: string;
   created_at: string;
   listing_id: string;
@@ -24,6 +24,7 @@ interface Message {
 interface Conversation {
   id: string; // unique identifier for the conversation
   listing_id: string;
+  listing_title: string; // Add this field for storing the listing title
   participant_id: string;
   participant_name: string;
   last_message: string;
@@ -52,27 +53,72 @@ export default function MessagesPage() {
     async function fetchMessages() {
       try {
         const userId = sessionStorage.getItem("user_id");
-        const userName = sessionStorage.getItem("name");
         if (!userId) {
           setError("User not logged in");
           return;
         }
 
         // Get messages where the current user is either sender or receiver
-        const { data, error } = await supabase
+        const { data: messagesData, error: messagesError } = await supabase
           .from("messages")
           .select("*")
-          .or(`sender_id.eq.${userId},reciver_id.eq.${userId}`)
+          .or(`sender_id.eq.${userId},reciever_id.eq.${userId}`)
           .order("sent_at", { ascending: false });
 
-        if (error) {
-          throw new Error(error.message);
+        if (messagesError) {
+          throw new Error(messagesError.message);
         }
+
+        // Fetch user data for senders and receivers
+        const userIds = new Set<string>();
+        const listingIds = new Set<string>();
+
+        messagesData.forEach((message) => {
+          userIds.add(message.sender_id);
+          userIds.add(message.reciever_id);
+          if (message.listing_id) listingIds.add(message.listing_id);
+        });
+
+        // Get user details
+        const { data: usersData, error: usersError } = await supabase
+          .from("users")
+          .select("id, name")
+          .in("id", Array.from(userIds));
+
+        if (usersError) {
+          console.error("Error fetching users:", usersError);
+        }
+
+        // Get listing details from items table
+        const { data: listingsData, error: listingsError } = await supabase
+          .from("items")
+          .select("id, title")
+          .in("id", Array.from(listingIds));
+
+        if (listingsError) {
+          console.error("Error fetching listings:", listingsError);
+        }
+
+        // Create lookup maps
+        const userMap = new Map(
+          usersData?.map((user) => [user.id, user]) || []
+        );
+        const listingMap = new Map(
+          listingsData?.map((listing) => [listing.id, listing]) || []
+        );
+
+        // Enrich messages with user and listing data
+        const enrichedMessages = messagesData.map((message) => ({
+          ...message,
+          sender: userMap.get(message.sender_id),
+          receiver: userMap.get(message.reciever_id),
+          listing: listingMap.get(message.listing_id),
+        }));
 
         // Group messages by conversations (listing_id + other participant)
         const conversationsMap = new Map<string, Conversation>();
 
-        for (const message of data) {
+        for (const message of enrichedMessages) {
           // Determine who the other participant is
           const isUserSender = message.sender_id === userId;
           const participantId = isUserSender
@@ -82,25 +128,29 @@ export default function MessagesPage() {
           // Create a unique key for the conversation: listing_id + participant_id
           const conversationKey = `${message.listing_id}-${participantId}`;
 
-          // If this is a new conversation we haven't processed yet
-          if (!conversationsMap.has(conversationKey)) {
-            // Fetch the participant's name
-            let participantName = "Unknown User";
+          // Get the participant's name from the user data
+          const participantName = isUserSender
+            ? message.receiver?.name || "Unknown User"
+            : message.sender?.name || "Unknown User";
 
-            if (participantId) {
-              const { data: participantData } = await supabase
-                .from("profiles")
-                .select("name")
-                .eq("id", participantId)
-                .single();
+          // Get listing title
+          const listingTitle =
+            message.listing?.title ||
+            `Listing #${message.listing_id?.substring(0, 8)}`;
 
-              participantName = participantData?.name || "Unknown User";
-            }
-
-            // Create a new conversation entry
+          // If this is a new conversation we haven't processed yet, or this is a newer message
+          if (
+            !conversationsMap.has(conversationKey) ||
+            new Date(message.sent_at).getTime() >
+              new Date(
+                conversationsMap.get(conversationKey)!.last_message_time
+              ).getTime()
+          ) {
+            // Create or update conversation entry with the latest message
             conversationsMap.set(conversationKey, {
               id: conversationKey,
               listing_id: message.listing_id,
+              listing_title: listingTitle,
               participant_id: participantId,
               participant_name: participantName,
               last_message: message.message,
@@ -152,6 +202,19 @@ export default function MessagesPage() {
     setFilteredConversations(filtered);
   }, [searchQuery, conversations]);
 
+  // Group conversations by listing ID
+  const groupedConversations = filteredConversations.reduce(
+    (groups, conversation) => {
+      const listingId = conversation.listing_id;
+      if (!groups[listingId]) {
+        groups[listingId] = [];
+      }
+      groups[listingId].push(conversation);
+      return groups;
+    },
+    {} as Record<string, Conversation[]>
+  );
+
   const handleConversationClick = (conversation: Conversation) => {
     // Store IDs in sessionStorage for the chat page
     sessionStorage.setItem("listing_id", conversation.listing_id);
@@ -171,6 +234,14 @@ export default function MessagesPage() {
       date.toLocaleDateString() +
       " " +
       date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    );
+  };
+
+  // Replace the getListingTitle function with this one that uses the stored title
+  const getListingTitle = (conversation: Conversation) => {
+    return (
+      conversation.listing_title ||
+      `Listing #${conversation.listing_id.substring(0, 8)}`
     );
   };
 
@@ -252,38 +323,45 @@ export default function MessagesPage() {
             </div>
           ) : (
             <div className="bg-white rounded-lg shadow-sm">
-              <ul className="divide-y divide-gray-200">
-                {filteredConversations.map((conversation) => (
-                  <li
-                    key={conversation.id}
-                    className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => handleConversationClick(conversation)}
-                  >
-                    <div className="flex justify-between">
-                      <div className="flex-1">
-                        <h3
-                          className="font-medium text-lg"
-                          style={{ color: styles.warmText }}
-                        >
-                          {conversation.participant_name}
-                        </h3>
-                        <p className="text-gray-600 mt-1 line-clamp-1">
-                          {conversation.last_message}
-                        </p>
-                      </div>
-                      <div className="text-sm text-gray-500 whitespace-nowrap ml-4">
-                        {formatDate(conversation.last_message_time)}
-                      </div>
+              {Object.entries(groupedConversations).map(
+                ([listingId, conversationsGroup]) => (
+                  <div key={listingId} className="mb-4">
+                    <div
+                      className="bg-gray-100 p-3 font-medium text-sm sticky top-0"
+                      style={{ color: styles.warmText }}
+                    >
+                      {conversationsGroup[0].listing_title ||
+                        getListingTitle(conversationsGroup[0])}
                     </div>
-                    {conversation.listing_id && (
-                      <div className="mt-2 inline-block px-2 py-1 bg-gray-100 text-xs rounded text-gray-600">
-                        Related to listing #
-                        {conversation.listing_id.substring(0, 8)}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                    <ul className="divide-y divide-gray-200">
+                      {conversationsGroup.map((conversation) => (
+                        <li
+                          key={conversation.id}
+                          className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                          onClick={() => handleConversationClick(conversation)}
+                        >
+                          <div className="flex justify-between">
+                            <div className="flex-1">
+                              <h3
+                                className="font-medium text-lg"
+                                style={{ color: styles.warmText }}
+                              >
+                                {conversation.participant_name}
+                              </h3>
+                              <p className="text-gray-600 mt-1 line-clamp-1">
+                                {conversation.last_message}
+                              </p>
+                            </div>
+                            <div className="text-sm text-gray-500 whitespace-nowrap ml-4">
+                              {formatDate(conversation.last_message_time)}
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )
+              )}
             </div>
           )}
         </div>

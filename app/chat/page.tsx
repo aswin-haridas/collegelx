@@ -10,7 +10,7 @@ interface Message {
   id: string;
   message: string;
   sender_id: string;
-  reciver_id: string;
+  reciever_id: string;
   sent_at: string;
   listing_id: string;
 }
@@ -65,8 +65,8 @@ export default function ChatPage() {
           .from("messages")
           .select("*")
           .eq("listing_id", listingId)
-          .or(`sender_id.eq.${userId},reciver_id.eq.${userId}`)
-          .or(`sender_id.eq.${receiverId},reciver_id.eq.${receiverId}`)
+          .or(`sender_id.eq.${userId},reciever_id .eq.${userId}`)
+          .or(`sender_id.eq.${receiverId},reciever_id .eq.${receiverId}`)
           .order("sent_at", { ascending: true });
 
         if (error) {
@@ -76,8 +76,8 @@ export default function ChatPage() {
         // Filter messages client-side to ensure they're between these two users only
         const filteredMessages = (data || []).filter(
           (msg) =>
-            ((msg.sender_id === userId && msg.reciver_id === receiverId) ||
-              (msg.sender_id === receiverId && msg.reciver_id === userId)) &&
+            ((msg.sender_id === userId && msg.reciever_id === receiverId) ||
+              (msg.sender_id === receiverId && msg.reciever_id === userId)) &&
             msg.listing_id === listingId
         );
 
@@ -148,9 +148,9 @@ export default function ChatPage() {
           // Only add message if it belongs to this specific conversation AND listing
           if (
             ((newMessage.sender_id === userId &&
-              newMessage.reciver_id === receiverId) ||
+              newMessage.reciever_id === receiverId) ||
               (newMessage.sender_id === receiverId &&
-                newMessage.reciver_id === userId)) &&
+                newMessage.reciever_id === userId)) &&
             newMessage.listing_id === listingId
           ) {
             setMessages((prev) => [...prev, newMessage]);
@@ -184,7 +184,7 @@ export default function ChatPage() {
       const messageData = {
         message: newMessage.trim(),
         sender_id: userId,
-        reciver_id: receiverId,
+        reciever_id: receiverId,
         sent_at: new Date().toISOString(),
         listing_id: listingId,
       };
