@@ -4,6 +4,7 @@ import "./globals.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import Providers from "./providers";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 const playfair = Playfair_Display_SC({
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body className={`${inter.className} ${playfair.variable} `}>
         <Providers>
           <QueryClientProvider client={queryClient}>
+            <Toaster />
             <main>{children}</main>
           </QueryClientProvider>
         </Providers>

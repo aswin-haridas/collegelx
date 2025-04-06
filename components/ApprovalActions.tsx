@@ -3,13 +3,7 @@
 import React, { useState } from "react";
 import { styles } from "@/lib/styles";
 
-interface Item {
-  id: string;
-  title: string;
-  description?: string;
-  price?: number;
-  status?: string;
-}
+import { Item } from "@/lib/types";
 
 interface ApprovalActionsProps {
   item: Item;

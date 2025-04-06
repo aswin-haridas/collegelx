@@ -6,17 +6,7 @@ import { Loader2 } from "lucide-react";
 import { styles } from "@/lib/styles";
 import Link from "next/link";
 import Header from "@/components/Header";
-
-interface Item {
-  id: string;
-  title: string;
-  description: string;
-  images: string[];
-  price: number;
-  category?: string;
-  year?: number;
-  department?: string;
-}
+import { Item } from "@/lib/types";
 
 const departments = [
   "All",

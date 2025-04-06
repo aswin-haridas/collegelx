@@ -3,12 +3,7 @@
 import React, { useState } from "react";
 import { styles } from "@/lib/styles";
 
-interface Item {
-  id: string;
-  title: string;
-  description?: string;
-  price?: number;
-}
+import { Item } from "@/lib/types";
 
 interface ItemActionsProps {
   item: Item;

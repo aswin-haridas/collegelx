@@ -5,21 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import { supabase } from "@/lib/supabase";
 import { styles } from "@/lib/styles";
-
-interface Message {
-  id: string;
-  message: string;
-  sender_id: string;
-  reciever_id: string;
-  sent_at: string;
-  listing_id: string;
-}
-
-interface ListingInfo {
-  title: string;
-  price: number;
-  id: string;
-}
+import { Message } from "@/lib/types";
+import { ListingInfo } from "@/lib/types";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -142,7 +129,7 @@ export default function ChatPage() {
           schema: "public",
           table: "messages",
         },
-        (payload) => {
+        (payload: any) => {
           const newMessage = payload.new as Message;
 
           // Only add message if it belongs to this specific conversation AND listing
@@ -282,16 +269,14 @@ export default function ChatPage() {
                   <p className="text-sm">Start the conversation!</p>
                 </div>
               ) : (
-                messages.map((message) => (
+                messages.map((msg: any) => (
                   <div
-                    key={message.id}
+                    key={msg.id}
                     className={`flex mb-4 ${
-                      message.sender_id === userId
-                        ? "justify-end"
-                        : "justify-start"
+                      msg.sender_id === userId ? "justify-end" : "justify-start"
                     }`}
                   >
-                    {message.sender_id !== userId && (
+                    {msg.sender_id !== userId && (
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm"
                         style={{ backgroundColor: styles.warmPrimary }}
@@ -303,25 +288,23 @@ export default function ChatPage() {
                     )}
                     <div
                       className={`rounded-lg max-w-[70%] shadow-sm ${
-                        message.sender_id === userId
+                        msg.sender_id === userId
                           ? "rounded-tr-none ml-2"
                           : "rounded-tl-none mr-2"
                       }`}
                       style={{
                         backgroundColor:
-                          message.sender_id === userId
+                          msg.sender_id === userId
                             ? styles.warmPrimary
                             : "#F5F5F7",
                         color:
-                          message.sender_id === userId
-                            ? "white"
-                            : styles.warmText,
+                          msg.sender_id === userId ? "white" : styles.warmText,
                         padding: "12px 16px",
                       }}
                     >
-                      <p className="break-words">{message.message}</p>
+                      <p className="break-words">{msg.message}</p>
                       <div className="text-xs mt-1 opacity-80 text-right">
-                        {new Date(message.sent_at).toLocaleTimeString([], {
+                        {new Date(msg.sent_at).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}

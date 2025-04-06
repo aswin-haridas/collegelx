@@ -16,16 +16,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
+import { Item } from "@/lib/types";
 
-// Type definition for items
-interface Item {
-  id: string;
-  title: string;
-  description: string;
-  images: string[];
-  price: number;
-  category?: string;
-}
 
 const Home = () => {
   const router = useRouter();

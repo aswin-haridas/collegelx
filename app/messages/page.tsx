@@ -6,31 +6,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Search } from "lucide-react";
 import Header from "@/components/Header";
-
-// Define the message type based on your database schema
-interface Message {
-  id: string;
-  sent_at: string;
-  sender_id: string;
-  reciever_id: string;
-  message: string;
-  created_at: string;
-  listing_id: string;
-  sender_name?: string;
-  reciver_name?: string;
-}
-
-// Define a new type for grouped conversations
-interface Conversation {
-  id: string; // unique identifier for the conversation
-  listing_id: string;
-  listing_title: string; // Add this field for storing the listing title
-  participant_id: string;
-  participant_name: string;
-  last_message: string;
-  last_message_time: string;
-  unread_count?: number;
-}
+import { Message, Conversation } from "@/lib/types";
 
 // Styles
 const styles = {
@@ -101,14 +77,14 @@ export default function MessagesPage() {
 
         // Create lookup maps
         const userMap = new Map(
-          usersData?.map((user) => [user.id, user]) || []
+          usersData?.map((user: any) => [user.id, user]) || []
         );
         const listingMap = new Map(
-          listingsData?.map((listing) => [listing.id, listing]) || []
+          listingsData?.map((listing: any) => [listing.id, listing]) || []
         );
 
         // Enrich messages with user and listing data
-        const enrichedMessages = messagesData.map((message) => ({
+        const enrichedMessages = messagesData.map((message: any) => ({
           ...message,
           sender: userMap.get(message.sender_id),
           receiver: userMap.get(message.reciever_id),

@@ -1,15 +1,18 @@
 export interface User {
-  id: any;
-  userid: string;
-  created_at: string;
-  name: string | null;
-  email: string | null;
-  password?: string | null; // We generally don't receive this from the database
-  phone: number | null;
-  university_id: string | null;
-  department: string | null;
-  role: string | null;
-  profile_image: string | null;
+  id: string;
+  userid?: string;
+  name?: string;
+  email?: string;
+  profile_image?: string;
+  created_at?: string;
+  updated_at?: string;
+  password?: string | null;
+  phone?: string | number | null;
+  university_id?: string | null;
+  department?: string | null;
+  role?: string | null;
+  year?: string | null;
+  rating?: number;
 }
 
 export interface AuthState {
@@ -19,18 +22,39 @@ export interface AuthState {
 }
 
 export interface Item {
-  seller_id: string;
   id: string;
-  created_at: string;
+  name?: string;
+  title?: string;
+  description?: string;
+  price?: number;
+  image?: string;
+  images: string[];
+  imageUrl?: string;
+  status?: "available" | "pending" | "sold";
+  seller_id?: string;
+  seller_id_id?: string;
+  user_id?: string;
+  sender_id?: string;
+  seller?: string;
+  created_at?: string;
+  updated_at?: string;
+  category?: string;
+  condition?: string;
+}
+
+export interface WishlistItem extends Item {
+  added_at?: string;
+  wishlist_id?: string;
+}
+
+export interface Review {
+  id: string;
   user_id: string;
-  title: string;
-  category: string;
-  description: string;
-  sender_id: string;
-  price: number;
-  status: string;
-  images?: string[];
-  seller: string;
+  reviewer_id: string;
+  reviewer_name?: string;
+  rating: number;
+  comment: string;
+  created_at: string;
 }
 
 export interface FAQ {
@@ -47,21 +71,54 @@ export interface FAQ {
 
 export interface Message {
   id: string;
-  sent_at: string;
   sender_id: string;
-  reciver_id: string;
-  listing_id: number;
-  message: string;
+  receiver_id: string;
+  content: string;
+  created_at: string;
+  item_id?: string;
+  read?: boolean;
   sender_name?: string;
-  sender_profile_image?: string;
+  receiver_name?: string;
 }
 
-// Export these interfaces in a barrel pattern to ensure usage
-export interface AuthState {
-  user: User | null;
-  isLoading: boolean;
-  error: string | null;
+export interface ChatMessage {
+  id: string;
+  sender_id: string;
+  content: string;
+  created_at: string;
+  sender_name?: string;
 }
 
-// Consider creating a types index file that re-exports these types
-// or use them in your components directly
+export interface Conversation {
+  id: string;
+  listing_id: string;
+  listing_title: string;
+  participant_id: string;
+  participant_name: string;
+  last_message: string;
+  last_message_time: string;
+  unread_count?: number;
+}
+
+export interface ListingInfo {
+  title: string;
+  price: number;
+  id: string;
+}
+
+export interface ItemEditModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  itemId: string;
+  onItemUpdated: () => void;
+}
+
+export interface ProfileHeaderProps {
+  user: any;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}
+
+export interface PayloadType {
+  [key: string]: any;
+}
