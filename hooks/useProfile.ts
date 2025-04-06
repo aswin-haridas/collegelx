@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Item as ItemType } from "@/lib/types";
 
@@ -31,7 +31,7 @@ export const useProfile = (userId: string | null) => {
   const [error, setError] = useState<string | null>(null);
 
   // Fetch User Data
-  const fetchUserData = useCallback(async () => {
+  const fetchUserData = async () => {
     if (!userId) return;
     setLoading(true);
     try {
@@ -49,10 +49,10 @@ export const useProfile = (userId: string | null) => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  };
 
   // Fetch User Items
-  const fetchUserItems = useCallback(async () => {
+  const fetchUserItems = async () => {
     if (!userId) return;
     setLoading(true);
     try {
@@ -69,7 +69,7 @@ export const useProfile = (userId: string | null) => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  };
 
   // Update an item/product
   const updateItem = async (itemId: string, updates: Partial<ItemType>) => {
@@ -109,7 +109,7 @@ export const useProfile = (userId: string | null) => {
   };
 
   // Fetch User Reviews
-  const fetchUserReviews = useCallback(async () => {
+  const fetchUserReviews = async () => {
     if (!userId) return;
     setLoading(true);
     try {
@@ -127,10 +127,10 @@ export const useProfile = (userId: string | null) => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  };
 
   // Fetch Wishlist Items
-  const fetchUserWishlist = useCallback(async () => {
+  const fetchUserWishlist = async () => {
     if (!userId) return;
     setLoading(true);
     try {
@@ -161,7 +161,7 @@ export const useProfile = (userId: string | null) => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  };
 
   // Update User Profile
   const updateUserProfile = async (formData: Partial<User>) => {

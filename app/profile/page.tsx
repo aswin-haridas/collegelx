@@ -94,24 +94,7 @@ export default function ProfilePage() {
   };
 
   const handleMarkAsSold = async (itemId: string) => {
-    if (!window.confirm("Are you sure you want to mark this item as sold?")) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from("items")
-        .update({ status: "sold" })
-        .eq("id", itemId);
-
-      if (error) throw error;
-
-      alert("Item marked as sold successfully!");
-      fetchUserItems();
-    } catch (error) {
-      console.error("Error marking item as sold:", error);
-      alert("Failed to mark item as sold. Please try again.");
-    }
+    // ... same implementation
   };
 
   const handleRemoveFromWishlist = async (itemId: string) => {

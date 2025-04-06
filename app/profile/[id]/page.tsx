@@ -6,10 +6,30 @@ import { supabase } from "@/lib/supabase";
 import { Star, Edit, Trash2, Package, MessageSquare } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import ItemCard from "@/components/ItemCard";
-import { Item as ItemType, User, Review } from "@/lib/types";
+import { Item as ItemType } from "@/lib/types";
 import Header from "@/components/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { useReview } from "@/hooks/useReview";
+
+interface User {
+  name: string;
+  email: string;
+  phone?: string;
+  department?: string;
+  university_id?: string;
+  role: string;
+  profile_image?: string;
+  year?: string;
+  rating?: number;
+}
+
+interface Review {
+  id: string;
+  reviewer_name: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+}
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -61,7 +81,7 @@ export default function ProfilePage() {
           .eq("seller_id", profileId);
         if (error) throw error;
 
-        const transformedItems = data.map((item: any) => ({
+        const transformedItems = data.map((item) => ({
           ...item,
           title: item.name || item.title,
           name: item.name || item.title,
@@ -109,7 +129,7 @@ export default function ProfilePage() {
     if (profileId && activeTab === "reviews") {
       fetchUserReviews();
     }
-  }, [profileId, activeTab]);
+  }, [profileId, activeTab, fetchUserReviews]);
 
   const handleEditItem = (itemId: string) => {
     router.push(`/sell/edit/${itemId}`);

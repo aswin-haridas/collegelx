@@ -8,19 +8,10 @@ import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import Button from "@/components/atoms/button";
-import { useSessionStorage } from "@/hooks/useSessionStorage";
-import TextInput from "@/components/atoms/TextInput";
-import ErrorAlert from "@/components/atoms/ErrorAlert";
 
 export default function LoginPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
-
-  const [_, setName] = useSessionStorage("name", "");
-  const [__, setUserId] = useSessionStorage("user_id", "");
-  const [userRole, setRole] = useSessionStorage("role", "");
-  const [___, setIsLoggedIn] = useSessionStorage("isLoggedIn", false);
 
   const [collegeId, setCollegeId] = useState("");
   const [password, setPassword] = useState("");
@@ -45,11 +36,13 @@ export default function LoginPage() {
 
       const userData = data[0];
 
-      setName(userData.name);
-      setUserId(userData.id);
-      setRole(userData.role);
-      setIsLoggedIn(true);
+      // Store user name in sessionStorage
+      sessionStorage.setItem("name", userData.name);
+      sessionStorage.setItem("user_id", userData.id);
+      sessionStorage.setItem("role", userData.role);
+      sessionStorage.setItem("isLoggedIn", "true");
 
+      // Redirect based on user role
       if (userData.role === "admin") {
         console.log("Admin logged in");
         router.push("/admin");
@@ -74,8 +67,10 @@ export default function LoginPage() {
     );
   }
 
+  // Redirect if already authenticated
   if (isAuthenticated) {
-    if (userRole === "admin") {
+    const role = sessionStorage.getItem("role");
+    if (role === "admin") {
       router.push("/admin");
     } else {
       router.push("/");
@@ -106,25 +101,67 @@ export default function LoginPage() {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <ErrorAlert message={error} />
+            {error && (
+              <div
+                className="p-3 rounded-lg text-sm"
+                style={{
+                  backgroundColor: "rgba(220, 38, 38, 0.1)",
+                  color: "#DC2626",
+                }}
+              >
+                {error}
+              </div>
+            )}
 
-            <TextInput
-              label="College ID"
-              type="text"
-              value={collegeId}
-              onChange={(e) => setCollegeId(e.target.value)}
-              required
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                College ID
+              </label>
+              <input
+                type="text"
+                value={collegeId}
+                onChange={(e) => setCollegeId(e.target.value)}
+                required
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
+                style={{
+                  borderColor: styles.warmBorder,
+                  color: styles.warmText,
+                }}
+              />
+            </div>
 
-            <TextInput
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
+                style={{
+                  borderColor: styles.warmBorder,
+                  color: styles.warmText,
+                }}
+              />
+            </div>
 
-            <Button loading={loading} />
+            <button
+              type="submit"
+              className="w-full py-2 px-4 rounded-lg text-white flex items-center justify-center"
+              style={{ backgroundColor: styles.warmPrimary }}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                  Logging in...
+                </>
+              ) : (
+                "Log In"
+              )}
+            </button>
           </form>
 
           <p className="mt-4 text-center text-sm text-gray-600">

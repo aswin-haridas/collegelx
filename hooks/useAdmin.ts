@@ -1,122 +1,132 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { User, Item } from "@/lib/types";
-import { useState } from "react";
 
 export function useAdmin() {
-  const queryClient = useQueryClient();
+  const [users, setUsers] = useState<User[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [unlistedItems, setUnlistedItems] = useState<Item[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
   // Fetch users from Supabase
-  const {
-    data: users = [],
-    isLoading: isUsersLoading,
-    error: usersError,
-  } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => {
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // Fetch all items and unlisted items from Supabase
+  useEffect(() => {
+    const fetchAllData = async () => {
+      await Promise.all([fetchItems(), fetchUnlistedItems()]);
+      setIsLoading(false);
+    };
+
+    fetchAllData();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
       const { data, error } = await supabase.from("users").select("*");
-      if (error) throw error;
-      return data || [];
-    },
-  });
 
-  // Fetch all items from Supabase
-  const {
-    data: items = [],
-    isLoading: isItemsLoading,
-    error: itemsError,
-  } = useQuery({
-    queryKey: ["items"],
-    queryFn: async () => {
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      setError("Failed to load users");
+    }
+  };
+
+  const fetchItems = async () => {
+    try {
       const { data, error } = await supabase.from("items").select("*");
-      if (error) throw error;
-      return data || [];
-    },
-  });
 
-  // Fetch unlisted items from Supabase
-  const {
-    data: unlistedItems = [],
-    isLoading: isUnlistedItemsLoading,
-    error: unlistedItemsError,
-  } = useQuery({
-    queryKey: ["unlistedItems"],
-    queryFn: async () => {
+      if (error) throw error;
+      setItems(data || []);
+    } catch (err) {
+      console.error("Error fetching items:", err);
+      setError("Failed to load items");
+    }
+  };
+
+  const fetchUnlistedItems = async () => {
+    try {
       const { data, error } = await supabase
         .from("items")
         .select("*")
         .eq("status", "unlisted");
+
       if (error) throw error;
-      return data || [];
-    },
-  });
+      setUnlistedItems(data || []);
+    } catch (err) {
+      console.error("Error fetching unlisted items:", err);
+      setError("Failed to load unlisted items");
+    }
+  };
 
-  // Calculate overall loading state
-  const isLoading = isUsersLoading || isItemsLoading || isUnlistedItemsLoading;
-
-  // Get first error that occurred, if any
-  const error =
-    usersError?.message ||
-    itemsError?.message ||
-    unlistedItemsError?.message ||
-    null;
-
-  // Mutation for updating user
-  const updateUserMutation = useMutation({
-    mutationFn: async (updatedUser: User) => {
+  // Function to update user
+  const updateUser = async (updatedUser: User) => {
+    try {
       const { error } = await supabase
         .from("users")
         .update(updatedUser)
         .eq("id", updatedUser.id);
 
       if (error) throw error;
-      return updatedUser;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      showSuccess("User updated successfully!");
-    },
-    onError: (err) => {
-      console.error("Error updating user:", err);
-    },
-  });
 
-  // Mutation for updating item
-  const updateItemMutation = useMutation({
-    mutationFn: async (updatedItem: Item) => {
+      // Update local state
+      setUsers(
+        users.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+      );
+      showSuccess("User updated successfully!");
+      return true;
+    } catch (err) {
+      console.error("Error updating user:", err);
+      setError("Failed to update user");
+      return false;
+    }
+  };
+
+  // Function to update item
+  const updateItem = async (updatedItem: Item) => {
+    try {
       const { error } = await supabase
         .from("items")
         .update(updatedItem)
         .eq("id", updatedItem.id);
 
       if (error) throw error;
-      return updatedItem;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["items"] });
-      queryClient.invalidateQueries({ queryKey: ["unlistedItems"] });
+
+      // Update local state
+      setItems(
+        items.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+      );
+      if (updatedItem.status === "unlisted") {
+        setUnlistedItems(
+          unlistedItems.map((item) =>
+            item.id === updatedItem.id ? updatedItem : item
+          )
+        );
+      } else {
+        setUnlistedItems(
+          unlistedItems.filter((item) => item.id !== updatedItem.id)
+        );
+      }
       showSuccess("Item updated successfully!");
-    },
-    onError: (err) => {
+      return true;
+    } catch (err) {
       console.error("Error updating item:", err);
-    },
-  });
+      setError("Failed to update item");
+      return false;
+    }
+  };
 
   // Show success message
   const showSuccess = (message: string) => {
     setSuccessMessage(message);
     setShowSuccessMessage(true);
     setTimeout(() => setShowSuccessMessage(false), 3000);
-  };
-
-  const updateUser = (user: User) => {
-    return updateUserMutation.mutate(user);
-  };
-
-  const updateItem = (item: Item) => {
-    return updateItemMutation.mutate(item);
   };
 
   return {
