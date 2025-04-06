@@ -16,8 +16,8 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   };
 
   // Get the first image URL or use the legacy imageUrl property
-  const displayImage = (item.images?.[0] ?? "/images/placeholder.png");
-  
+  const displayImage = item.images?.[0] ?? "/images/placeholder.png";
+
   return (
     <Link href={`/buy/${item.id}`} className="block h-full">
       <div
@@ -49,11 +49,14 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
         </div>
         <div className="p-4 flex flex-col flex-grow">
           <h3
-            className="font-medium text-lg mb-2"
+            className="font-medium text-lg mb-1"
             style={{ color: styles.warmText }}
           >
             {item.title}
           </h3>
+          <span className="text-xs px-2 py-1 bg-gray-100 rounded-full inline-block mb-2">
+            {item.category}
+          </span>
           <p className="text-gray-600 mb-2 text-sm flex-grow">
             {item.description.length > 100
               ? `${item.description.substring(0, 100)}...`
@@ -62,9 +65,6 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
           <div className="flex justify-between items-center mt-2">
             <span className="font-bold" style={{ color: styles.warmText }}>
               ₹{item.price.toFixed(2)}
-            </span>
-            <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-              {item.category}
             </span>
           </div>
         </div>

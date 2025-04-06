@@ -129,7 +129,7 @@ export default function ProfilePage() {
     if (profileId && activeTab === "reviews") {
       fetchUserReviews();
     }
-  }, [profileId, activeTab, fetchUserReviews]);
+  }, [profileId, activeTab]); 
 
   const handleEditItem = (itemId: string) => {
     router.push(`/sell/edit/${itemId}`);

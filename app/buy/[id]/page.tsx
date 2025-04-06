@@ -7,32 +7,30 @@ import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
 import { Loader2, MessageSquare, ArrowLeft, Heart } from "lucide-react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { Item } from "@/lib/types";
-import Sidebar from "@/components/Sidebar";
-import Link from "next/link";
-import { useItem } from "@/hooks/useItem";
-import { useWishlist } from "@/hooks/useWishlist";
+import { useItemQuery } from "@/hooks/useItemQuery";
+import { useWishlistQuery } from "@/hooks/useWishlistQuery";
 
 export default function ItemPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params?.id as string;
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const {
-    item,
-    loading: itemLoading,
-    seller,
-    sellerLoading,
-  } = useItem(itemId, true);
   const { userId, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  // Use the wishlist hook instead of managing state manually
+  // Use React Query hooks for data fetching
+  const {
+    item,
+    seller,
+    isLoading: itemLoading,
+    isError,
+  } = useItemQuery(itemId, true);
+
+  // Use the wishlist query hook
   const {
     isInWishlist,
     toggleWishlist,
     loading: wishlistLoading,
-  } = useWishlist({
+  } = useWishlistQuery({
     userId: userId ?? undefined,
     itemId,
     isAuthenticated,
@@ -98,7 +96,7 @@ export default function ItemPage() {
     );
   }
 
-  if (!item) {
+  if (isError || !item) {
     return (
       <div className="h-screen">
         <div className="flex justify-center items-center h-full ">

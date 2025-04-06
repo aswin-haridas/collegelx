@@ -35,7 +35,7 @@ export function useReview(
     setAverageRating(avg);
   }, []);
 
-  const fetchUserReviews = async () => {
+  const fetchUserReviews = useCallback(async () => {
     if (!profileId) return;
     try {
       const { data, error } = await supabase
@@ -46,11 +46,10 @@ export function useReview(
 
       if (error) throw error;
       setReviews(data || []);
-      calculateAverageRating(data || []);
     } catch (error) {
       console.error("Error fetching user reviews:", error);
     }
-  };
+  }, [profileId]);
 
   const handleReviewInputChange = (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
@@ -106,6 +105,13 @@ export function useReview(
       alert("Failed to post review. Please try again.");
     }
   };
+
+  // Fetch reviews when profileId changes
+  useEffect(() => {
+    if (profileId) {
+      fetchUserReviews();
+    }
+  }, [profileId, fetchUserReviews]);
 
   // Run calculation when reviews change
   useEffect(() => {
