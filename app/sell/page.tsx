@@ -6,6 +6,7 @@ import { styles } from "@/lib/styles";
 import { supabase } from "@/lib/supabase";
 import { Loader2, Upload } from "lucide-react";
 import Header from "@/components/Header";
+import toast from "react-hot-toast";
 
 export default function SellPage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function SellPage() {
 
     // Check if userId exists
     if (!userId) {
-      alert("You must be logged in to create a listing.");
+      toast.error("You must be logged in to create a listing.");
       return;
     }
 
@@ -78,16 +79,16 @@ export default function SellPage() {
 
       if (insertError) {
         console.error("Insert Error:", insertError);
-        alert("Failed to create listing. Please try again.");
+        toast.error("Failed to create listing. Please try again.");
         return;
       }
 
-      alert("Listing created successfully!");
+      toast.success("Listing created successfully!");
       // Redirect to home page on success
       router.push("/");
     } catch (error) {
       console.error("Error creating listing:", error);
-      alert("Failed to create listing. Please try again.");
+      toast.error("Failed to create listing. Please try again.");
     } finally {
       setUploading(false);
     }

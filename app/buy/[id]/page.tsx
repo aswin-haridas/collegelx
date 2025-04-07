@@ -7,12 +7,10 @@ import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
 import { Loader2, MessageSquare, ArrowLeft, Heart } from "lucide-react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { Item } from "@/lib/types";
-import Sidebar from "@/components/Sidebar";
-import Link from "next/link";
 import { useItem } from "@/hooks/useItem";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useChatSave } from "@/hooks/useChatSave";
+import toast from "react-hot-toast";
 
 export default function ItemPage() {
   const router = useRouter();
@@ -27,7 +25,6 @@ export default function ItemPage() {
   } = useItem(itemId, true);
   const { userId, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  // Use the wishlist hook instead of managing state manually
   const {
     isInWishlist,
     toggleWishlist,
@@ -38,9 +35,12 @@ export default function ItemPage() {
     isAuthenticated,
   });
 
+  // Added useChatSave hook
+  const { saveChat, loading: chatSaving } = useChatSave();
+
   const loading = authLoading || itemLoading;
 
-  const isseller = userId && item?.sender_id === userId;
+  const isseller = userId && item?.seller_id === userId;
 
   // Store item ID in session storage when it becomes available
   useEffect(() => {
@@ -49,31 +49,38 @@ export default function ItemPage() {
     }
   }, [item]);
 
-  const handleChat = () => {
+  const handleChat = async () => {
+    if (!userId || !item) return;
+
+    const sellerId = item?.seller_id || item?.user_id;
+
+    // Save the chat and get the chat ID
+    await saveChat({
+      senderId: userId,
+      receiverId: sellerId,
+      listingId: item?.id,
+    });
+
     const chatItemId = item?.id || sessionStorage.getItem("listing_id");
     // Get seller ID consistently with no duplicates
-    const sellerId =
-      item?.sender_id ||
-      item?.seller_id ||
-      item?.user_id ||
-      sessionStorage.getItem("sender_id");
+    const sellerIdForChat = sellerId || sessionStorage.getItem("seller_id");
 
-    if (!chatItemId || !sellerId) {
+    if (!chatItemId || !sellerIdForChat) {
       console.error("Missing required data for chat:", {
         chatItemId,
-        sellerId,
+        sellerId: sellerIdForChat,
       });
       return;
     }
 
-    console.log("Navigating to chat with:", { sellerId, chatItemId });
+    toast.success(`Opening chat with seller about: ${item?.title}`);
 
     // Store in session storage before navigation
     sessionStorage.setItem("listing_id", chatItemId);
-    sessionStorage.setItem("receiver_id", sellerId);
+    sessionStorage.setItem("receiver_id", sellerIdForChat);
 
     // Navigate with query parameters to ensure data persistence
-    router.push(`/chat?receiverId=${sellerId}&listingId=${chatItemId}`);
+    router.push(`/chat?receiverId=${sellerIdForChat}&listingId=${chatItemId}`);
   };
 
   const handleWishlist = async () => {
@@ -247,7 +254,7 @@ export default function ItemPage() {
                       className="font-medium cursor-pointer hover:underline"
                       onClick={() =>
                         router.push(
-                          `/profile/${item.sender_id || item.seller_id}`
+                          `/profile/${item.seller_id || item.seller_id}`
                         )
                       }
                       style={{ color: styles.warmPrimary }}
@@ -270,38 +277,28 @@ export default function ItemPage() {
                 </p>
               </div>
 
+              {/* Item Details */}
               <div className="mb-6">
                 <h2
                   className="text-xl font-semibold mb-2"
                   style={{ color: styles.warmText }}
                 >
-                  Details
+                  Quick Info
                 </h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-gray-500">Product Type</p>
-                    <p className="font-medium">{item.category}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col">
+                    <span className="text-gray-500 text-sm">Category</span>
+                    <span className="font-medium">{item.category}</span>
                   </div>
-                  <div>
-                    <p className="text-gray-500">Listed On</p>
-                    <p className="font-medium">
-                      {new Date(item.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-gray-500">Seller</p>
-                    <p
+                  <div className="flex flex-col">
+                    <span className="text-gray-500 text-sm">Seller</span>
+                    <span
                       className="font-medium cursor-pointer hover:underline"
-                      onClick={() =>
-                        router.push(
-                          `/profile/${item.sender_id || item.seller_id}`
-                        )
-                      }
+                      onClick={() => router.push(`/profile/${item.seller_id}`)}
                       style={{ color: styles.warmPrimary }}
                     >
                       {seller?.name || "Unknown"}
-                    </p>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -320,7 +317,7 @@ export default function ItemPage() {
                     onClick={() =>
                       router.push(
                         `/profile/${
-                          item.sender_id || item.seller_id || seller?.userid
+                          item.seller_id || item.seller_id || seller?.userid
                         }`
                       )
                     }

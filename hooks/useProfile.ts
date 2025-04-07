@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react"; // Add useCallback
 import { supabase } from "@/lib/supabase";
 import { Item as ItemType } from "@/lib/types";
 
@@ -30,8 +30,8 @@ export const useProfile = (userId: string | null) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch User Data
-  const fetchUserData = async () => {
+  // Wrap fetch functions in useCallback
+  const fetchUserData = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
     try {
@@ -49,10 +49,9 @@ export const useProfile = (userId: string | null) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
-  // Fetch User Items
-  const fetchUserItems = async () => {
+  const fetchUserItems = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
     try {
@@ -69,47 +68,9 @@ export const useProfile = (userId: string | null) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
-  // Update an item/product
-  const updateItem = async (itemId: string, updates: Partial<ItemType>) => {
-    if (!userId) return null;
-    setLoading(true);
-    try {
-      // First verify the item belongs to this user
-      const item = items.find((item) => item.id === itemId);
-      if (!item) {
-        throw new Error("Item not found in user's products");
-      }
-
-      const { data, error } = await supabase
-        .from("items")
-        .update(updates)
-        .eq("id", itemId)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Update local items state
-      setItems((prevItems) =>
-        prevItems.map((item) =>
-          item.id === itemId ? { ...item, ...updates } : item
-        )
-      );
-
-      return data;
-    } catch (error: any) {
-      console.error("Error updating item:", error);
-      setError(error.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch User Reviews
-  const fetchUserReviews = async () => {
+  const fetchUserReviews = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
     try {
@@ -127,10 +88,9 @@ export const useProfile = (userId: string | null) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
-  // Fetch Wishlist Items
-  const fetchUserWishlist = async () => {
+  const fetchUserWishlist = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
     try {
@@ -161,30 +121,68 @@ export const useProfile = (userId: string | null) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
-  // Update User Profile
-  const updateUserProfile = async (formData: Partial<User>) => {
-    if (!userId) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .update(formData)
-        .eq("id", userId)
-        .select()
-        .single();
+  // Update User Profile with useCallback
+  const updateUserProfile = useCallback(
+    async (formData: Partial<User>) => {
+      if (!userId) return;
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("users")
+          .update(formData)
+          .eq("id", userId)
+          .select()
+          .single();
 
-      if (error) throw error;
-      setUser((prevUser) => ({ ...prevUser, ...formData } as User));
-      return data;
-    } catch (error: any) {
-      console.error("Error updating user data:", error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (error) throw error;
+        setUser((prevUser) => ({ ...prevUser, ...formData } as User));
+        return data;
+      } catch (error: any) {
+        console.error("Error updating user data:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [userId]
+  );
+
+  // Update an item/product with useCallback
+  const updateItem = useCallback(
+    async (itemId: string, updates: Partial<ItemType>) => {
+      if (!userId) return null;
+      setLoading(true);
+      try {
+        // First verify the item belongs to this user
+        const { data, error } = await supabase
+          .from("items")
+          .update(updates)
+          .eq("id", itemId)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Update local items state
+        setItems((prevItems) =>
+          prevItems.map((item) =>
+            item.id === itemId ? { ...item, ...updates } : item
+          )
+        );
+
+        return data;
+      } catch (error: any) {
+        console.error("Error updating item:", error);
+        setError(error.message);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [userId]
+  );
 
   return {
     user,
@@ -198,6 +196,6 @@ export const useProfile = (userId: string | null) => {
     fetchUserReviews,
     fetchUserWishlist,
     updateUserProfile,
-    updateItem, // Add the new function to the returned object
+    updateItem,
   };
 };

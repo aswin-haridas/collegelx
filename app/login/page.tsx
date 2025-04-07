@@ -8,6 +8,7 @@ import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -44,7 +45,7 @@ export default function LoginPage() {
 
       // Redirect based on user role
       if (userData.role === "admin") {
-        console.log("Admin logged in");
+        toast.success("Admin access granted");
         router.push("/admin");
       } else {
         router.push("/");
