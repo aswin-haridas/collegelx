@@ -1,8 +1,8 @@
 "use client";
 
 import { styles } from "@/shared/lib/styles";
-import { X } from "lucide-react";
-import { useEffect } from "react";
+import { X, Eye, EyeOff } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function UserEditModal({
   isOpen,
@@ -12,6 +12,8 @@ export default function UserEditModal({
   handleSave,
   saveSuccess,
 }) {
+  const [showPassword, setShowPassword] = useState(false);
+
   // Prevent body scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -131,6 +133,28 @@ export default function UserEditModal({
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password || ""}
+                  onChange={handleInputChange}
+                  placeholder="Update password (leave empty to keep current)"
+                  className="w-full border p-2 rounded pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
             {/* Additional fields could be added here */}
           </div>
 

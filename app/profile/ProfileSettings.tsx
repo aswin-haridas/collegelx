@@ -87,8 +87,6 @@ export default function ProfileSettings({
             </button>
           </div>
         </div>
-
-        
       </div>
     </div>
   );
