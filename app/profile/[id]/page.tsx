@@ -8,7 +8,7 @@ import { useRouter, useParams } from "next/navigation";
 import ItemCard from "@/shared/components/ItemCard";
 import { Item } from "@/shared/lib/types";
 import Header from "@/shared/components/Header";
-import { useAuth } from "@/app/auth/useAuth";
+import { useAuth } from "@/app/auth/hooks/useAuth";
 import { useReview } from "../useReview";
 import { User } from "@/shared/lib/types";
 
@@ -62,40 +62,19 @@ export default function ProfilePage() {
           .eq("seller_id", profileId);
         if (error) throw error;
 
-        const transformedItems = data.map((item) => ({
-          ...item,
-          title: item.name || item.title,
-          name: item.name || item.title,
-          user_id:
-            item.user_id ||
-            item.sender_id ||
-            item.seller_id_id ||
-            item.seller_id,
-          sender_id:
-            item.sender_id ||
-            item.user_id ||
-            item.seller_id_id ||
-            item.seller_id,
-          seller_id:
-            item.seller_id_id ||
-            item.user_id ||
-            item.sender_id ||
-            item.seller_id,
-          seller:
-            item.seller_id ||
-            item.user_id ||
-            item.sender_id ||
-            item.seller_id_id,
-          images: item.images || (item.image ? [item.image] : []),
-          image:
-            item.image ||
-            (item.images && item.images.length > 0 ? item.images[0] : null),
-          imageUrl:
-            item.image ||
-            (item.images && item.images.length > 0 ? item.images[0] : null),
-        }));
-
-        setItems(transformedItems);
+        setItems(
+          data.map((item) => ({
+            ...item,
+            title: item.name || item.title,
+            name: item.name || item.title,
+            user_id: item.seller_id,
+            seller_id: item.seller_id,
+            seller: item.seller_id,
+            images: item.images || (item.image ? [item.image] : []),
+            image: item.image || item.images?.[0] || null,
+            imageUrl: item.image || item.images?.[0] || null,
+          }))
+        );
       } catch (error) {
         console.error("Error fetching user items:", error);
       }
@@ -305,35 +284,6 @@ export default function ProfilePage() {
                           </button>
                         </div>
                       )}
-                      <div
-                        className="absolute bottom-2 right-2 px-2 py-1 text-xs font-medium rounded-full"
-                        style={{
-                          backgroundColor:
-                            item.status === "available"
-                              ? "#dcfce7"
-                              : item.status === "pending"
-                              ? "#fef3c7"
-                              : item.status === "sold"
-                              ? "#dbeafe"
-                              : "#fee2e2",
-                          color:
-                            item.status === "available"
-                              ? "#166534"
-                              : item.status === "pending"
-                              ? "#92400e"
-                              : item.status === "sold"
-                              ? "#1e40af"
-                              : "#b91c1c",
-                        }}
-                      >
-                        {item.status === "sold"
-                          ? "Sold"
-                          : item.status === "available"
-                          ? "Available"
-                          : item.status === "pending"
-                          ? "Pending"
-                          : "No Status"}
-                      </div>
                     </div>
                   ))}
                 </div>

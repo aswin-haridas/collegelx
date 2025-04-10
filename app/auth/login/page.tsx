@@ -1,72 +1,39 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/shared/lib/supabase";
 import { styles } from "@/shared/lib/styles";
 import { playfair } from "@/shared/lib/fonts";
-import { useAuth } from "../../auth/useAuth";
+import { useAuth } from "../hooks/useAuth";
 import Loader from "@/shared/components/Atoms/Loading";
 import { Loader2 } from "lucide-react";
+import { useLogin } from "../hooks/useLogin";
+
 export default function LoginPage() {
   const {
     isAuthenticated,
     isLoading: authLoading,
     redirectIfAuthenticated,
   } = useAuth();
-  const router = useRouter();
 
   // Use the redirect helper function
   redirectIfAuthenticated();
 
-  const [collegeId, setCollegeId] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("university_id", collegeId)
-        .eq("password", password);
-
-      if (error || !data || data.length === 0) {
-        throw new Error("Invalid college ID or password");
-      }
-
-      const userData = data[0];
-
-      // Store user name in sessionStorage
-      sessionStorage.setItem("name", userData.name);
-      sessionStorage.setItem("user_id", userData.id);
-      sessionStorage.setItem("role", userData.role);
-      sessionStorage.setItem("isLoggedIn", "true");
-
-      // Redirect based on user role
-      if (userData.role === "admin") {
-        console.log("Admin logged in");
-        router.push("/admin");
-      } else {
-        router.push("/");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Use the login hook
+  const {
+    collegeId,
+    setCollegeId,
+    password,
+    setPassword,
+    error,
+    loading,
+    handleLogin,
+  } = useLogin();
 
   if (authLoading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
-        <Loader/>
+        <Loader />
       </div>
     );
   }
@@ -93,7 +60,7 @@ export default function LoginPage() {
             Log In
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             {error && (
               <div
                 className="p-3 rounded-lg text-sm"

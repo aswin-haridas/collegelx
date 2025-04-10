@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/shared/lib/supabase";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../auth/useAuth";
+import { useAuth } from "../auth/hooks/useAuth";
 import { useProfile } from "./useProfile";
 import ProfileHeader from "./ProfileHeader";
 import ProfileContent from "./ProfileContent";

@@ -12,7 +12,7 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
-import { useAuth } from "@/app/auth/useAuth";
+import { useAuth } from "@/app/auth/hooks/useAuth";
 import { styles } from "@/shared/lib/styles";
 import { playfair } from "@/shared/lib/fonts";
 import { supabase } from "@/shared/lib/supabase";

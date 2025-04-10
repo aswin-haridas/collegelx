@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/shared/lib/supabase";
 
 export function useAuth() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -7,6 +8,26 @@ export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(true);
   const router = useRouter();
+
+  const verifyUser = async (username: string, password: string) => {
+    //check if there is a user in supabase
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("username", username)
+        .eq("password", password)
+        .single();
+
+      if (error || !data) {
+        return { success: false, error: "Invalid credentials" };
+      }
+
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: "Authentication failed" };
+    }
+  };
 
   useEffect(() => {
     // Update authentication state based on session storage
@@ -64,6 +85,7 @@ export function useAuth() {
     isAuthenticated,
     isLoading,
     logout,
+    verifyUser,
     redirectIfUnauthenticated,
     redirectIfAuthenticated,
   };

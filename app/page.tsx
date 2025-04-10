@@ -13,11 +13,14 @@ import {
   PlusCircle,
   ArrowRight,
 } from "lucide-react";
-import { useAuth } from "@/app/auth/useAuth";
+import { useAuth } from "@/app/auth/hooks/useAuth";
 import Header from "@/shared/components/Header";
 import { Item } from "@/shared/lib/types";
+import { useLoginCheck } from "@/shared/hooks/useLoginCheck";
 
 const Home = () => {
+  useLoginCheck();
+
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [featuredItems, setFeaturedItems] = useState<Item[]>([]);

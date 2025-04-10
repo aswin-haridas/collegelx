@@ -1,135 +1,21 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { styles } from "@/shared/lib/styles";
-import { supabase } from "@/shared/lib/supabase";
 import { playfair } from "@/shared/lib/fonts";
+import { useSignup } from "../hooks/useSignup";
 
 /**
  * Create a new user account with basic info
  */
 export default function SignupPage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    phone: "",
-    confirmPassword: "",
-    universityNumber: "",
-    department: "",
-  });
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-
-  const departments = [
-    "Computer Science",
-    "Electronics",
-    "Mechanical",
-    "Civil",
-    "Electrical",
-    "Other",
-  ];
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const registerUser = async (userData: {
-    name: string;
-    email: string;
-    password: string;
-    phone?: string;
-    university_id: string;
-    department: string;
-  }) => {
-    // Check if email already exists
-    const { data: existingUser } = await supabase
-      .from("users")
-      .select("email")
-      .eq("email", userData.email);
-
-    if (existingUser && existingUser.length > 0) {
-      throw new Error("Email already in use");
-    }
-    const userID = crypto.randomUUID();
-
-    // Create user directly in the users table
-    const { data: newUser, error: insertError } = await supabase
-      .from("users")
-      .insert([
-        {
-          id: userID,
-          name: userData.name,
-          email: userData.email,
-          password: userData.password, // In a production app, you would hash this password
-          phone: userData.phone || null,
-          university_id: userData.university_id,
-          department: userData.department,
-          role: "user", // Default role
-          created_at: new Date().toISOString(),
-        },
-      ])
-      .select();
-
-    if (insertError) {
-      throw new Error(insertError.message);
-    }
-
-    if (newUser && newUser.length > 0) {
-      // Store user role and name in localStorage
-      localStorage.setItem("userRole", newUser[0].role);
-      localStorage.setItem("userName", newUser[0].name);
-      localStorage.setItem("userId", newUser[0].id);
-
-      // Still keep the full user object in localStorage for backward compatibility
-      localStorage.setItem("auth", "true");
-      localStorage.setItem("id", newUser[0].id);
-      localStorage.setItem("name", newUser[0].name);
-      localStorage.setItem("user", JSON.stringify(newUser[0]));
-      return newUser[0];
-    } else {
-      throw new Error("Failed to create user account");
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
-
-    try {
-      // Basic validation
-      if (formData.password !== formData.confirmPassword) {
-        setError("Passwords don't match");
-        setIsLoading(false);
-        return;
-      }
-
-      await registerUser({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        phone: formData.phone,
-        university_id: formData.universityNumber,
-        department: formData.department,
-      });
-
-      // Redirect on successful registration
-      router.push("/");
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    formData,
+    error,
+    isLoading,
+    departments,
+    handleChange,
+    handleSubmit,
+  } = useSignup();
 
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row">

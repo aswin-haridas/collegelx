@@ -49,11 +49,19 @@ export interface Conversation {
 
 export interface Message {
   id: string;
-  sender_id: string;
-  receiver_id: string;
-  listing_id: string;
-  message: string;
   created_at: string;
+  seller_id: string | null;
+  buyer_id: string | null;
+  message: string | null;
+  product_id: string | null;
+}
+
+export interface Chat {
+  id: number;
+  created_at: string;
+  product_id: string | null;
+  buyer_id: string | null;
+  seller_id: string | null;
 }
 
 export interface Listing {

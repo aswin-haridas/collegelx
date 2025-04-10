@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/shared/lib/supabase";
 import { Review } from "@/shared/lib/types";
-import { useAuth } from "@/app/auth/useAuth";
+import { useAuth } from "@/app/auth/hooks/useAuth";
 import { useRating } from "./useRating";
 
 export function useReview(

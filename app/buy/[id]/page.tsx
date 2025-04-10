@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/auth/useAuth";
+import { useAuth } from "@/app/auth/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { styles } from "@/shared/lib/styles";
 import { playfair } from "@/shared/lib/fonts";
@@ -10,12 +10,16 @@ import { useParams } from "next/navigation";
 import { useWishlist } from "@/shared/hooks/useWishlist";
 import { useProduct } from "@/shared/hooks/useProducts";
 import Header from "@/shared/components/Header";
+import { supabase } from "@/shared/lib/supabase";
+import { useLoginCheck } from "@/shared/hooks/useLoginCheck";
 
 export default function ItemPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params?.id as string;
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  useLoginCheck();
 
   const { userId, isAuthenticated, isLoading: authLoading } = useAuth();
   const { product: item, loading: itemLoading } = useProduct(itemId);
@@ -37,10 +41,17 @@ export default function ItemPage() {
     async function fetchSellerData() {
       if (item?.seller_id) {
         setSellerLoading(true);
-        // Implement your seller fetching logic here
-        // Example:
-        // const sellerData = await fetchSeller(item.seller_id);
-        // setSellerData(sellerData);
+        const { data: sellerData, error } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", item.seller_id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching seller data:", error);
+        } else {
+          setSellerData(sellerData);
+        }
         setSellerLoading(false);
       }
     }
@@ -55,28 +66,63 @@ export default function ItemPage() {
     }
   }, [item]);
 
-  const handleChat = () => {
+  const handleChat = async () => {
     const chatItemId = item?.id || sessionStorage.getItem("listing_id");
-    // Get seller ID consistently with no duplicates
     const sellerId =
-      item?.seller_id || item?.user_id || sessionStorage.getItem("sender_id");
+      item?.seller_id || item?.user_id || sessionStorage.getItem("seller_id");
 
-    if (!chatItemId || !sellerId) {
+    if (!chatItemId || !sellerId || !userId) {
       console.error("Missing required data for chat:", {
         chatItemId,
         sellerId,
+        userId,
       });
       return;
     }
 
-    console.log("Navigating to chat with:", { sellerId, chatItemId });
+    try {
+      // Check if a chat already exists between the buyer and seller for this product
+      const { data: existingChats, error: fetchError } = await supabase
+        .from("chats")
+        .select("id")
+        .eq("buyer_id", userId)
+        .eq("seller_id", sellerId)
+        .eq("product_id", chatItemId);
 
-    // Store in session storage before navigation
-    sessionStorage.setItem("listing_id", chatItemId);
-    sessionStorage.setItem("receiver_id", sellerId);
+      if (fetchError) {
+        console.error("Error fetching existing chats:", fetchError);
+        return;
+      }
 
-    // Navigate with query parameters to ensure data persistence
-    router.push(`/chat?receiverId=${sellerId}&listingId=${chatItemId}`);
+      let chatId;
+
+      if (existingChats && existingChats.length > 0) {
+        // Use the existing chat ID
+        chatId = existingChats[0].id;
+      } else {
+        // Create a new chat
+        const { data: newChat, error: createError } = await supabase
+          .from("chats")
+          .insert({
+            buyer_id: userId,
+            seller_id: sellerId,
+            product_id: chatItemId,
+          })
+          .select();
+
+        if (createError) {
+          console.error("Error creating new chat:", createError);
+          return;
+        }
+
+        chatId = newChat[0].id;
+      }
+
+      // Navigate to the chat page
+      router.push(`/chat?chatId=${chatId}`);
+    } catch (error) {
+      console.error("Error handling chat:", error);
+    }
   };
 
   const handleWishlist = async () => {
