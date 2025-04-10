@@ -158,7 +158,7 @@ export default function ProfilePage() {
   };
 
   const handleDeleteItem = async (itemId: string) => {
-    const { error } = await supabase.from("items").delete().eq("id", itemId);
+    const { error } = await supabase.from("products").delete().eq("id", itemId);
 
     if (!error) {
       const updatedItems = await fetchUserItems();
@@ -168,7 +168,7 @@ export default function ProfilePage() {
 
   const handleMarkAsSold = async (itemId: string) => {
     const { error } = await supabase
-      .from("items")
+      .from("products")
       .update({ status: "sold" })
       .eq("id", itemId);
 

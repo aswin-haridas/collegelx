@@ -21,7 +21,7 @@ export function useItem(itemId: string, includeSellerInfo = false) {
 
       try {
         const { data, error } = await supabase
-          .from("items")
+          .from("products")
           .select("*")
           .eq("id", itemId)
           .single();

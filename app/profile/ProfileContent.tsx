@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { styles } from "@/shared/lib/styles";
-import { Star, Edit, Trash2 } from "lucide-react";
+import { Star, Edit, Trash2, PackageCheck } from "lucide-react";
 import ItemCard from "./components/ItemCard";
 
 interface ProfileContentProps {
@@ -75,7 +75,7 @@ export default function ProfileContent({
                         style={{ color: "#16a34a" }}
                         title="Mark as sold"
                       >
-                        <Star size={16} />
+                        <PackageCheck size={16} />
                       </button>
                     )}
                     <button

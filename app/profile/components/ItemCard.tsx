@@ -77,7 +77,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
 
   return (
     <>
-      <Link href={`/items/buy/${item.id}`} className="block h-full">
+      <Link href={`/buy/${item.id}`} className="block h-full">
         <div
           className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow h-full flex flex-col group"
           style={{ borderColor: styles.warmBorder, backgroundColor: "white" }}
