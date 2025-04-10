@@ -78,25 +78,22 @@ export default function ProfilePage() {
     const loadData = async () => {
       if (!userId) return;
       setIsLoading(true);
+      console.log("Loading data for user:", userId);
 
       try {
         // Fetch user items
+        console.log("Fetching user items...");
         const userItems = await fetchUserItems();
-        if (userItems) {
-          setItems(userItems);
-        }
+        console.log("Items fetched:", userItems?.length || 0);
+        setItems(userItems || []);
 
         // Fetch user wishlist
         const wishlist = await fetchUserWishlist();
-        if (wishlist) {
-          setWishlistItems(wishlist);
-        }
+        setWishlistItems(wishlist || []);
 
         // Fetch user reviews
         const userReviews = await fetchUserReviews();
-        if (userReviews) {
-          setReviews(userReviews);
-        }
+        setReviews(userReviews || []);
       } catch (error) {
         console.error("Error loading profile data:", error);
       } finally {
@@ -190,14 +187,21 @@ export default function ProfilePage() {
   };
 
   const handleRemoveFromWishlist = async (itemId: string) => {
-    const { error } = await supabase
-      .from("wishlist")
-      .delete()
-      .eq("item_id", itemId);
+    try {
+      const { error } = await supabase
+        .from("wishlist")
+        .delete()
+        .eq("product_id", itemId)
+        .eq("user_id", userId);
 
-    if (!error) {
-      const updatedWishlist = await fetchUserWishlist();
-      setWishlistItems(updatedWishlist || []);
+      if (!error) {
+        const updatedWishlist = await fetchUserWishlist();
+        setWishlistItems(updatedWishlist || []);
+      } else {
+        console.error("Error removing from wishlist:", error);
+      }
+    } catch (err) {
+      console.error("Exception removing from wishlist:", err);
     }
   };
 

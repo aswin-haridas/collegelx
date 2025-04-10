@@ -24,7 +24,7 @@ export function useReview(
     try {
       const { data, error } = await supabase
         .from("reviews")
-        .select("id, reviewer_name, rating, comment, created_at")
+        .select("id, user_id, reviewer_name, rating, comment, created_at")
         .eq("user_id", profileId)
         .order("created_at", { ascending: false });
 
@@ -80,9 +80,9 @@ export function useReview(
 
         if (error) throw error;
 
-        setReviews((prev) => [data[0], ...prev]);
+        setReviews((prev) => [{...data[0], user_id: profileId}, ...prev]);
         setReviewData({ rating: 5, comment: "" });
-        calculateAverageRating([data[0], ...reviews]);
+        calculateAverageRating([{...data[0], user_id: profileId}, ...reviews]);
       } catch (error) {
         console.error("Error posting review:", error);
         alert("Failed to post review. Please try again.");
