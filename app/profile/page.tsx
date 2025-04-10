@@ -8,7 +8,8 @@ import { useProfile } from "./useProfile";
 import ProfileHeader from "./ProfileHeader";
 import ProfileContent from "./ProfileContent";
 import ProfileSettings from "./ProfileSettings";
-import ItemEditModal from "./ItemEditModal";
+import ItemEditModal from "./components/ItemEditModal";
+import UserEditModal from "./components/UserEditModal";
 import { Item, User, Review } from "@/shared/lib/types";
 
 export default function ProfilePage() {
@@ -30,6 +31,8 @@ export default function ProfilePage() {
   });
   const [passwordError, setPasswordError] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isUserEditModalOpen, setIsUserEditModalOpen] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [editingItemId, setEditingItemId] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<Item[]>([]);
@@ -116,7 +119,11 @@ export default function ProfilePage() {
     const result = await updateUserProfile(formData);
     if (result) {
       setUser(result);
-      setIsEditing(false);
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+        setIsUserEditModalOpen(false);
+      }, 2000);
     }
   };
 
@@ -155,6 +162,10 @@ export default function ProfilePage() {
   const handleEditItem = (itemId: string) => {
     setEditingItemId(itemId);
     setIsEditModalOpen(true);
+  };
+
+  const handleEditProfile = () => {
+    setIsUserEditModalOpen(true);
   };
 
   const handleDeleteItem = async (itemId: string) => {
@@ -219,7 +230,7 @@ export default function ProfilePage() {
             <ProfileSettings
               user={user}
               isEditing={isEditing}
-              setIsEditing={setIsEditing}
+              setIsEditing={handleEditProfile}
               isChangingPassword={isChangingPassword}
               setIsChangingPassword={setIsChangingPassword}
               showPassword={showPassword}
@@ -231,6 +242,14 @@ export default function ProfilePage() {
               handlePasswordChange={handlePasswordChange}
               handleSave={handleSave}
               handleChangePassword={handleChangePassword}
+              resetPasswordData={() => {
+                setPasswordData({
+                  currentPassword: "",
+                  newPassword: "",
+                  confirmPassword: "",
+                });
+                setPasswordError("");
+              }}
             />
           )}
 
@@ -244,6 +263,15 @@ export default function ProfilePage() {
                 setItems(updatedItems);
               }
             }}
+          />
+
+          <UserEditModal
+            isOpen={isUserEditModalOpen}
+            onClose={() => setIsUserEditModalOpen(false)}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleSave={handleSave}
+            saveSuccess={saveSuccess}
           />
         </>
       )}

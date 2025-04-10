@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { styles } from "@/shared/lib/styles";
 import { Star, Edit, Trash2, PackageCheck } from "lucide-react";
-import ItemCard from "./components/ItemCard";
+import ItemCard from "./ItemCard";
 
 interface ProfileContentProps {
   activeTab: string;

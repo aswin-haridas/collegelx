@@ -6,9 +6,8 @@ import Link from "next/link";
 import { supabase } from "@/shared/lib/supabase";
 import { styles } from "@/shared/lib/styles";
 import { playfair } from "@/shared/lib/fonts";
-import { Loader2 } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
-
+import Loader from "@/shared/components/Atoms/Loading";
 export default function LoginPage() {
   const {
     isAuthenticated,
@@ -66,10 +65,7 @@ export default function LoginPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
-        <Loader2
-          className="h-8 w-8 animate-spin"
-          style={{ color: styles.warmPrimary }}
-        />
+        <Loader/>
       </div>
     );
   }

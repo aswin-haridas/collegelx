@@ -102,12 +102,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
               </div>
             )}
 
-            {/* Status badge */}
-            {item.status !== "available" && (
-              <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
-                {item.status}
-              </div>
-            )}
+
 
             {/* Item Controls - Now with opacity transition on hover */}
             {showControls && (

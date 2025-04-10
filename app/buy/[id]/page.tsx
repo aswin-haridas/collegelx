@@ -8,20 +8,19 @@ import { playfair } from "@/shared/lib/fonts";
 import { Loader2, MessageSquare, ArrowLeft, Heart } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useWishlist } from "@/shared/hooks/useWishlist";
-import { useItem } from "@/hooks/useItem";
+import { useProduct } from "@/shared/hooks/useProducts";
+import Header from "@/shared/components/Header";
 
 export default function ItemPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params?.id as string;
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const {
-    item,
-    loading: itemLoading,
-    seller,
-    sellerLoading,
-  } = useItem(itemId, true);
+
   const { userId, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { product: item, loading: itemLoading } = useProduct(itemId);
+  const [seller, setSellerData] = useState<any>(null);
+  const [sellerLoading, setSellerLoading] = useState(false);
 
   const {
     isWishlisted,
@@ -29,9 +28,25 @@ export default function ItemPage() {
     loading: wishlistLoading,
   } = useWishlist(itemId);
 
-  const loading = authLoading || itemLoading;
+  const loading = authLoading || itemLoading || sellerLoading;
 
   const isseller = userId && item?.seller_id === userId;
+
+  // Fetch seller information when item is loaded
+  useEffect(() => {
+    async function fetchSellerData() {
+      if (item?.seller_id) {
+        setSellerLoading(true);
+        // Implement your seller fetching logic here
+        // Example:
+        // const sellerData = await fetchSeller(item.seller_id);
+        // setSellerData(sellerData);
+        setSellerLoading(false);
+      }
+    }
+
+    fetchSellerData();
+  }, [item]);
 
   // Store item ID in session storage when it becomes available
   useEffect(() => {
@@ -112,6 +127,7 @@ export default function ItemPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Header />
       <div className="max-w-6xl mx-auto p-4  py-10">
         {/* Back button */}
         <button

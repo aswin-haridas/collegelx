@@ -150,7 +150,7 @@ const AdminDashboard: React.FC = () => {
                       <tbody>
                         {filteredUsers.map((user) => (
                           <tr key={user.id} className="border-t">
-                            <td className="p-2">{user.userid}</td>
+                            <td className="p-2">{user.id}</td>
                             <td className="p-2">{user.name || "N/A"}</td>
                             <td className="p-2">{user.email || "N/A"}</td>
                             <td className="p-2">

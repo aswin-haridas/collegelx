@@ -12,20 +12,17 @@ import {
   MessageCircle,
   PlusCircle,
   ArrowRight,
-  LogIn,
 } from "lucide-react";
 import { useAuth } from "@/app/auth/useAuth";
 import Header from "@/shared/components/Header";
-
 import { Item } from "@/shared/lib/types";
 
 const Home = () => {
   const router = useRouter();
-  const { isAuthenticated, userId } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [featuredItems, setFeaturedItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch featured items on page load
   useEffect(() => {
     const fetchFeaturedItems = async () => {
       try {
@@ -33,8 +30,8 @@ const Home = () => {
           .from("products")
           .select("*")
           .eq("status", "available")
-          .order("created_at", { ascending: false })
-          .limit(4);
+          .limit(4)
+          .order("created_at", { ascending: false });
 
         if (error) throw error;
         setFeaturedItems(data || []);
@@ -48,11 +45,24 @@ const Home = () => {
     fetchFeaturedItems();
   }, []);
 
+  const renderFeatureCard = (
+    icon: React.ReactNode,
+    title: string,
+    description: string
+  ) => (
+    <div className="bg-white p-6 rounded-lg shadow-md text-center">
+      <div className="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
+        {icon}
+      </div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-gray-600">{description}</p>
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      {/* Hero Section */}
       <section className="bg-gradient-to-r from-amber-50 to-amber-100 py-16 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-8 md:mb-0">
@@ -64,8 +74,7 @@ const Home = () => {
             </h1>
             <p className="text-lg mb-8 text-gray-700">
               Buy and sell college essentials - from textbooks and notes to
-              uniforms and stationery. Connect with fellow students and find
-              everything you need for your academic journey.
+              uniforms and stationery.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button
@@ -89,7 +98,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Items Section */}
       <section className="py-12 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
@@ -130,7 +138,7 @@ const Home = () => {
                 <Link href={`/buy/${item.id}`} key={item.id}>
                   <div className="border border-stone-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
                     <div className="relative h-44 bg-gray-100">
-                      {item.images?.length > 0 ? (
+                      {featuredItems.length > 0 ? (
                         <img
                           src={item.images[0]}
                           alt={item.title}
@@ -174,7 +182,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Features Highlight Section */}
       <section className="bg-amber-50 py-12 px-4">
         <div className="max-w-7xl mx-auto">
           <h2
@@ -185,42 +192,23 @@ const Home = () => {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <div className="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
-                <ShoppingBag className="h-8 w-8 text-amber-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">
-                Campus-Focused Marketplace
-              </h3>
-              <p className="text-gray-600">
-                Buy and sell items specifically relevant to your college
-                experience.
-              </p>
-            </div>
+            {renderFeatureCard(
+              <ShoppingBag className="h-8 w-8 text-amber-600" />,
+              "Campus-Focused Marketplace",
+              "Buy and sell items specifically relevant to your college experience."
+            )}
 
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <div className="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
-                <MessageCircle className="h-8 w-8 text-amber-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">
-                Direct Communication
-              </h3>
-              <p className="text-gray-600">
-                Message sellers directly to negotiate prices or ask questions.
-              </p>
-            </div>
+            {renderFeatureCard(
+              <MessageCircle className="h-8 w-8 text-amber-600" />,
+              "Direct Communication",
+              "Message sellers directly to negotiate prices or ask questions."
+            )}
 
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <div className="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
-                <UserCircle className="h-8 w-8 text-amber-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">
-                Verified College Users
-              </h3>
-              <p className="text-gray-600">
-                A safe community of verified students for secure transactions.
-              </p>
-            </div>
+            {renderFeatureCard(
+              <UserCircle className="h-8 w-8 text-amber-600" />,
+              "Verified College Users",
+              "A safe community of verified students for secure transactions."
+            )}
           </div>
         </div>
       </section>

@@ -6,15 +6,15 @@ export const useWishlist = (productId?: String) => {
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  // Add state for wishlist items
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
 
-  // Check if item is in wishlist on component mount if productId is provided
   useEffect(() => {
     if (productId) {
       checkWishlistStatus();
     }
   }, [productId, user]);
 
-  // Check if the current product is in the user's wishlist
   const checkWishlistStatus = async () => {
     if (productId) {
       const result = await isInWishlist(productId);
@@ -85,7 +85,6 @@ export const useWishlist = (productId?: String) => {
     }
   };
 
-  // Toggle function to add/remove from wishlist
   const toggleWishlist = async () => {
     if (!productId || !user) return;
 
@@ -102,11 +101,61 @@ export const useWishlist = (productId?: String) => {
     setLoading(false);
   };
 
+  // New function to fetch all wishlist items for the current user
+  const fetchWishlistItems = async () => {
+    if (!user) return [];
+    setLoading(true);
+
+    try {
+      // Join wishlist with products to get product details
+      const { data, error } = await supabase
+        .from("wishlist")
+        .select(
+          `
+          id,
+          product_id,
+          products:product_id (
+            id,
+            title,
+            price,
+            description,
+            category,
+            condition,
+            status,
+            images,
+            created_at,
+            user_id
+          )
+        `
+        )
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      // Transform the data to extract the products
+      const items =
+        data?.map((item) => ({
+          id: item.product_id,
+          ...item.products,
+        })) || [];
+
+      setWishlistItems(items);
+      setLoading(false);
+      return items;
+    } catch (error) {
+      setLoading(false);
+      handleError("fetching wishlist items", error);
+      return [];
+    }
+  };
+
   return {
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
     toggleWishlist,
+    fetchWishlistItems,
+    wishlistItems,
     loading,
     isWishlisted,
   };
