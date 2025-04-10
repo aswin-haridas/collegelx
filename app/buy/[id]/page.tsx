@@ -1,18 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/app/auth/useAuth";
 import { useState, useEffect } from "react";
-import { styles } from "@/lib/styles";
-import { playfair } from "@/lib/fonts";
+import { styles } from "@/shared/lib/styles";
+import { playfair } from "@/shared/lib/fonts";
 import { Loader2, MessageSquare, ArrowLeft, Heart } from "lucide-react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { Item } from "@/lib/types";
-import Sidebar from "@/components/Sidebar";
-import Link from "next/link";
+import { useWishlist } from "@/shared/hooks/useWishlist";
 import { useItem } from "@/hooks/useItem";
-import { useWishlist } from "@/hooks/useWishlist";
 
 export default function ItemPage() {
   const router = useRouter();
@@ -27,20 +23,15 @@ export default function ItemPage() {
   } = useItem(itemId, true);
   const { userId, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  // Use the wishlist hook instead of managing state manually
   const {
-    isInWishlist,
+    isWishlisted,
     toggleWishlist,
     loading: wishlistLoading,
-  } = useWishlist({
-    userId: userId ?? undefined,
-    itemId,
-    isAuthenticated,
-  });
+  } = useWishlist(itemId);
 
   const loading = authLoading || itemLoading;
 
-  const isseller = userId && item?.sender_id === userId;
+  const isseller = userId && item?.seller_id === userId;
 
   // Store item ID in session storage when it becomes available
   useEffect(() => {
@@ -53,10 +44,7 @@ export default function ItemPage() {
     const chatItemId = item?.id || sessionStorage.getItem("listing_id");
     // Get seller ID consistently with no duplicates
     const sellerId =
-      item?.sender_id ||
-      item?.seller_id ||
-      item?.user_id ||
-      sessionStorage.getItem("sender_id");
+      item?.seller_id || item?.user_id || sessionStorage.getItem("sender_id");
 
     if (!chatItemId || !sellerId) {
       console.error("Missing required data for chat:", {
@@ -152,7 +140,7 @@ export default function ItemPage() {
                 {/* Image selection buttons */}
                 {item.images.length > 1 && (
                   <div className="flex flex-wrap gap-2 justify-center">
-                    {item.images.map((image, index) => (
+                    {item.images.map((image: string, index: number) => (
                       <button
                         key={index}
                         onClick={() => setSelectedImageIndex(index)}
@@ -201,55 +189,46 @@ export default function ItemPage() {
                   </span>
                 </div>
 
-                <div className="flex gap-2 mb-2">
-                  <button
-                    onClick={handleChat}
-                    className={`flex-grow py-3 px-4 rounded-lg flex items-center justify-center transition-colors ${
-                      isseller
-                        ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                        : "text-white hover:bg-opacity-90"
-                    }`}
-                    style={{
-                      backgroundColor: isseller
-                        ? undefined
-                        : styles.warmPrimary,
-                    }}
-                    disabled={!!isseller}
-                  >
-                    <MessageSquare className="mr-2 h-5 w-5" />
-                    {isseller ? "You own this item" : "Chat with Seller"}
-                  </button>
+                {isseller ? (
+                  <div className="py-3 px-4 rounded-lg bg-gray-200 text-gray-700 text-center font-medium mb-2">
+                    You own this item
+                  </div>
+                ) : (
+                  <div className="flex gap-2 mb-2">
+                    <button
+                      onClick={handleChat}
+                      className="flex-grow py-3 px-4 rounded-lg flex items-center justify-center transition-colors text-white hover:bg-opacity-90"
+                      style={{ backgroundColor: styles.warmPrimary }}
+                    >
+                      <MessageSquare className="mr-2 h-5 w-5" />
+                      Chat with Seller
+                    </button>
 
-                  <button
-                    onClick={handleWishlist}
-                    disabled={isseller || wishlistLoading}
-                    className={`px-4 py-3 rounded-lg flex items-center justify-center transition-colors ${
-                      isseller
-                        ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                        : isInWishlist
-                        ? "bg-pink-100 text-pink-600 hover:bg-pink-200"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    <Heart
-                      className={`h-5 w-5 ${
-                        isInWishlist ? "fill-current" : ""
+                    <button
+                      onClick={handleWishlist}
+                      disabled={wishlistLoading}
+                      className={`px-4 py-3 rounded-lg flex items-center justify-center transition-colors ${
+                        isWishlisted
+                          ? "bg-pink-100 text-pink-600 hover:bg-pink-200"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
-                      style={{ color: isInWishlist ? "#e11d48" : undefined }}
-                    />
-                  </button>
-                </div>
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${
+                          isWishlisted ? "fill-current" : ""
+                        }`}
+                        style={{ color: isWishlisted ? "#e11d48" : undefined }}
+                      />
+                    </button>
+                  </div>
+                )}
 
                 {seller && (
                   <div className="text-sm text-gray-600 flex items-center">
                     <span className="mr-1">Posted by:</span>
                     <span
                       className="font-medium cursor-pointer hover:underline"
-                      onClick={() =>
-                        router.push(
-                          `/profile/${item.sender_id || item.seller_id}`
-                        )
-                      }
+                      onClick={() => router.push(`/profile/${item.seller_id}`)}
                       style={{ color: styles.warmPrimary }}
                     >
                       {seller?.name}
@@ -293,11 +272,7 @@ export default function ItemPage() {
                     <p className="text-gray-500">Seller</p>
                     <p
                       className="font-medium cursor-pointer hover:underline"
-                      onClick={() =>
-                        router.push(
-                          `/profile/${item.sender_id || item.seller_id}`
-                        )
-                      }
+                      onClick={() => router.push(`/profile/${item.seller_id}`)}
                       style={{ color: styles.warmPrimary }}
                     >
                       {seller?.name || "Unknown"}
@@ -319,9 +294,7 @@ export default function ItemPage() {
                     className="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
                     onClick={() =>
                       router.push(
-                        `/profile/${
-                          item.sender_id || item.seller_id || seller?.userid
-                        }`
+                        `/profile/${item.seller_id || seller?.userid}`
                       )
                     }
                   >

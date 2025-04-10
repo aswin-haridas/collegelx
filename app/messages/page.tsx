@@ -1,35 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Sidebar from "@/components/Sidebar";
+import Sidebar from "@/shared/components/Sidebar";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/shared/lib/supabase";
 import { Search } from "lucide-react";
-import Header from "@/components/Header";
+import Header from "@/shared/components/Header";
 
 // Define the message type based on your database schema
-interface Message {
-  id: string;
-  sender_id: string;
-  reciever_id: string;
-  message: string;
-  created_at: string;
-  listing_id: string;
-  sender_name?: string;
-  reciver_name?: string;
-}
-
-// Define a new type for grouped conversations
-interface Conversation {
-  id: string; // unique identifier for the conversation
-  listing_id: string;
-  listing_title: string; // Add this field for storing the listing title
-  participant_id: string;
-  participant_name: string;
-  last_message: string;
-  last_message_time: string;
-  unread_count?: number;
-}
+import { Conversation } from "@/shared/lib/types";
 
 // Styles
 const styles = {
@@ -90,7 +69,7 @@ export default function MessagesPage() {
 
         // Get listing details from items table
         const { data: listingsData, error: listingsError } = await supabase
-          .from("items")
+          .from("products")
           .select("id, title")
           .in("id", Array.from(listingIds));
 

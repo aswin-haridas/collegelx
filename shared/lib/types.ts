@@ -2,15 +2,16 @@
 export interface User {
   id: string;
   userid?: string;
-  name?: string;
+  name: string;
   email: string;
   profile_image?: string;
   department?: string;
   university_id?: string;
   year?: string;
   phone?: string;
-  role?: string;
+  role: string;
   created_at: string;
+  rating?: number;
 }
 
 // Types for items
@@ -77,4 +78,27 @@ export interface Review {
   rating: number;
   comment: string;
   created_at: string;
+}
+
+export interface Message {
+  id: string;
+  sender_id: string;
+  reciever_id: string;
+  message: string;
+  created_at: string;
+  listing_id: string;
+  sender_name?: string;
+  reciver_name?: string;
+}
+
+// Define a new type for grouped conversations
+export interface Conversation {
+  id: string; // unique identifier for the conversation
+  listing_id: string;
+  listing_title: string; // Add this field for storing the listing title
+  participant_id: string;
+  participant_name: string;
+  last_message: string;
+  last_message_time: string;
+  unread_count?: number;
 }

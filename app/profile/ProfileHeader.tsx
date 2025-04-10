@@ -1,9 +1,7 @@
 "use client";
-
-import { useState } from "react";
-import { styles } from "@/lib/styles";
+import { styles } from "@/shared/lib/styles";
 import { Package, MessageSquare, Settings, Heart } from "lucide-react";
-import Header from "@/components/Header";
+import Header from "@/shared/components/Header";
 
 interface ProfileHeaderProps {
   user: any;

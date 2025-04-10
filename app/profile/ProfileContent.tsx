@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { styles } from "@/lib/styles";
+import { styles } from "@/shared/lib/styles";
 import { Star, Edit, Trash2 } from "lucide-react";
-import ItemCard from "@/components/ItemCard";
+import ItemCard from "./components/ItemCard";
 
 interface ProfileContentProps {
   activeTab: string;
@@ -33,7 +33,10 @@ export default function ProfileContent({
       {activeTab === "products" && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold" style={{ color: styles.warmText }}>
+            <h2
+              className="text-xl font-semibold"
+              style={{ color: styles.warmText }}
+            >
               Your Items
             </h2>
             <button
@@ -137,7 +140,10 @@ export default function ProfileContent({
       {activeTab === "wishlist" && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold" style={{ color: styles.warmText }}>
+            <h2
+              className="text-xl font-semibold"
+              style={{ color: styles.warmText }}
+            >
               Your Wishlist
             </h2>
           </div>
@@ -181,7 +187,10 @@ export default function ProfileContent({
       {activeTab === "reviews" && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold" style={{ color: styles.warmText }}>
+            <h2
+              className="text-xl font-semibold"
+              style={{ color: styles.warmText }}
+            >
               Your Reviews
             </h2>
           </div>

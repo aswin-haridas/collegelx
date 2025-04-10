@@ -1,17 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
-import { styles } from "@/lib/styles";
-import { playfair } from "@/lib/fonts";
+import { supabase } from "@/shared/lib/supabase";
+import { styles } from "@/shared/lib/styles";
+import { playfair } from "@/shared/lib/fonts";
 import { Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../auth/useAuth";
 
 export default function LoginPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const {
+    isAuthenticated,
+    isLoading: authLoading,
+    redirectIfAuthenticated,
+  } = useAuth();
   const router = useRouter();
+
+  // Use the redirect helper function
+  redirectIfAuthenticated();
 
   const [collegeId, setCollegeId] = useState("");
   const [password, setPassword] = useState("");
@@ -65,17 +72,6 @@ export default function LoginPage() {
         />
       </div>
     );
-  }
-
-  // Redirect if already authenticated
-  if (isAuthenticated) {
-    const role = sessionStorage.getItem("role");
-    if (role === "admin") {
-      router.push("/admin");
-    } else {
-      router.push("/");
-    }
-    return null;
   }
 
   return (

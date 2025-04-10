@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase
 import toast from "react-hot-toast";
 import { Message } from "@/lib/types";
 

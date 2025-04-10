@@ -1,13 +1,19 @@
 import { useCallback } from "react";
 import { supabase } from "@/shared/lib/supabase";
 import { User } from "@/shared/lib/types";
-import { useUser } from "@/shared/hooks/useUser";
 
 export const useProfile = (userId: string | null) => {
   // Fetch user profile
   const fetchUserProfile = useCallback(async () => {
-    const user = useUser();
-    return user;
+    if (!userId) return null;
+
+    const { data } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    return data;
   }, [userId]);
 
   // Fetch user items
@@ -15,7 +21,7 @@ export const useProfile = (userId: string | null) => {
     if (!userId) return [];
 
     const { data } = await supabase
-      .from("items")
+      .from("products")
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });

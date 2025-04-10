@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/shared/lib/supabase";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "../auth/useAuth";
+import { useProfile } from "./useProfile";
 import ProfileHeader from "./ProfileHeader";
 import ProfileContent from "./ProfileContent";
 import ProfileSettings from "./ProfileSettings";
 import ItemEditModal from "./ItemEditModal";
+import { Item, User, Review } from "@/shared/lib/types";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("products");
@@ -30,42 +31,78 @@ export default function ProfilePage() {
   const [passwordError, setPasswordError] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItemId, setEditingItemId] = useState("");
+  const [user, setUser] = useState<User | null>(null);
+  const [items, setItems] = useState<Item[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<Item[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const router = useRouter();
-  const { userId } = useAuth();
+  const { userId, redirectIfUnauthenticated } = useAuth();
   const {
-    user,
-    items,
-    reviews,
-    wishlistItems,
-    fetchUserData,
+    fetchUserProfile,
     fetchUserItems,
     fetchUserReviews,
     fetchUserWishlist,
     updateUserProfile,
   } = useProfile(userId);
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name,
-        email: user.email,
-        department: user.department || "",
-        university_id: user.university_id || "",
-        year: user.year || "",
-      });
-    }
-  }, [user]);
+  // Redirect to login page if not authenticated
+  redirectIfUnauthenticated("/auth/login");
 
   useEffect(() => {
-    if (!userId) return;
-    if (activeTab === "products") fetchUserItems();
-    else if (activeTab === "reviews") fetchUserReviews();
-    else if (activeTab === "wishlist") fetchUserWishlist();
-  }, [userId, activeTab, fetchUserItems, fetchUserReviews, fetchUserWishlist]);
+    const loadUserProfile = async () => {
+      if (!userId) return;
+      const userData = await fetchUserProfile();
+      setUser(userData);
+
+      // Set initial form data
+      if (userData) {
+        setFormData({
+          name: userData.name || "",
+          email: userData.email || "",
+          department: userData.department || "",
+          university_id: userData.university_id || "",
+          year: userData.year || "",
+        });
+      }
+    };
+
+    loadUserProfile();
+  }, [userId, fetchUserProfile]);
 
   useEffect(() => {
-    if (userId) fetchUserData();
-  }, [userId, fetchUserData]);
+    const loadData = async () => {
+      if (!userId) return;
+      setIsLoading(true);
+
+      try {
+        // Fetch user items
+        const userItems = await fetchUserItems();
+        if (userItems) {
+          setItems(userItems);
+        }
+
+        // Fetch user wishlist
+        const wishlist = await fetchUserWishlist();
+        if (wishlist) {
+          setWishlistItems(wishlist);
+        }
+
+        // Fetch user reviews
+        const userReviews = await fetchUserReviews();
+        if (userReviews) {
+          setReviews(userReviews);
+        }
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [userId, fetchUserItems, fetchUserWishlist, fetchUserReviews]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -77,11 +114,42 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     const result = await updateUserProfile(formData);
-    if (result) setIsEditing(false);
+    if (result) {
+      setUser(result);
+      setIsEditing(false);
+    }
   };
 
   const handleChangePassword = async () => {
-    // ... same implementation
+    if (
+      !passwordData.currentPassword ||
+      !passwordData.newPassword ||
+      !passwordData.confirmPassword
+    ) {
+      setPasswordError("All fields are required.");
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("New password and confirm password do not match.");
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      password: passwordData.newPassword,
+    });
+
+    if (error) {
+      setPasswordError(error.message);
+    } else {
+      setPasswordError("");
+      setIsChangingPassword(false);
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    }
   };
 
   const handleEditItem = (itemId: string) => {
@@ -90,61 +158,95 @@ export default function ProfilePage() {
   };
 
   const handleDeleteItem = async (itemId: string) => {
-    // ... same implementation
+    const { error } = await supabase.from("items").delete().eq("id", itemId);
+
+    if (!error) {
+      const updatedItems = await fetchUserItems();
+      setItems(updatedItems || []);
+    }
   };
 
   const handleMarkAsSold = async (itemId: string) => {
-    // ... same implementation
+    const { error } = await supabase
+      .from("items")
+      .update({ status: "sold" })
+      .eq("id", itemId);
+
+    if (!error) {
+      const updatedItems = await fetchUserItems();
+      setItems(updatedItems || []);
+    }
   };
 
   const handleRemoveFromWishlist = async (itemId: string) => {
-    // ... same implementation
+    const { error } = await supabase
+      .from("wishlist")
+      .delete()
+      .eq("item_id", itemId);
+
+    if (!error) {
+      const updatedWishlist = await fetchUserWishlist();
+      setWishlistItems(updatedWishlist || []);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <ProfileHeader
-        user={user}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
-      {activeTab !== "settings" && (
-        <ProfileContent
-          activeTab={activeTab}
-          items={items}
-          wishlistItems={wishlistItems}
-          reviews={reviews}
-          handleEditItem={handleEditItem}
-          handleDeleteItem={handleDeleteItem}
-          handleMarkAsSold={handleMarkAsSold}
-          handleRemoveFromWishlist={handleRemoveFromWishlist}
-        />
-      )}
-      {activeTab === "settings" && (
-        <ProfileSettings
-          user={user}
-          isEditing={isEditing}
-          setIsEditing={setIsEditing}
-          isChangingPassword={isChangingPassword}
-          setIsChangingPassword={setIsChangingPassword}
-          showPassword={showPassword}
-          setShowPassword={setShowPassword}
-          formData={formData}
-          passwordData={passwordData}
-          passwordError={passwordError}
-          handleInputChange={handleInputChange}
-          handlePasswordChange={handlePasswordChange}
-          handleSave={handleSave}
-          handleChangePassword={handleChangePassword}
-        />
-      )}
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      ) : (
+        <>
+          <ProfileHeader
+            user={user}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+          {activeTab !== "settings" && (
+            <ProfileContent
+              activeTab={activeTab}
+              items={items}
+              wishlistItems={wishlistItems}
+              reviews={reviews}
+              handleEditItem={handleEditItem}
+              handleDeleteItem={handleDeleteItem}
+              handleMarkAsSold={handleMarkAsSold}
+              handleRemoveFromWishlist={handleRemoveFromWishlist}
+            />
+          )}
+          {activeTab === "settings" && (
+            <ProfileSettings
+              user={user}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
+              isChangingPassword={isChangingPassword}
+              setIsChangingPassword={setIsChangingPassword}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+              formData={formData}
+              passwordData={passwordData}
+              passwordError={passwordError}
+              handleInputChange={handleInputChange}
+              handlePasswordChange={handlePasswordChange}
+              handleSave={handleSave}
+              handleChangePassword={handleChangePassword}
+            />
+          )}
 
-      <ItemEditModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        itemId={editingItemId}
-        onItemUpdated={fetchUserItems}
-      />
+          <ItemEditModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            itemId={editingItemId}
+            onItemUpdated={async () => {
+              const updatedItems = await fetchUserItems();
+              if (updatedItems) {
+                setItems(updatedItems);
+              }
+            }}
+          />
+        </>
+      )}
     </div>
   );
 }

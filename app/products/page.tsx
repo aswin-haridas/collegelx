@@ -1,22 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/shared/lib/supabase";
 import { Loader2 } from "lucide-react";
-import { styles } from "@/lib/styles";
+import { styles } from "@/shared/lib/styles";
 import Link from "next/link";
-import Header from "@/components/Header";
-
-interface Item {
-  id: string;
-  title: string;
-  description: string;
-  images: string[];
-  price: number;
-  category?: string;
-  year?: number;
-  department?: string;
-}
+import Header from "@/shared/components/Header";
+import { Item } from "@/shared/lib/types";
 
 const departments = [
   "All",
@@ -55,7 +45,7 @@ export default function ItemsPage() {
     async function fetchItems() {
       try {
         let query = supabase
-          .from("items")
+          .from("products")
           .select("*")
           .eq("status", "available");
 

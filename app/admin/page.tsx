@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import { User, Item } from "@/lib/types";
-import Header from "@/components/Header";
-import { useAdmin } from "@/hooks/useAdmin";
+import { User, Item } from "@/shared/lib/types";
+import Header from "@/shared/components/Header";
+import { useAdmin } from "./useAdmin";
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<

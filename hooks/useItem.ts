@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { Item } from "@/lib/types";
+import { supabase } from "@/shared/lib/supabase";
+import { Item } from "@/shared/lib/types";
 
 export function useItem(itemId: string, includeSellerInfo = false) {
   const [item, setItem] = useState<Item | null>(null);

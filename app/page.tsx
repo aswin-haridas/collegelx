@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { styles } from "@/lib/styles";
-import { playfair } from "@/lib/fonts";
+import { supabase } from "@/shared/lib/supabase";
+import { styles } from "@/shared/lib/styles";
+import { playfair } from "@/shared/lib/fonts";
 import {
   UserCircle,
   ShoppingBag,
@@ -14,18 +14,10 @@ import {
   ArrowRight,
   LogIn,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import Header from "@/components/Header";
+import { useAuth } from "@/app/auth/useAuth";
+import Header from "@/shared/components/Header";
 
-// Type definition for items
-interface Item {
-  id: string;
-  title: string;
-  description: string;
-  images: string[];
-  price: number;
-  category?: string;
-}
+import { Item } from "@/shared/lib/types";
 
 const Home = () => {
   const router = useRouter();
@@ -38,7 +30,7 @@ const Home = () => {
     const fetchFeaturedItems = async () => {
       try {
         const { data, error } = await supabase
-          .from("items")
+          .from("products")
           .select("*")
           .eq("status", "available")
           .order("created_at", { ascending: false })

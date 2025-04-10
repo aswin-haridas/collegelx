@@ -1,39 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { styles } from "@/lib/styles";
-import { supabase } from "@/lib/supabase";
+import { styles } from "@/shared/lib/styles";
+import { supabase } from "@/shared/lib/supabase";
 import { Star, Edit, Trash2, Package, MessageSquare } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
-import ItemCard from "@/components/ItemCard";
-import { Item as ItemType } from "@/lib/types";
-import Header from "@/components/Header";
-import { useAuth } from "@/hooks/useAuth";
-import { useReview } from "@/hooks/useReview";
-
-interface User {
-  name: string;
-  email: string;
-  phone?: string;
-  department?: string;
-  university_id?: string;
-  role: string;
-  profile_image?: string;
-  year?: string;
-  rating?: number;
-}
-
-interface Review {
-  id: string;
-  reviewer_name: string;
-  rating: number;
-  comment: string;
-  created_at: string;
-}
+import ItemCard from "@/shared/components/ItemCard";
+import { Item } from "@/shared/lib/types";
+import Header from "@/shared/components/Header";
+import { useAuth } from "@/app/auth/useAuth";
+import { useReview } from "../useReview";
+import { User } from "@/shared/lib/types";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
-  const [items, setItems] = useState<ItemType[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [activeTab, setActiveTab] = useState("products");
   const { userId: currentUserId } = useAuth();
   const router = useRouter();
@@ -76,7 +57,7 @@ export default function ProfilePage() {
       if (!profileId) return;
       try {
         const { data, error } = await supabase
-          .from("items")
+          .from("products")
           .select("*")
           .eq("seller_id", profileId);
         if (error) throw error;
@@ -139,7 +120,7 @@ export default function ProfilePage() {
     if (confirm("Are you sure you want to delete this item?")) {
       try {
         const { error } = await supabase
-          .from("items")
+          .from("products")
           .delete()
           .eq("id", itemId);
 
@@ -158,7 +139,7 @@ export default function ProfilePage() {
     ) {
       try {
         const { error } = await supabase
-          .from("items")
+          .from("products")
           .update({ status: "sold" })
           .eq("id", itemId);
 

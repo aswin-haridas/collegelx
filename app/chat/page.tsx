@@ -2,9 +2,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Loader2, AlertCircle, ArrowLeft, Send } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Sidebar from "@/components/Sidebar";
-import { supabase } from "@/lib/supabase";
-import { styles } from "@/lib/styles";
+import Sidebar from "@/shared/components/Sidebar";
+import { supabase } from "@/shared/lib/supabase";
+import { styles } from "@/shared/lib/styles";
 
 interface Message {
   id: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { styles } from "@/lib/styles";
+import { styles } from "@/shared/lib/styles";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 

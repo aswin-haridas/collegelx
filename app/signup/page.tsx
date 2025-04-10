@@ -2,9 +2,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { styles } from "@/lib/styles";
-import { supabase } from "@/lib/supabase";
-import { playfair } from "@/lib/fonts";
+import { styles } from "@/shared/lib/styles";
+import { supabase } from "@/shared/lib/supabase";
+import { playfair } from "@/shared/lib/fonts";
 
 /**
  * Create a new user account with basic info

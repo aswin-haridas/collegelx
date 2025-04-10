@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { styles } from "@/lib/styles";
-import { supabase } from "@/lib/supabase";
+import { styles } from "@/shared/lib/styles";
+import { supabase } from "@/shared/lib/supabase";
 import { Loader2, Upload } from "lucide-react";
-import Header from "@/components/Header";
+import Header from "@/shared/components/Header";
 
 export default function SellPage() {
   const router = useRouter();
@@ -62,7 +62,7 @@ export default function SellPage() {
       );
 
       // Insert item into database with seller field instead of user_id
-      const { error: insertError } = await supabase.from("items").insert({
+      const { error: insertError } = await supabase.from("products").insert({
         seller_id: userId, // Changed to seller field to match the database schema
         title,
         description,
