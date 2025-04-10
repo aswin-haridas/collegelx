@@ -10,7 +10,6 @@ import Header from "@/components/Header";
 // Define the message type based on your database schema
 interface Message {
   id: string;
-  sent_at: string;
   sender_id: string;
   reciever_id: string;
   message: string;
@@ -63,7 +62,7 @@ export default function MessagesPage() {
           .from("messages")
           .select("*")
           .or(`sender_id.eq.${userId},reciever_id.eq.${userId}`)
-          .order("sent_at", { ascending: false });
+          .order("created_at", { ascending: false });
 
         if (messagesError) {
           throw new Error(messagesError.message);
@@ -141,7 +140,7 @@ export default function MessagesPage() {
           // If this is a new conversation we haven't processed yet, or this is a newer message
           if (
             !conversationsMap.has(conversationKey) ||
-            new Date(message.sent_at).getTime() >
+            new Date(message.created_at).getTime() >
               new Date(
                 conversationsMap.get(conversationKey)!.last_message_time
               ).getTime()
@@ -154,7 +153,7 @@ export default function MessagesPage() {
               participant_id: participantId,
               participant_name: participantName,
               last_message: message.message,
-              last_message_time: message.sent_at,
+              last_message_time: message.created_at,
               unread_count: 0, // Could implement unread count later
             });
           }

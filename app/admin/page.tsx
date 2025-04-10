@@ -45,12 +45,12 @@ const AdminDashboard: React.FC = () => {
   return (
     <>
       <Header />
-      <div className="flex h-screen bg-gray-100">
+      <div className="flex h-screen bg-gray-50">
         {/* Main Content */}
         <div className="flex-1 p-6 overflow-auto">
           {/* Success Message */}
           {showSuccessMessage && (
-            <div className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50">
+            <div className="fixed top-4 right-4 bg-gray-100 border border-black text-gray-800 px-4 py-3 rounded z-50 shadow-md">
               <span>{successMessage}</span>
               <button
                 className="ml-4 font-bold"
@@ -68,23 +68,23 @@ const AdminDashboard: React.FC = () => {
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full p-2 border rounded-lg"
+              className="w-full p-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none"
             />
           </div>
 
           {/* Summary Counts */}
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="p-4 bg-white rounded-lg shadow">
+            <div className="p-4 bg-white rounded-lg shadow-md border border-gray-200">
               <h3 className="text-2xl font-bold">{users.length}</h3>
-              <p className="text-gray-600">Total Users</p>
+              <p className="text-gray-700">Total Users</p>
             </div>
-            <div className="p-4 bg-white rounded-lg shadow">
+            <div className="p-4 bg-white rounded-lg shadow-md border border-gray-200">
               <h3 className="text-2xl font-bold">{items.length}</h3>
-              <p className="text-gray-600">Total Products</p>
+              <p className="text-gray-700">Total Products</p>
             </div>
-            <div className="p-4 bg-white rounded-lg shadow">
+            <div className="p-4 bg-white rounded-lg shadow-md border border-gray-200">
               <h3 className="text-2xl font-bold">{unlistedItems.length}</h3>
-              <p className="text-gray-600">Unlisted Products</p>
+              <p className="text-gray-700">Unlisted Products</p>
             </div>
           </div>
 
@@ -94,8 +94,8 @@ const AdminDashboard: React.FC = () => {
               <button
                 className={`py-2 px-4 ${
                   activeTab === "users"
-                    ? "border-b-2 border-blue-500 text-blue-600"
-                    : "text-gray-600 hover:text-blue-500"
+                    ? "border-b-2 border-black text-black font-medium"
+                    : "text-gray-600 hover:text-black"
                 }`}
                 onClick={() => setActiveTab("users")}
               >
@@ -104,8 +104,8 @@ const AdminDashboard: React.FC = () => {
               <button
                 className={`py-2 px-4 ${
                   activeTab === "allItems"
-                    ? "border-b-2 border-blue-500 text-blue-600"
-                    : "text-gray-600 hover:text-blue-500"
+                    ? "border-b-2 border-black text-black font-medium"
+                    : "text-gray-600 hover:text-black"
                 }`}
                 onClick={() => setActiveTab("allItems")}
               >
@@ -114,8 +114,8 @@ const AdminDashboard: React.FC = () => {
               <button
                 className={`py-2 px-4 ${
                   activeTab === "unlistedItems"
-                    ? "border-b-2 border-blue-500 text-blue-600"
-                    : "text-gray-600 hover:text-blue-500"
+                    ? "border-b-2 border-black text-black font-medium"
+                    : "text-gray-600 hover:text-black"
                 }`}
                 onClick={() => setActiveTab("unlistedItems")}
               >
@@ -125,7 +125,7 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           {/* Tab Content */}
-          <div className="bg-white rounded-lg shadow">
+          <div className="bg-white rounded-lg shadow-md border border-gray-200">
             {isLoading ? (
               <div className="p-4 text-center">Loading data...</div>
             ) : error ? (
@@ -171,7 +171,7 @@ const AdminDashboard: React.FC = () => {
                             <td className="p-2">
                               <button
                                 onClick={() => setEditingUser(user)}
-                                className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded text-sm"
+                                className="bg-black hover:bg-gray-800 text-white py-1 px-2 rounded text-sm"
                               >
                                 Edit
                               </button>
@@ -222,7 +222,7 @@ const AdminDashboard: React.FC = () => {
                             <td className="p-2">
                               <button
                                 onClick={() => setEditingItem(item)}
-                                className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded text-sm"
+                                className="bg-black hover:bg-gray-800 text-white py-1 px-2 rounded text-sm"
                               >
                                 Edit
                               </button>
@@ -263,7 +263,7 @@ const AdminDashboard: React.FC = () => {
                             <td className="p-2">
                               <button
                                 onClick={() => setEditingItem(item)}
-                                className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded text-sm"
+                                className="bg-black hover:bg-gray-800 text-white py-1 px-2 rounded text-sm"
                               >
                                 Edit
                               </button>
@@ -281,8 +281,8 @@ const AdminDashboard: React.FC = () => {
 
         {/* Edit User Modal */}
         {editingUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-md">
+          <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl border border-gray-300">
               <h2 className="text-xl font-bold mb-4">Edit User</h2>
               <form
                 onSubmit={(e) => {
@@ -292,29 +292,29 @@ const AdminDashboard: React.FC = () => {
                 }}
               >
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-1">Name</label>
+                  <label className="block text-gray-800 mb-1">Name</label>
                   <input
                     type="text"
                     value={editingUser.name || ""}
                     onChange={(e) =>
                       setEditingUser({ ...editingUser, name: e.target.value })
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-1">Email</label>
+                  <label className="block text-gray-800 mb-1">Email</label>
                   <input
                     type="email"
                     value={editingUser.email || ""}
                     onChange={(e) =>
                       setEditingUser({ ...editingUser, email: e.target.value })
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-1">Department</label>
+                  <label className="block text-gray-800 mb-1">Department</label>
                   <input
                     type="text"
                     value={editingUser.department || ""}
@@ -324,17 +324,17 @@ const AdminDashboard: React.FC = () => {
                         department: e.target.value,
                       })
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-1">Role</label>
+                  <label className="block text-gray-800 mb-1">Role</label>
                   <select
                     value={editingUser.role || "user"}
                     onChange={(e) =>
                       setEditingUser({ ...editingUser, role: e.target.value })
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
@@ -344,13 +344,13 @@ const AdminDashboard: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setEditingUser(null)}
-                    className="px-4 py-2 border rounded"
+                    className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-500 text-white rounded"
+                    className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors"
                   >
                     Save Changes
                   </button>
@@ -362,8 +362,8 @@ const AdminDashboard: React.FC = () => {
 
         {/* Edit Item Modal */}
         {editingItem && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-md">
+          <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl border border-gray-300">
               <h2 className="text-xl font-bold mb-4">Edit Item</h2>
               <form
                 onSubmit={(e) => {
@@ -373,18 +373,18 @@ const AdminDashboard: React.FC = () => {
                 }}
               >
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-1">Title</label>
+                  <label className="block text-gray-800 mb-1">Title</label>
                   <input
                     type="text"
                     value={editingItem.title}
                     onChange={(e) =>
                       setEditingItem({ ...editingItem, title: e.target.value })
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-1">Category</label>
+                  <label className="block text-gray-800 mb-1">Category</label>
                   <input
                     type="text"
                     value={editingItem.category}
@@ -394,11 +394,11 @@ const AdminDashboard: React.FC = () => {
                         category: e.target.value,
                       })
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-1">Price</label>
+                  <label className="block text-gray-800 mb-1">Price</label>
                   <input
                     type="number"
                     value={editingItem.price}
@@ -408,19 +408,19 @@ const AdminDashboard: React.FC = () => {
                         price: parseFloat(e.target.value),
                       })
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-1">Status</label>
+                  <label className="block text-gray-800 mb-1">Status</label>
                   <select
                     value={editingItem.status}
                     onChange={(e) =>
                       setEditingItem({ ...editingItem, status: e.target.value })
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
                   >
-                    <option value="available">available</option>
+                    <option value="available">Available</option>
                     <option value="unlisted">Unlisted</option>
                   </select>
                 </div>
@@ -428,13 +428,13 @@ const AdminDashboard: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setEditingItem(null)}
-                    className="px-4 py-2 border rounded"
+                    className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-500 text-white rounded"
+                    className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors"
                   >
                     Save Changes
                   </button>

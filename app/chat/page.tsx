@@ -11,7 +11,7 @@ interface Message {
   message: string;
   sender_id: string;
   reciever_id: string;
-  sent_at: string;
+  created_at: string;
   listing_id: string;
 }
 
@@ -67,7 +67,7 @@ export default function ChatPage() {
           .eq("listing_id", listingId)
           .or(`sender_id.eq.${userId},reciever_id .eq.${userId}`)
           .or(`sender_id.eq.${receiverId},reciever_id .eq.${receiverId}`)
-          .order("sent_at", { ascending: true });
+          .order("created_at", { ascending: true });
 
         if (error) {
           throw new Error(error.message);
@@ -185,7 +185,7 @@ export default function ChatPage() {
         message: newMessage.trim(),
         sender_id: userId,
         reciever_id: receiverId,
-        sent_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
         listing_id: listingId,
       };
 
@@ -321,7 +321,7 @@ export default function ChatPage() {
                     >
                       <p className="break-words">{message.message}</p>
                       <div className="text-xs mt-1 opacity-80 text-right">
-                        {new Date(message.sent_at).toLocaleTimeString([], {
+                        {new Date(message.created_at).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}

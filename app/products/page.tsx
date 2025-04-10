@@ -31,6 +31,8 @@ const departments = [
 const category = ["Notes", "Uniform", "Stationary", "Others", "All"];
 const years = [1, 2, 3, 4, "All"];
 
+const name = sessionStorage.getItem("name") || "User";
+
 export default function ItemsPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,10 +94,11 @@ export default function ItemsPage() {
 
   return (
     <>
-      <Header/>
+      <Header />
       <div className="min-h-screen">
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
+            <p className="text-gray-600 italic text-sm">Welcome {name}</p>
             <h1
               className="text-4xl font-semibold mb-6 mt-6"
               style={{ color: styles.warmPrimaryDark }}

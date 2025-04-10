@@ -25,7 +25,7 @@ export const useWishlist = ({
           .from("wishlist")
           .select("*")
           .eq("user_id", userId)
-          .eq("item_id", itemId)
+          .eq("product_id", itemId)
           .single();
 
         if (data) {
@@ -53,7 +53,7 @@ export const useWishlist = ({
           .from("wishlist")
           .delete()
           .eq("user_id", userId)
-          .eq("item_id", itemId);
+          .eq("product_id", itemId);
 
         if (error) throw error;
         setIsInWishlist(false);
@@ -61,7 +61,7 @@ export const useWishlist = ({
         // Add to wishlist
         const { error } = await supabase
           .from("wishlist")
-          .insert({ user_id: userId, item_id: itemId })
+          .insert({ user_id: userId, product_id: itemId })
           .select();
 
         if (error) throw error;

@@ -44,12 +44,8 @@ const Header = () => {
   }, [isAuthenticated, userId]);
 
   const handleLogout = () => {
-    // Clear the user session
     sessionStorage.clear();
-    // Redirect to home page
     router.push("/login");
-    // Refresh the page to update auth state
-    window.location.reload();
   };
 
   return (
