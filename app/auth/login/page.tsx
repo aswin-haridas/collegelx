@@ -8,6 +8,7 @@ import { styles } from "@/shared/lib/styles";
 import { playfair } from "@/shared/lib/fonts";
 import { useAuth } from "../../auth/useAuth";
 import Loader from "@/shared/components/Atoms/Loading";
+import { Loader2 } from "lucide-react";
 export default function LoginPage() {
   const {
     isAuthenticated,
