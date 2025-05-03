@@ -9,7 +9,11 @@ interface ProfileHeaderProps {
   setActiveTab: (tab: string) => void;
 }
 
-export default function ProfileHeader({ user, activeTab, setActiveTab }: ProfileHeaderProps) {
+export default function ProfileHeader({
+  user,
+  activeTab,
+  setActiveTab,
+}: ProfileHeaderProps) {
   return (
     <>
       <Header />

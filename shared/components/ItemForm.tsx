@@ -30,7 +30,7 @@ const ItemForm: React.FC<ItemFormProps> = ({
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     if (name === "price") {

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
@@ -25,6 +26,7 @@
     "@types/react-dom": "^19",
     "eslint": "^8.x.x",
     "eslint-config-next": "^13.x.x",
+    "prettier": "^3.5.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

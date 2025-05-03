@@ -73,7 +73,7 @@ export default function ProfilePage() {
             images: item.images || (item.image ? [item.image] : []),
             image: item.image || item.images?.[0] || null,
             imageUrl: item.image || item.images?.[0] || null,
-          }))
+          })),
         );
       } catch (error) {
         console.error("Error fetching user items:", error);
@@ -126,8 +126,8 @@ export default function ProfilePage() {
 
         setItems(
           items.map((item) =>
-            item.id === itemId ? { ...item, status: "sold" } : item
-          )
+            item.id === itemId ? { ...item, status: "sold" } : item,
+          ),
         );
       } catch (error) {
         console.error("Error marking item as sold:", error);

@@ -122,7 +122,7 @@ export const useProfile = (userId: string | null) => {
 
       return data;
     },
-    [userId]
+    [userId],
   );
 
   return {

@@ -183,9 +183,7 @@ const Sidebar = () => {
               const requiresAuth =
                 item.href !== "/" && !item.href.startsWith("/buy/");
               const linkHref =
-                requiresAuth && !userName
-                  ? `/auth/login}`
-                  : item.href;
+                requiresAuth && !userName ? `/auth/login}` : item.href;
 
               // Replace the item href for the NavItem component
               const navItem = { ...item, href: linkHref };

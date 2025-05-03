@@ -123,7 +123,7 @@ export const useChat = () => {
             ...currentMessages,
             payload.new as Message,
           ]);
-        }
+        },
       )
       .subscribe();
 
@@ -160,7 +160,7 @@ export const useChat = () => {
       .from("messages")
       .select("*")
       .or(
-        `seller_id.eq.${chatData.buyer_id},seller_id.eq.${chatData.seller_id}`
+        `seller_id.eq.${chatData.buyer_id},seller_id.eq.${chatData.seller_id}`,
       )
       .or(`buyer_id.eq.${chatData.buyer_id},buyer_id.eq.${chatData.seller_id}`)
       .order("created_at", { ascending: true });
@@ -222,7 +222,7 @@ export const useChat = () => {
     chatId: number,
     senderId: string,
     message: string,
-    productId?: string
+    productId?: string,
   ) => {
     // Get the chat to determine recipient
     const { data: chatData, error: chatError } = await supabase
@@ -254,7 +254,7 @@ export const useChat = () => {
   const createChat = async (
     buyerId: string,
     sellerId: string,
-    productId?: string
+    productId?: string,
   ) => {
     const { data, error } = await supabase
       .from("chats")

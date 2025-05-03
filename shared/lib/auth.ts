@@ -6,7 +6,7 @@ import { supabase } from "./supabase";
 export async function updatePassword(
   email: string,
   currentPassword: string,
-  newPassword: string
+  newPassword: string,
 ) {
   try {
     // First verify the current password by attempting to sign in

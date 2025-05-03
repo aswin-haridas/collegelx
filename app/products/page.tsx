@@ -77,7 +77,7 @@ export default function ItemsPage() {
   }, [filters.year, filters.department, filters.category, filters.sortPrice]);
 
   const filteredItems = items.filter((item) =>
-    item.title.toLowerCase().includes(filters.search.toLowerCase())
+    item.title.toLowerCase().includes(filters.search.toLowerCase()),
   );
 
   if (loading) {

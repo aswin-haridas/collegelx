@@ -126,7 +126,7 @@ export const useWishlist = (productId?: String) => {
             created_at,
             user_id
           )
-        `
+        `,
         )
         .eq("user_id", user.id);
 

@@ -33,7 +33,7 @@ export default function ChatPage() {
 
   // Group chats by product
   const [chatsByProduct, setChatsByProduct] = useState<Record<string, any[]>>(
-    {}
+    {},
   );
 
   // Create a mapping of product IDs to products
@@ -41,7 +41,7 @@ export default function ChatPage() {
 
   // Track which product is expanded to show its users
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
-    null
+    null,
   );
 
   // Get current user from session storage
@@ -299,7 +299,7 @@ export default function ChatPage() {
                       )}
                     </div>
                   );
-                }
+                },
               )}
             </div>
           )}
@@ -353,7 +353,7 @@ export default function ChatPage() {
                       }}
                       onClick={() => {
                         const productId = chats.find(
-                          (chat) => chat.id === selectedChatId
+                          (chat) => chat.id === selectedChatId,
                         )?.product_id;
                         if (productId) {
                           router.push(`/buy/${productId}`);
@@ -369,7 +369,7 @@ export default function ChatPage() {
                   >
                     {chats.find((chat) => chat.id === selectedChatId)
                       ? getChatName(
-                          chats.find((chat) => chat.id === selectedChatId)
+                          chats.find((chat) => chat.id === selectedChatId),
                         )
                       : "Chat"}
                   </h2>
@@ -381,7 +381,7 @@ export default function ChatPage() {
                       style={{ color: styles.warmPrimary }}
                       onClick={() => {
                         const productId = chats.find(
-                          (chat) => chat.id === selectedChatId
+                          (chat) => chat.id === selectedChatId,
                         )?.product_id;
                         if (productId) {
                           router.push(`/buy/${productId}`);
@@ -390,7 +390,7 @@ export default function ChatPage() {
                     >
                       {truncateText(
                         chatProducts[selectedChatId].title ||
-                          "View product details"
+                          "View product details",
                       )}
                     </div>
                   )}

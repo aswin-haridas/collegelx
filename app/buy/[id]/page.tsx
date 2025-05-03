@@ -356,7 +356,7 @@ export default function ItemPage() {
                     className="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
                     onClick={() =>
                       router.push(
-                        `/profile/${item.seller_id || seller?.userid}`
+                        `/profile/${item.seller_id || seller?.userid}`,
                       )
                     }
                   >

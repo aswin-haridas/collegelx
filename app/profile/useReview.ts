@@ -6,7 +6,7 @@ import { useRating } from "./useRating";
 
 export function useReview(
   profileId: string | null,
-  currentUserId: string | null
+  currentUserId: string | null,
 ) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isPostingReview, setIsPostingReview] = useState(false);
@@ -43,7 +43,7 @@ export function useReview(
         e.target.name === "rating" ? parseInt(e.target.value) : e.target.value;
       setReviewData((prev) => ({ ...prev, [e.target.name]: value }));
     },
-    []
+    [],
   );
 
   const handlePostReview = useCallback(
@@ -80,9 +80,12 @@ export function useReview(
 
         if (error) throw error;
 
-        setReviews((prev) => [{...data[0], user_id: profileId}, ...prev]);
+        setReviews((prev) => [{ ...data[0], user_id: profileId }, ...prev]);
         setReviewData({ rating: 5, comment: "" });
-        calculateAverageRating([{...data[0], user_id: profileId}, ...reviews]);
+        calculateAverageRating([
+          { ...data[0], user_id: profileId },
+          ...reviews,
+        ]);
       } catch (error) {
         console.error("Error posting review:", error);
         alert("Failed to post review. Please try again.");
@@ -97,7 +100,7 @@ export function useReview(
       userName,
       reviews,
       calculateAverageRating,
-    ]
+    ],
   );
 
   return {

@@ -56,8 +56,8 @@ export function Table<T>({
                   {typeof column.accessor === "function"
                     ? column.accessor(item)
                     : item[column.accessor] !== undefined
-                    ? String(item[column.accessor])
-                    : "N/A"}
+                      ? String(item[column.accessor])
+                      : "N/A"}
                 </td>
               ))}
             </tr>

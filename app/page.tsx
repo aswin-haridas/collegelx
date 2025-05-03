@@ -51,7 +51,7 @@ const Home = () => {
   const renderFeatureCard = (
     icon: React.ReactNode,
     title: string,
-    description: string
+    description: string,
   ) => (
     <div className="bg-white p-6 rounded-lg shadow-md text-center">
       <div className="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
@@ -198,19 +198,19 @@ const Home = () => {
             {renderFeatureCard(
               <ShoppingBag className="h-8 w-8 text-amber-600" />,
               "Campus-Focused Marketplace",
-              "Buy and sell items specifically relevant to your college experience."
+              "Buy and sell items specifically relevant to your college experience.",
             )}
 
             {renderFeatureCard(
               <MessageCircle className="h-8 w-8 text-amber-600" />,
               "Direct Communication",
-              "Message sellers directly to negotiate prices or ask questions."
+              "Message sellers directly to negotiate prices or ask questions.",
             )}
 
             {renderFeatureCard(
               <UserCircle className="h-8 w-8 text-amber-600" />,
               "Verified College Users",
-              "A safe community of verified students for secure transactions."
+              "A safe community of verified students for secure transactions.",
             )}
           </div>
         </div>

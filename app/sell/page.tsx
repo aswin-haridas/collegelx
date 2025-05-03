@@ -58,7 +58,7 @@ export default function SellPage() {
           } = supabase.storage.from("images").getPublicUrl(fileName);
 
           return publicUrl;
-        })
+        }),
       );
 
       // Insert item into database with seller field instead of user_id
