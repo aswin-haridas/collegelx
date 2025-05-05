@@ -9,6 +9,7 @@ import { playfair } from "@/lib/fonts";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import toast from "react-hot-toast";
+import "@/app/styles.css";
 
 export default function LoginPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();

@@ -17,7 +17,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import { Item } from "@/lib/types";
-
+import "@/app/styles.css";
 
 const Home = () => {
   const router = useRouter();
@@ -57,8 +57,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-8 md:mb-0">
             <h1
-              className={`text-4xl md:text-5xl font-bold mb-4 ${playfair.className}`}
-              style={{ color: styles.warmPrimaryDark }}
+              className={`text-4xl md:text-5xl font-bold mb-4 ${playfair.className} warmPrimaryDark`}
             >
               CollegeLX Marketplace
             </h1>
@@ -94,8 +93,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <h2
-              className={`text-2xl md:text-3xl font-semibold ${playfair.className}`}
-              style={{ color: styles.warmPrimaryDark }}
+              className={`text-2xl md:text-3xl font-semibold ${playfair.className} warmPrimaryDark`}
             >
               Featured Items
             </h2>
@@ -144,8 +142,7 @@ const Home = () => {
                     </div>
                     <div className="p-4 flex flex-col flex-grow">
                       <h3
-                        className="font-medium text-lg mb-2"
-                        style={{ color: styles.warmText }}
+                        className="font-medium text-lg mb-2 warmText"
                       >
                         {item.title}
                       </h3>
@@ -154,8 +151,7 @@ const Home = () => {
                       </p>
                       <div className="flex justify-between items-center mt-2">
                         <span
-                          className="font-bold"
-                          style={{ color: styles.warmText }}
+                          className="font-bold warmText"
                         >
                           ₹{item.price.toFixed(2)}
                         </span>
@@ -178,8 +174,7 @@ const Home = () => {
       <section className="bg-amber-50 py-12 px-4">
         <div className="max-w-7xl mx-auto">
           <h2
-            className={`text-2xl md:text-3xl font-semibold text-center mb-12 ${playfair.className}`}
-            style={{ color: styles.warmPrimaryDark }}
+            className={`text-2xl md:text-3xl font-semibold text-center mb-12 ${playfair.className} warmPrimaryDark`}
           >
             Why Choose CollegeLX?
           </h2>
