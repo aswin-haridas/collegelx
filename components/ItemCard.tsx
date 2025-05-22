@@ -16,7 +16,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   };
 
   // Get the first image URL or use the legacy imageUrl property
-  const displayImage = (item.images?.[0] ?? "/images/placeholder.png");
+  const displayImage = (item.images?.[0] ?? "/images/default-placeholder.png");
   
   return (
     <Link href={`/buy/${item.id}`} className="block h-full">
