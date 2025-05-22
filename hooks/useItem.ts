@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { Item } from "@/lib/types";
+import { Item, User } from "@/lib/types";
 
 export function useItem(itemId: string, includeSellerInfo = false) {
   const [item, setItem] = useState<Item | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [seller, setSeller] = useState<any | null>(null);
+  const [seller, setSeller] = useState<User | null>(null);
   const [sellerLoading, setSellerLoading] = useState(false);
 
   useEffect(() => {
@@ -36,8 +36,17 @@ export function useItem(itemId: string, includeSellerInfo = false) {
           // Fetch seller data if requested
           if (includeSellerInfo) {
             setSellerLoading(true);
-            const sellerId =
-              data.seller_id || data.user_id || data.sender_id || data.seller;
+            let sellerIdToFetch: string | undefined = undefined;
+            if (data.seller_id) {
+              sellerIdToFetch = data.seller_id;
+            } else if (data.user_id) {
+              sellerIdToFetch = data.user_id;
+            } else if (data.sender_id) {
+              sellerIdToFetch = data.sender_id;
+            } else if (typeof data.seller === 'string') {
+              sellerIdToFetch = data.seller;
+            }
+            const sellerId = sellerIdToFetch;
 
             if (sellerId) {
               const { data: userData, error: userError } = await supabase
@@ -47,7 +56,7 @@ export function useItem(itemId: string, includeSellerInfo = false) {
                 .single();
 
               if (!userError && userData) {
-                setSeller(userData);
+                setSeller(userData as User);
               }
             }
             setSellerLoading(false);

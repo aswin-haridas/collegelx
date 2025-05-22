@@ -31,6 +31,8 @@ export interface Item {
   user_id: string;
   category: string;
   condition: string;
+  sender_id?: string; 
+  seller?: string; 
 }
 
 export interface WishlistItem extends Item {
@@ -49,7 +51,7 @@ export interface Review {
 export interface Message {
   id: string;
   sender_id: string;
-  reciever_id: string;
+  receiver_id: string;
   content: string;
   item_id: string;
   read: boolean;

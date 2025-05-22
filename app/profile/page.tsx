@@ -345,35 +345,14 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {items.map((item) => (
                   <div key={item.id} className="relative group">
-                    <ItemCard item={item} />
-                    <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        className="p-2 bg-white rounded-full shadow-md"
-                        onClick={() => handleEditItem(item.id)}
-                        style={{ color: styles.warmPrimary }}
-                        title="Edit item"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      {item.status !== "sold" && (
-                        <button
-                          className="p-2 bg-white rounded-full shadow-md"
-                          onClick={() => handleMarkAsSold(item.id)}
-                          style={{ color: "#16a34a" }}
-                          title="Mark as sold"
-                        >
-                          <Star size={16} fill="#16a34a" />
-                        </button>
-                      )}
-                      <button
-                        className="p-2 bg-white rounded-full shadow-md"
-                        onClick={() => handleDeleteItem(item.id)}
-                        style={{ color: "#ef4444" }}
-                        title="Delete item"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                    <ItemCard
+                      item={item}
+                      showControls={true}
+                      isOwnItem={true}
+                      onEdit={handleEditItem}
+                      onDelete={handleDeleteItem}
+                      onMarkAsSold={handleMarkAsSold}
+                    />
                     <div
                       className="absolute bottom-2 right-2 px-2 py-1 text-xs font-medium rounded-full"
                       style={{
@@ -432,17 +411,12 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {wishlistItems.map((item) => (
                   <div key={item.id} className="relative group">
-                    <ItemCard item={item} />
-                    <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        className="p-2 bg-white rounded-full shadow-md"
-                        onClick={() => handleRemoveFromWishlist(item.id)}
-                        style={{ color: "#ef4444" }}
-                        title="Remove from wishlist"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                    <ItemCard
+                      item={item}
+                      showControls={true}
+                      isWishlistItem={true}
+                      onRemoveFromWishlist={handleRemoveFromWishlist}
+                    />
                   </div>
                 ))}
               </div>
