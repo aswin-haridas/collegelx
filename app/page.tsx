@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { styles } from "@/lib/styles";
 import { playfair } from "@/lib/fonts";
 import {
   UserCircle,
@@ -12,11 +11,11 @@ import {
   MessageCircle,
   PlusCircle,
   ArrowRight,
-  LogIn,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import { Item } from "@/lib/types";
+import ItemCard from "@/components/ItemCard";
 import "@/app/styles.css";
 
 const Home = () => {
@@ -125,45 +124,7 @@ const Home = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {featuredItems.map((item) => (
-                <Link href={`/buy/${item.id}`} key={item.id}>
-                  <div className="border border-stone-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
-                    <div className="relative h-44 bg-gray-100">
-                      {item.images?.length > 0 ? (
-                        <img
-                          src={item.images[0]}
-                          alt={item.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                          No Image
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4 flex flex-col flex-grow">
-                      <h3
-                        className="font-medium text-lg mb-2 warmText"
-                      >
-                        {item.title}
-                      </h3>
-                      <p className="text-gray-600 mb-2 text-sm flex-grow line-clamp-2">
-                        {item.description}
-                      </p>
-                      <div className="flex justify-between items-center mt-2">
-                        <span
-                          className="font-bold warmText"
-                        >
-                          ₹{item.price.toFixed(2)}
-                        </span>
-                        {item.category && (
-                          <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                            {item.category}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
+                <ItemCard key={item.id} item={item} />
               ))}
             </div>
           )}

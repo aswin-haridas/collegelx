@@ -3,12 +3,29 @@ import Image from "next/image";
 import { styles } from "@/lib/styles";
 import Link from "next/link";
 import { Item } from "@/lib/types";
+import { Edit, Trash2, Star, Heart } from "lucide-react";
 
 interface ItemCardProps {
   item: Item;
+  showControls?: boolean;
+  isOwnItem?: boolean;
+  isWishlistItem?: boolean;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onMarkAsSold?: (id: string) => void;
+  onRemoveFromWishlist?: (id: string) => void;
 }
 
-const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
+const ItemCard: React.FC<ItemCardProps> = ({
+  item,
+  showControls = false,
+  isOwnItem = false,
+  isWishlistItem = false,
+  onEdit,
+  onDelete,
+  onMarkAsSold,
+  onRemoveFromWishlist,
+}) => {
   const [imageError, setImageError] = useState(false);
 
   const handleImageError = () => {
@@ -16,7 +33,17 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   };
 
   // Get the first image URL or use the legacy imageUrl property
-  const displayImage = (item.images?.[0] ?? "/images/default-placeholder.png");
+  const displayImage = item.images?.[0] ?? "/images/placeholder.png";
+
+  const handleAction = (
+    e: React.MouseEvent,
+    action: (id: string) => void,
+    id: string
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    action(id);
+  };
   
   return (
     <Link href={`/buy/${item.id}`} className="block h-full">
@@ -44,6 +71,57 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
           {item.status !== "available" && (
             <div className="absolute top-2 right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
               {item.status}
+            </div>
+          )}
+
+          {/* Item Controls */}
+          {showControls && (
+            <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {isOwnItem && onEdit && (
+                <button
+                  className="p-2 bg-white rounded-full shadow-md"
+                  onClick={(e) => handleAction(e, onEdit, item.id)}
+                  style={{ color: styles.warmPrimary }}
+                  title="Edit item"
+                >
+                  <Edit size={16} />
+                </button>
+              )}
+
+              {isOwnItem && item.status !== "sold" && onMarkAsSold && (
+                <button
+                  className="p-2 bg-white rounded-full shadow-md"
+                  onClick={(e) => handleAction(e, onMarkAsSold, item.id)}
+                  style={{ color: "#16a34a" }}
+                  title="Mark as sold"
+                >
+                  <Star size={16} fill="#16a34a" />
+                </button>
+              )}
+
+              {isOwnItem && onDelete && (
+                <button
+                  className="p-2 bg-white rounded-full shadow-md"
+                  onClick={(e) => handleAction(e, onDelete, item.id)}
+                  style={{ color: "#ef4444" }}
+                  title="Delete item"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
+
+              {isWishlistItem && onRemoveFromWishlist && (
+                <button
+                  className="p-2 bg-white rounded-full shadow-md"
+                  onClick={(e) =>
+                    handleAction(e, onRemoveFromWishlist, item.id)
+                  }
+                  style={{ color: "#ef4444" }}
+                  title="Remove from wishlist"
+                >
+                  <Heart size={16} fill="#ef4444" />
+                </button>
+              )}
             </div>
           )}
         </div>

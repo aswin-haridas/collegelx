@@ -284,46 +284,29 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {items.map((item) => (
                     <div key={item.id} className="relative group">
-                      <ItemCard item={item} />
-                      {isOwnProfile && (
-                        <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            className="p-2 bg-white rounded-full shadow-md"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleEditItem(item.id);
-                            }}
-                            style={{ color: styles.warmPrimary }}
-                            title="Edit item"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          {item.status !== "sold" && (
-                            <button
-                              className="p-2 bg-white rounded-full shadow-md"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleMarkAsSold(item.id);
-                              }}
-                              style={{ color: "#16a34a" }}
-                              title="Mark as sold"
-                            >
-                              <Star size={16} />
-                            </button>
-                          )}
-                          <button
-                            className="p-2 bg-white rounded-full shadow-md"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleDeleteItem(item.id);
-                            }}
-                            style={{ color: "#ef4444" }}
-                            title="Delete item"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      )}
+                      <ItemCard
+                        item={item}
+                        showControls={isOwnProfile}
+                        isOwnItem={isOwnProfile}
+                        onEdit={(id) => {
+                          // Need to wrap to prevent default link navigation
+                          // but handleAction in ItemCard already does e.preventDefault() and e.stopPropagation()
+                          // So, directly passing might be fine if ItemCard's Link is the one triggering.
+                          // However, these buttons are on top, so they should handle their own events.
+                          // Let's keep original onClick={(e) => { e.preventDefault(); handleEditItem(id); }} structure
+                          // by ensuring handleEditItem itself is passed if it handles prevention,
+                          // or wrap it here.
+                          // The original ProfileItemCard had handleAction that took the event.
+                          // The merged ItemCard now has that.
+                          handleEditItem(id);
+                        }}
+                        onMarkAsSold={(id) => {
+                          handleMarkAsSold(id);
+                        }}
+                        onDelete={(id) => {
+                          handleDeleteItem(id);
+                        }}
+                      />
                       <div
                         className="absolute bottom-2 right-2 px-2 py-1 text-xs font-medium rounded-full"
                         style={{
