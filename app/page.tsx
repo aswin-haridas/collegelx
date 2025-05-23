@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/shared/lib/supabase";
-import { styles } from "@/shared/lib/styles";
-import { playfair } from "@/shared/lib/fonts";
+import { styles, playfair } from "@/shared/lib/styles";
 import {
   UserCircle,
   ShoppingBag,
@@ -13,45 +11,23 @@ import {
   PlusCircle,
   ArrowRight,
 } from "lucide-react";
-import { useAuth } from "@/app/auth/hooks/useAuth";
 import Header from "@/shared/components/Header";
-import { Item } from "@/shared/lib/types";
 import { useLoginCheck } from "@/shared/hooks/useLoginCheck";
+import Image from "next/image";
 
 const Home = () => {
   useLoginCheck();
 
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
-  const [featuredItems, setFeaturedItems] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchFeaturedItems = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("products")
-          .select("*")
-          .eq("status", "available")
-          .limit(4)
-          .order("created_at", { ascending: false });
+  const { fetchFeaturedItems } = useItems();
 
-        if (error) throw error;
-        setFeaturedItems(data || []);
-      } catch (error) {
-        console.error("Error fetching featured items:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFeaturedItems();
-  }, []);
+  fetchFeaturedItems();
 
   const renderFeatureCard = (
     icon: React.ReactNode,
     title: string,
-    description: string,
+    description: string
   ) => (
     <div className="bg-white p-6 rounded-lg shadow-md text-center">
       <div className="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
@@ -71,7 +47,7 @@ const Home = () => {
           <div className="md:w-1/2 mb-8 md:mb-0">
             <h1
               className={`text-4xl md:text-5xl font-bold mb-4 ${playfair.className}`}
-              style={{ color: styles.warmPrimaryDark }}
+              style={{ color: styles.PRIMARY_DARK }}
             >
               CollegeLX Marketplace
             </h1>
@@ -106,7 +82,7 @@ const Home = () => {
           <div className="flex justify-between items-center mb-8">
             <h2
               className={`text-2xl md:text-3xl font-semibold ${playfair.className}`}
-              style={{ color: styles.warmPrimaryDark }}
+              style={{ color: styles.PRIMARY }}
             >
               Featured Items
             </h2>
@@ -142,7 +118,7 @@ const Home = () => {
                   <div className="border border-stone-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
                     <div className="relative h-44 bg-gray-100">
                       {featuredItems.length > 0 ? (
-                        <img
+                        <Image
                           src={item.images[0]}
                           alt={item.title}
                           className="w-full h-full object-cover"
@@ -156,7 +132,7 @@ const Home = () => {
                     <div className="p-4 flex flex-col flex-grow">
                       <h3
                         className="font-medium text-lg mb-2"
-                        style={{ color: styles.warmText }}
+                        style={{ color: styles.Text }}
                       >
                         {item.title}
                       </h3>
@@ -166,7 +142,7 @@ const Home = () => {
                       <div className="flex justify-between items-center mt-2">
                         <span
                           className="font-bold"
-                          style={{ color: styles.warmText }}
+                          style={{ color: styles.Text }}
                         >
                           ₹{item.price.toFixed(2)}
                         </span>
@@ -189,7 +165,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto">
           <h2
             className={`text-2xl md:text-3xl font-semibold text-center mb-12 ${playfair.className}`}
-            style={{ color: styles.warmPrimaryDark }}
+            style={{ color: styles.PrimaryDark }}
           >
             Why Choose CollegeLX?
           </h2>
@@ -198,19 +174,19 @@ const Home = () => {
             {renderFeatureCard(
               <ShoppingBag className="h-8 w-8 text-amber-600" />,
               "Campus-Focused Marketplace",
-              "Buy and sell items specifically relevant to your college experience.",
+              "Buy and sell items specifically relevant to your college experience."
             )}
 
             {renderFeatureCard(
               <MessageCircle className="h-8 w-8 text-amber-600" />,
               "Direct Communication",
-              "Message sellers directly to negotiate prices or ask questions.",
+              "Message sellers directly to negotiate prices or ask questions."
             )}
 
             {renderFeatureCard(
               <UserCircle className="h-8 w-8 text-amber-600" />,
               "Verified College Users",
-              "A safe community of verified students for secure transactions.",
+              "A safe community of verified students for secure transactions."
             )}
           </div>
         </div>

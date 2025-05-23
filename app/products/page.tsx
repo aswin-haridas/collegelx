@@ -7,6 +7,7 @@ import { styles } from "@/shared/lib/styles";
 import Link from "next/link";
 import Header from "@/shared/components/Header";
 import { Item } from "@/shared/lib/types";
+import Image from "next/image";
 
 const departments = [
   "All",
@@ -77,7 +78,7 @@ export default function ItemsPage() {
   }, [filters.year, filters.department, filters.category, filters.sortPrice]);
 
   const filteredItems = items.filter((item) =>
-    item.title.toLowerCase().includes(filters.search.toLowerCase()),
+    item.title.toLowerCase().includes(filters.search.toLowerCase())
   );
 
   if (loading) {
@@ -96,7 +97,7 @@ export default function ItemsPage() {
           <p className="text-gray-600 italic text-sm">Welcome {name}</p>
           <h1
             className="text-4xl font-semibold mb-6 mt-6"
-            style={{ color: styles.warmPrimaryDark }}
+            style={{ color: styles.PrimaryDark }}
           >
             Available Items
           </h1>
@@ -190,7 +191,7 @@ export default function ItemsPage() {
                   <div className="border border-stone-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
                     <div className="relative h-44 bg-gray-100">
                       {item.images?.length > 0 ? (
-                        <img
+                        <Image
                           src={item.images[0]}
                           alt={item.title}
                           className="w-full h-full object-cover"
@@ -204,7 +205,7 @@ export default function ItemsPage() {
                     <div className="p-4 flex flex-col flex-grow">
                       <h3
                         className="font-medium text-lg mb-2"
-                        style={{ color: styles.warmText }}
+                        style={{ color: styles.Text }}
                       >
                         {item.title}
                       </h3>
@@ -214,7 +215,7 @@ export default function ItemsPage() {
                       <div className="flex justify-between items-center mt-2">
                         <span
                           className="font-bold"
-                          style={{ color: styles.warmText }}
+                          style={{ color: styles.Text }}
                         >
                           ₹{item.price.toFixed(2)}
                         </span>

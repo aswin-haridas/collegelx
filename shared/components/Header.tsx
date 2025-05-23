@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,19 +11,15 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
-import { useAuth } from "@/app/auth/hooks/useAuth";
-import { styles } from "@/shared/lib/styles";
-import { playfair } from "@/shared/lib/fonts";
+import {playfair, styles} from "@/shared/lib/styles";
 import { supabase } from "@/shared/lib/supabase";
 
 const Header = () => {
-  const { isAuthenticated, userId, isLoading } = useAuth();
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
-      if (isAuthenticated && userId) {
         try {
           const { data, error } = await supabase
             .from("users")
@@ -38,10 +33,9 @@ const Header = () => {
           console.error("Error checking admin status:", err);
         }
       }
-    };
 
     checkAdminStatus();
-  }, [isAuthenticated, userId]);
+  });
 
   const handleLogout = () => {
     // Clear the user session
@@ -61,7 +55,7 @@ const Header = () => {
             <Link href="/" className="flex items-center">
               <span
                 className={`text-xl font-bold ${playfair.className}`}
-                style={{ color: styles.warmPrimaryDark }}
+                style={{ color: styles.PRIMARY_DARK }}
               >
                 CollegeLX
               </span>
@@ -78,7 +72,7 @@ const Header = () => {
               <ShoppingBag className="h-6 w-6" />
             </Link>
 
-            {isAuthenticated ? (
+
               <>
                 <Link
                   href="/sell"
@@ -126,7 +120,7 @@ const Header = () => {
                 <LogIn className="h-5 w-5 mr-1" />
                 Login
               </Link>
-            )}
+
           </div>
         </div>
       </div>

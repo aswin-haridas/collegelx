@@ -2,19 +2,12 @@ import { supabase } from "@/shared/lib/supabase";
 import { useEffect, useState } from "react";
 import { useUser } from "./useUser";
 
-export const useWishlist = (productId?: String) => {
+export const useWishlist = (productId?: string) => {
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   // Add state for wishlist items
-  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (productId) {
-      checkWishlistStatus();
-    }
-  }, [productId, user]);
-
+  const [wishlistItems, setWishlistItems] = useState<unknown[]>([]);
   const checkWishlistStatus = async () => {
     if (productId) {
       const result = await isInWishlist(productId);
@@ -22,12 +15,18 @@ export const useWishlist = (productId?: String) => {
     }
   };
 
-  const handleError = (operation: string, error: any) => {
+  useEffect(() => {
+    if (productId) {
+      checkWishlistStatus();
+    }
+  }, [checkWishlistStatus, productId, user]);
+
+  const handleError = (operation: string, error: unknown) => {
     console.error(`Error ${operation}:`, error);
     return false;
   };
 
-  const addToWishlist = async (productId: String) => {
+  const addToWishlist = async (productId: string) => {
     if (!user) return false;
     setLoading(true);
 
@@ -46,7 +45,7 @@ export const useWishlist = (productId?: String) => {
     }
   };
 
-  const removeFromWishlist = async (productId: String) => {
+  const removeFromWishlist = async (productId: string) => {
     if (!user) return false;
     setLoading(true);
 
@@ -67,7 +66,7 @@ export const useWishlist = (productId?: String) => {
     }
   };
 
-  const isInWishlist = async (productId: String): Promise<boolean> => {
+  const isInWishlist = async (productId: string): Promise<boolean> => {
     if (!user) return false;
 
     try {
@@ -126,7 +125,7 @@ export const useWishlist = (productId?: String) => {
             created_at,
             user_id
           )
-        `,
+        `
         )
         .eq("user_id", user.id);
 

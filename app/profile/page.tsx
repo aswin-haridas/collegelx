@@ -2,9 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/shared/lib/supabase";
-import { useRouter } from "next/navigation";
-import { useAuth } from "../auth/hooks/useAuth";
-import { useProfile } from "./useProfile";
 import ProfileHeader from "./ProfileHeader";
 import ProfileContent from "./ProfileContent";
 import ProfileSettings from "./ProfileSettings";
@@ -14,7 +11,6 @@ import { Item, User, Review } from "@/shared/lib/types";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("products");
-  const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -40,8 +36,7 @@ export default function ProfilePage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const router = useRouter();
-  const { userId, redirectIfUnauthenticated } = useAuth();
+  const { userId } = useAuth();
   const {
     fetchUserProfile,
     fetchUserItems,
@@ -49,9 +44,6 @@ export default function ProfilePage() {
     fetchUserWishlist,
     updateUserProfile,
   } = useProfile(userId);
-
-  // Redirect to login page if not authenticated
-  redirectIfUnauthenticated("/auth/login");
 
   useEffect(() => {
     const loadUserProfile = async () => {

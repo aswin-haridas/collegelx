@@ -36,16 +36,7 @@ export interface Review {
   created_at: string;
 }
 
-export interface Conversation {
-  id: string;
-  listing_id: string;
-  listing_title: string;
-  participant_id: string;
-  participant_name: string;
-  last_message: string;
-  last_message_time: string;
-  unread_count: number;
-}
+
 
 export interface Message {
   id: string;
@@ -64,8 +55,3 @@ export interface Chat {
   seller_id: string | null;
 }
 
-export interface Listing {
-  id: string;
-  title: string;
-  price: number;
-}

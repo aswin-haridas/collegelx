@@ -2,7 +2,7 @@ import { supabase } from "../lib/supabase";
 import { useState, useEffect } from "react";
 
 export const useProduct = (itemId?: string) => {
-  const [product, setProduct] = useState<any>(null);
+  const [product, setProduct] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -23,9 +23,8 @@ export const useProduct = (itemId?: string) => {
 
       setProduct(data);
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching product:", err);
-      setError(err);
       return null;
     } finally {
       setLoading(false);

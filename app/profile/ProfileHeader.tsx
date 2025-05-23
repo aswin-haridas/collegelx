@@ -2,9 +2,10 @@
 import { styles } from "@/shared/lib/styles";
 import { Package, MessageSquare, Settings, Heart } from "lucide-react";
 import Header from "@/shared/components/Header";
+import Image from "next/image";
 
 interface ProfileHeaderProps {
-  user: any;
+  user: unknown;
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
@@ -21,7 +22,9 @@ export default function ProfileHeader({
         <div className="bg-white rounded-lg shadow-md mb-6">
           <div className="flex items-center p-6">
             <div className="mr-4">
-              <img
+              <Image
+                width={96}
+                height={96}
                 src={
                   user?.profile_image ||
                   "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg"
@@ -34,7 +37,7 @@ export default function ProfileHeader({
               <h1
                 className="text-2xl font-semibold"
                 style={{
-                  color: styles.warmText,
+                  color: styles.Text,
                   fontFamily: "Playfair Display, serif",
                 }}
               >

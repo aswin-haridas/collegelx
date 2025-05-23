@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/shared/lib/supabase";
 import { Chat, Message, User, Item } from "@/shared/lib/types";
-import { useAuth } from "../auth/hooks/useAuth";
-
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
@@ -79,7 +77,7 @@ export const useChat = () => {
         } else {
           setError("User not authenticated");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message);
       } finally {
         setLoading(false);
@@ -98,7 +96,7 @@ export const useChat = () => {
         setLoading(true);
         const messagesData = await getMessages(selectedChatId);
         setMessages(messagesData);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message);
       } finally {
         setLoading(false);
@@ -123,7 +121,7 @@ export const useChat = () => {
             ...currentMessages,
             payload.new as Message,
           ]);
-        },
+        }
       )
       .subscribe();
 
@@ -160,7 +158,7 @@ export const useChat = () => {
       .from("messages")
       .select("*")
       .or(
-        `seller_id.eq.${chatData.buyer_id},seller_id.eq.${chatData.seller_id}`,
+        `seller_id.eq.${chatData.buyer_id},seller_id.eq.${chatData.seller_id}`
       )
       .or(`buyer_id.eq.${chatData.buyer_id},buyer_id.eq.${chatData.seller_id}`)
       .order("created_at", { ascending: true });
@@ -212,7 +210,7 @@ export const useChat = () => {
       }
 
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message);
       return false;
     }
@@ -222,7 +220,7 @@ export const useChat = () => {
     chatId: number,
     senderId: string,
     message: string,
-    productId?: string,
+    productId?: string
   ) => {
     // Get the chat to determine recipient
     const { data: chatData, error: chatError } = await supabase
@@ -254,7 +252,7 @@ export const useChat = () => {
   const createChat = async (
     buyerId: string,
     sellerId: string,
-    productId?: string,
+    productId?: string
   ) => {
     const { data, error } = await supabase
       .from("chats")

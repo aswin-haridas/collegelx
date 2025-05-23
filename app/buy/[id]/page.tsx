@@ -1,10 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/auth/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { styles } from "@/shared/lib/styles";
-import { playfair } from "@/shared/lib/fonts";
 import { Loader2, MessageSquare, ArrowLeft, Heart } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useWishlist } from "@/shared/hooks/useWishlist";
@@ -12,6 +10,7 @@ import { useProduct } from "@/shared/hooks/useProducts";
 import Header from "@/shared/components/Header";
 import { supabase } from "@/shared/lib/supabase";
 import { useLoginCheck } from "@/shared/hooks/useLoginCheck";
+import Image from "next/image";
 
 export default function ItemPage() {
   const router = useRouter();
@@ -23,7 +22,7 @@ export default function ItemPage() {
 
   const { userId, isAuthenticated, isLoading: authLoading } = useAuth();
   const { product: item, loading: itemLoading } = useProduct(itemId);
-  const [seller, setSellerData] = useState<any>(null);
+  const [seller, setSellerData] = useState(null);
   const [sellerLoading, setSellerLoading] = useState(false);
 
   const {
@@ -131,7 +130,7 @@ export default function ItemPage() {
       return;
     }
 
-    toggleWishlist();
+    await toggleWishlist();
   };
 
   if (loading) {
@@ -140,7 +139,7 @@ export default function ItemPage() {
         <div className="flex justify-center items-center h-full ">
           <Loader2
             className="h-8 w-8 animate-spin"
-            style={{ color: styles.warmPrimary }}
+            style={{ color: styles.Primary }}
           />
         </div>
       </div>
@@ -154,14 +153,14 @@ export default function ItemPage() {
           <div className="text-center">
             <h2
               className="text-xl font-semibold mb-2"
-              style={{ color: styles.warmText }}
+              style={{ color: styles.Text }}
             >
               Item not found
             </h2>
             <button
               onClick={() => router.push("/")}
               className="mt-4 px-4 py-2 rounded-lg text-white"
-              style={{ backgroundColor: styles.warmPrimary }}
+              style={{ backgroundColor: styles.Primary }}
             >
               Back to Home
             </button>
@@ -192,7 +191,7 @@ export default function ItemPage() {
               <div className="md:w-2/5 w-full">
                 {/* Currently selected image */}
                 <div className="rounded-lg overflow-hidden mb-4">
-                  <img
+                  <Image
                     src={item.images[selectedImageIndex]}
                     alt={`${item.title} - Image ${selectedImageIndex + 1}`}
                     className="w-full h-96 object-cover rounded-lg"
@@ -208,17 +207,17 @@ export default function ItemPage() {
                         onClick={() => setSelectedImageIndex(index)}
                         className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
                           selectedImageIndex === index
-                            ? "border-warmPrimary"
+                            ? "border-Primary"
                             : "border-gray-200 hover:border-gray-400"
                         }`}
                         style={{
                           borderColor:
                             selectedImageIndex === index
-                              ? styles.warmPrimary
+                              ? styles.Primary
                               : undefined,
                         }}
                       >
-                        <img
+                        <Image
                           src={image}
                           alt={`${item.title} - Thumbnail ${index + 1}`}
                           className="w-full h-full object-cover"
@@ -242,7 +241,7 @@ export default function ItemPage() {
                 <div className="flex items-center justify-between mb-4">
                   <p
                     className="text-3xl font-bold"
-                    style={{ color: styles.warmPrimary }}
+                    style={{ color: styles.Primary }}
                   >
                     ₹{item.price}
                   </p>
@@ -260,7 +259,7 @@ export default function ItemPage() {
                     <button
                       onClick={handleChat}
                       className="flex-grow py-3 px-4 rounded-lg flex items-center justify-center transition-colors text-white hover:bg-opacity-90"
-                      style={{ backgroundColor: styles.warmPrimary }}
+                      style={{ backgroundColor: styles.Primary }}
                     >
                       <MessageSquare className="mr-2 h-5 w-5" />
                       Chat with Seller
@@ -291,7 +290,7 @@ export default function ItemPage() {
                     <span
                       className="font-medium cursor-pointer hover:underline"
                       onClick={() => router.push(`/profile/${item.seller_id}`)}
-                      style={{ color: styles.warmPrimary }}
+                      style={{ color: styles.Primary }}
                     >
                       {seller?.name}
                     </span>
@@ -302,7 +301,7 @@ export default function ItemPage() {
               <div className="mb-6">
                 <h2
                   className="text-xl font-semibold mb-2"
-                  style={{ color: styles.warmText }}
+                  style={{ color: styles.Text }}
                 >
                   Description
                 </h2>
@@ -314,7 +313,7 @@ export default function ItemPage() {
               <div className="mb-6">
                 <h2
                   className="text-xl font-semibold mb-2"
-                  style={{ color: styles.warmText }}
+                  style={{ color: styles.Text }}
                 >
                   Details
                 </h2>
@@ -335,7 +334,7 @@ export default function ItemPage() {
                     <p
                       className="font-medium cursor-pointer hover:underline"
                       onClick={() => router.push(`/profile/${item.seller_id}`)}
-                      style={{ color: styles.warmPrimary }}
+                      style={{ color: styles.Primary }}
                     >
                       {seller?.name || "Unknown"}
                     </p>
@@ -348,7 +347,7 @@ export default function ItemPage() {
                 <div className="border-t border-gray-200 pt-6">
                   <h2
                     className="text-xl font-semibold mb-4"
-                    style={{ color: styles.warmText }}
+                    style={{ color: styles.Text }}
                   >
                     Seller Information
                   </h2>
@@ -356,13 +355,13 @@ export default function ItemPage() {
                     className="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
                     onClick={() =>
                       router.push(
-                        `/profile/${item.seller_id || seller?.userid}`,
+                        `/profile/${item.seller_id || seller?.userid}`
                       )
                     }
                   >
                     <div className="h-12 w-12 rounded-full bg-gray-200 overflow-hidden mr-4 flex items-center justify-center">
                       {seller?.profile_image ? (
-                        <img
+                        <Image
                           src={seller.profile_image}
                           alt={seller?.name || "Seller"}
                           className="h-full w-full object-cover"
@@ -376,7 +375,7 @@ export default function ItemPage() {
                     <div className="flex flex-col">
                       <div
                         className="font-medium hover:underline"
-                        style={{ color: styles.warmText }}
+                        style={{ color: styles.Text }}
                       >
                         {seller?.name || "Anonymous Seller"}
                       </div>

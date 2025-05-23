@@ -1,19 +1,15 @@
 "use client";
-
 import { styles } from "@/shared/lib/styles";
-import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
-
 interface ProfileSettingsProps {
-  user: any;
+  user: unknown;
   isEditing: boolean;
   setIsEditing: (value: boolean) => void;
   isChangingPassword: boolean;
   setIsChangingPassword: (value: boolean) => void;
   showPassword: boolean;
   setShowPassword: (value: boolean) => void;
-  formData: any;
-  passwordData: any;
+  formData: unknown;
+  passwordData: unknown;
   passwordError: string;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handlePasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -24,27 +20,14 @@ interface ProfileSettingsProps {
 
 export default function ProfileSettings({
   user,
-  isEditing,
   setIsEditing,
-  isChangingPassword,
-  setIsChangingPassword,
-  showPassword,
-  setShowPassword,
-  formData,
-  passwordData,
-  passwordError,
-  handleInputChange,
-  handlePasswordChange,
-  handleSave,
-  handleChangePassword,
-  resetPasswordData,
 }: ProfileSettingsProps) {
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2
           className="text-xl font-semibold mb-4"
-          style={{ color: styles.warmText }}
+          style={{ color: styles.TEXT }}
         >
           Account Settings
         </h2>
@@ -80,7 +63,7 @@ export default function ProfileSettings({
           <div className="mt-4">
             <button
               className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-              style={{ backgroundColor: styles.warmPrimary }}
+              style={{ backgroundColor: styles.PRIMARY }}
               onClick={() => setIsEditing(true)}
             >
               Edit Profile

@@ -7,7 +7,6 @@ import { styles } from "@/shared/lib/styles";
 import Header from "@/shared/components/Header";
 import { Message as MessageType, User } from "@/shared/lib/types";
 import { useLoginCheck } from "@/shared/hooks/useLoginCheck";
-import { useAuth } from "@/app/auth/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
@@ -23,7 +22,6 @@ export default function ChatPage() {
     sendMessage,
   } = useChat();
 
-  const { userId } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
@@ -32,16 +30,16 @@ export default function ChatPage() {
   const [newMessage, setNewMessage] = useState("");
 
   // Group chats by product
-  const [chatsByProduct, setChatsByProduct] = useState<Record<string, any[]>>(
-    {},
-  );
+  const [chatsByProduct, setChatsByProduct] = useState<
+    Record<string, unknown[]>
+  >({});
 
   // Create a mapping of product IDs to products
-  const [productsList, setProductsList] = useState<Record<string, any>>({});
+  const [productsList, setProductsList] = useState<Record<string, unknown>>({});
 
   // Track which product is expanded to show its users
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
-    null,
+    null
   );
 
   // Get current user from session storage
@@ -66,8 +64,8 @@ export default function ChatPage() {
   // Organize chats by product and extract product details
   useEffect(() => {
     if (chats.length > 0) {
-      const groupedChats: Record<string, any[]> = {};
-      const products: Record<string, any> = {};
+      const groupedChats: Record<string, unknown[]> = {};
+      const products: Record<string, unknown> = {};
 
       chats.forEach((chat) => {
         const productId = chat.product_id || "unknown";
@@ -103,7 +101,7 @@ export default function ChatPage() {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const getChatName = (chat: any) => {
+  const getChatName = (chat: unknown) => {
     const currentUserId = user?.id || sessionStorage.getItem("user_id");
 
     if (chat.buyer_id === currentUserId) {
@@ -132,34 +130,34 @@ export default function ChatPage() {
       <Header />
       <div
         className="flex"
-        style={{ height: "calc(100vh - 70px)", backgroundColor: styles.warmBg }}
+        style={{ height: "calc(100vh - 70px)", backgroundColor: styles.Bg }}
       >
         {/* Chat List Sidebar */}
         <div
           className="w-1/3 overflow-y-auto"
           style={{
             backgroundColor: "#FFFFFF",
-            borderRight: `1px solid ${styles.warmBorder}`,
+            borderRight: `1px solid ${styles.Border}`,
           }}
         >
           {loading ? (
             <div className="p-4 flex justify-center items-center h-full">
               <div
                 className="animate-spin rounded-full h-10 w-10 border-b-2"
-                style={{ borderColor: styles.warmPrimary }}
+                style={{ borderColor: styles.Primary }}
               ></div>
             </div>
           ) : error ? (
             <div className="p-4 text-red-500">Error: {error}</div>
           ) : Object.keys(chatsByProduct).length === 0 ? (
             <div className="p-4 text-center flex flex-col items-center justify-center h-full">
-              <div className="text-lg mb-2" style={{ color: styles.warmText }}>
+              <div className="text-lg mb-2" style={{ color: styles.Text }}>
                 No chats found
               </div>
               <button
                 onClick={() => router.push("/products")}
                 className="px-4 py-2 rounded-md text-white"
-                style={{ backgroundColor: styles.warmPrimary }}
+                style={{ backgroundColor: styles.Primary }}
               >
                 Browse Products
               </button>
@@ -170,7 +168,7 @@ export default function ChatPage() {
               <div className="p-4 sticky top-0 z-10 bg-white border-b border-gray-200">
                 <h2
                   className="font-semibold text-lg"
-                  style={{ color: styles.warmText }}
+                  style={{ color: styles.Text }}
                 >
                   Products
                 </h2>
@@ -189,16 +187,16 @@ export default function ChatPage() {
                         style={{
                           backgroundColor:
                             selectedProductId === productId
-                              ? styles.warmBg
+                              ? styles.Bg
                               : "#FFFFFF",
-                          borderBottom: `1px solid ${styles.warmBorder}`,
+                          borderBottom: `1px solid ${styles.Border}`,
                         }}
                         onClick={() => handleProductClick(productId)}
                       >
                         <div
                           className="w-12 h-12 rounded-md mr-3 bg-center bg-cover flex-shrink-0"
                           style={{
-                            backgroundColor: styles.warmBorder,
+                            backgroundColor: styles.Border,
                             backgroundImage:
                               product.images && product.images.length > 0
                                 ? `url(${product.images[0]})`
@@ -208,13 +206,13 @@ export default function ChatPage() {
                         <div className="flex-1">
                           <h3
                             className="font-medium"
-                            style={{ color: styles.warmText }}
+                            style={{ color: styles.Text }}
                           >
                             {product.title || "Untitled Product"}
                           </h3>
                           <p
                             className="text-xs"
-                            style={{ color: styles.warmAccentDark }}
+                            style={{ color: styles.AccentDark }}
                           >
                             ₹{product.price || "N/A"} • {productChats.length}{" "}
                             conversation
@@ -233,7 +231,7 @@ export default function ChatPage() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             style={{
-                              color: styles.warmAccentDark,
+                              color: styles.AccentDark,
                               transform:
                                 selectedProductId === productId
                                   ? "rotate(90deg)"
@@ -256,7 +254,7 @@ export default function ChatPage() {
                               style={{
                                 backgroundColor:
                                   selectedChatId === chat.id
-                                    ? styles.warmBg
+                                    ? styles.Bg
                                     : "#FFFFFF",
                               }}
                               onClick={() => setSelectedChatId(chat.id)}
@@ -264,7 +262,7 @@ export default function ChatPage() {
                               <div
                                 className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white flex-shrink-0"
                                 style={{
-                                  backgroundColor: styles.warmPrimary,
+                                  backgroundColor: styles.Primary,
                                 }}
                               >
                                 {getChatName(chat).charAt(0).toUpperCase()}
@@ -273,14 +271,14 @@ export default function ChatPage() {
                                 <div className="flex justify-between">
                                   <h2
                                     className="font-semibold"
-                                    style={{ color: styles.warmText }}
+                                    style={{ color: styles.Text }}
                                   >
                                     {getChatName(chat)}
                                   </h2>
                                   <span
                                     className="text-xs"
                                     style={{
-                                      color: styles.warmAccentDark,
+                                      color: styles.AccentDark,
                                     }}
                                   >
                                     {formatDate(chat.created_at)}
@@ -288,7 +286,7 @@ export default function ChatPage() {
                                 </div>
                                 <p
                                   className="text-xs truncate"
-                                  style={{ color: styles.warmText }}
+                                  style={{ color: styles.Text }}
                                 >
                                   Tap to view conversation
                                 </p>
@@ -299,7 +297,7 @@ export default function ChatPage() {
                       )}
                     </div>
                   );
-                },
+                }
               )}
             </div>
           )}
@@ -314,14 +312,14 @@ export default function ChatPage() {
                 className="p-4 flex items-center"
                 style={{
                   backgroundColor: "#FFFFFF",
-                  borderBottom: `1px solid ${styles.warmBorder}`,
+                  borderBottom: `1px solid ${styles.Border}`,
                 }}
               >
                 {/* Back arrow to return to product layer */}
                 <div
                   className="mr-3 cursor-pointer flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100"
                   onClick={() => setSelectedChatId(null)}
-                  style={{ color: styles.warmAccentDark }}
+                  style={{ color: styles.AccentDark }}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -349,11 +347,11 @@ export default function ChatPage() {
                           chatProducts[selectedChatId].images.length > 0
                             ? `url(${chatProducts[selectedChatId].images[0]})`
                             : "none",
-                        backgroundColor: styles.warmBorder,
+                        backgroundColor: styles.Border,
                       }}
                       onClick={() => {
                         const productId = chats.find(
-                          (chat) => chat.id === selectedChatId,
+                          (chat) => chat.id === selectedChatId
                         )?.product_id;
                         if (productId) {
                           router.push(`/buy/${productId}`);
@@ -365,11 +363,11 @@ export default function ChatPage() {
                 <div className="flex flex-col flex-1">
                   <h2
                     className="text-lg font-semibold"
-                    style={{ color: styles.warmText }}
+                    style={{ color: styles.Text }}
                   >
                     {chats.find((chat) => chat.id === selectedChatId)
                       ? getChatName(
-                          chats.find((chat) => chat.id === selectedChatId),
+                          chats.find((chat) => chat.id === selectedChatId)
                         )
                       : "Chat"}
                   </h2>
@@ -378,10 +376,10 @@ export default function ChatPage() {
                   {chatProducts[selectedChatId] && (
                     <div
                       className="text-xs cursor-pointer"
-                      style={{ color: styles.warmPrimary }}
+                      style={{ color: styles.Primary }}
                       onClick={() => {
                         const productId = chats.find(
-                          (chat) => chat.id === selectedChatId,
+                          (chat) => chat.id === selectedChatId
                         )?.product_id;
                         if (productId) {
                           router.push(`/buy/${productId}`);
@@ -390,7 +388,7 @@ export default function ChatPage() {
                     >
                       {truncateText(
                         chatProducts[selectedChatId].title ||
-                          "View product details",
+                          "View product details"
                       )}
                     </div>
                   )}
@@ -400,7 +398,7 @@ export default function ChatPage() {
               {/* Messages */}
               <div
                 className="flex-1 p-4 overflow-y-auto"
-                style={{ backgroundColor: styles.warmBg }}
+                style={{ backgroundColor: styles.Bg }}
               >
                 {loading ? (
                   <div className="text-center">Loading messages...</div>
@@ -426,14 +424,14 @@ export default function ChatPage() {
                             message.seller_id === user?.id ||
                             message.seller_id ===
                               sessionStorage.getItem("user_id")
-                              ? styles.warmPrimary
+                              ? styles.Primary
                               : "#FFFFFF",
                           color:
                             message.seller_id === user?.id ||
                             message.seller_id ===
                               sessionStorage.getItem("user_id")
                               ? "#FFFFFF"
-                              : styles.warmText,
+                              : styles.Text,
                         }}
                       >
                         <p>{message.message}</p>
@@ -444,8 +442,8 @@ export default function ChatPage() {
                               message.seller_id === user?.id ||
                               message.seller_id ===
                                 sessionStorage.getItem("user_id")
-                                ? styles.warmAccent
-                                : styles.warmAccentDark,
+                                ? styles.Accent
+                                : styles.AccentDark,
                           }}
                         >
                           {formatDate(message.created_at)}
@@ -461,7 +459,7 @@ export default function ChatPage() {
                 className="p-4"
                 style={{
                   backgroundColor: "#FFFFFF",
-                  borderTop: `1px solid ${styles.warmBorder}`,
+                  borderTop: `1px solid ${styles.Border}`,
                 }}
               >
                 <div className="flex items-center">
@@ -470,9 +468,9 @@ export default function ChatPage() {
                     placeholder="Type a message..."
                     className="flex-1 p-2 rounded-l-md focus:outline-none"
                     style={{
-                      border: `1px solid ${styles.warmBorder}`,
-                      backgroundColor: styles.warmBg,
-                      color: styles.warmText,
+                      border: `1px solid ${styles.Border}`,
+                      backgroundColor: styles.Bg,
+                      color: styles.Text,
                     }}
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
@@ -485,7 +483,7 @@ export default function ChatPage() {
                   <button
                     className="p-2 rounded-r-md"
                     style={{
-                      backgroundColor: styles.warmPrimary,
+                      backgroundColor: styles.Primary,
                       color: "#FFFFFF",
                     }}
                     onClick={handleSendMessage}
@@ -498,7 +496,7 @@ export default function ChatPage() {
           ) : (
             <div
               className="flex-1 flex items-center justify-center"
-              style={{ color: styles.warmText }}
+              style={{ color: styles.Text }}
             >
               <div className="text-center max-w-md mx-auto p-6">
                 <h2 className="text-xl font-semibold mb-2">

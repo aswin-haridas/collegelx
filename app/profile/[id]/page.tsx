@@ -8,9 +8,9 @@ import { useRouter, useParams } from "next/navigation";
 import ItemCard from "@/shared/components/ItemCard";
 import { Item } from "@/shared/lib/types";
 import Header from "@/shared/components/Header";
-import { useAuth } from "@/app/auth/hooks/useAuth";
 import { useReview } from "../useReview";
 import { User } from "@/shared/lib/types";
+import Image from "next/image";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -73,7 +73,7 @@ export default function ProfilePage() {
             images: item.images || (item.image ? [item.image] : []),
             image: item.image || item.images?.[0] || null,
             imageUrl: item.image || item.images?.[0] || null,
-          })),
+          }))
         );
       } catch (error) {
         console.error("Error fetching user items:", error);
@@ -126,8 +126,8 @@ export default function ProfilePage() {
 
         setItems(
           items.map((item) =>
-            item.id === itemId ? { ...item, status: "sold" } : item,
-          ),
+            item.id === itemId ? { ...item, status: "sold" } : item
+          )
         );
       } catch (error) {
         console.error("Error marking item as sold:", error);
@@ -163,7 +163,7 @@ export default function ProfilePage() {
           <div className="bg-white rounded-lg shadow-md mb-6">
             <div className="flex items-center p-6">
               <div className="mr-4">
-                <img
+                <Image
                   src={
                     user?.profile_image ||
                     "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg"
@@ -176,7 +176,7 @@ export default function ProfilePage() {
                 <h1
                   className="text-2xl font-semibold"
                   style={{
-                    color: styles.warmText,
+                    color: styles.Text,
                     fontFamily: "Playfair Display, serif",
                   }}
                 >
@@ -225,7 +225,7 @@ export default function ProfilePage() {
               <div className="flex justify-between items-center mb-4">
                 <h2
                   className="text-xl font-semibold"
-                  style={{ color: styles.warmText }}
+                  style={{ color: styles.Text }}
                 >
                   {isOwnProfile ? "Your Items" : `${user?.name}'s Items`}
                 </h2>
@@ -233,7 +233,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => router.push("/sell")}
                     className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                    style={{ backgroundColor: styles.warmPrimary }}
+                    style={{ backgroundColor: styles.Primary }}
                   >
                     Add New Item
                   </button>
@@ -253,7 +253,7 @@ export default function ProfilePage() {
                               e.preventDefault();
                               handleEditItem(item.id);
                             }}
-                            style={{ color: styles.warmPrimary }}
+                            style={{ color: styles.Primary }}
                             title="Edit item"
                           >
                             <Edit size={16} />
@@ -294,7 +294,7 @@ export default function ProfilePage() {
                     <button
                       onClick={() => router.push("/sell")}
                       className="mt-4 px-4 py-2 text-white rounded-lg hover:brightness-110"
-                      style={{ backgroundColor: styles.warmPrimary }}
+                      style={{ backgroundColor: styles.Primary }}
                     >
                       Add an Item
                     </button>
@@ -309,7 +309,7 @@ export default function ProfilePage() {
               <div className="flex justify-between items-center mb-4">
                 <h2
                   className="text-xl font-semibold"
-                  style={{ color: styles.warmText }}
+                  style={{ color: styles.Text }}
                 >
                   Your Reviews
                 </h2>
@@ -317,7 +317,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => setIsPostingReview(true)}
                     className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                    style={{ backgroundColor: styles.warmPrimary }}
+                    style={{ backgroundColor: styles.Primary }}
                   >
                     Post Review
                   </button>
@@ -374,7 +374,7 @@ export default function ProfilePage() {
                     <button
                       type="submit"
                       className="px-4 py-2 text-white rounded-lg hover:bg-green-600"
-                      style={{ backgroundColor: styles.warmPrimary }}
+                      style={{ backgroundColor: styles.Primary }}
                     >
                       Submit Review
                     </button>

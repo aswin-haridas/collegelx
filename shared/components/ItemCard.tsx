@@ -3,7 +3,7 @@ import Image from "next/image";
 import { styles } from "@/shared/lib/styles";
 import Link from "next/link";
 import { Item } from "@/shared/lib/types";
-import StatusBadge from "@/shared/components/Atoms/StatusBadge";
+import StatusBadge from "@/shared/components/StatusBadge";
 
 interface ItemCardProps {
   item: Item;

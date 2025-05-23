@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { styles } from "@/shared/lib/styles";
 import Link from "next/link";
@@ -80,7 +80,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
       <Link href={`/buy/${item.id}`} className="block h-full">
         <div
           className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow h-full flex flex-col group"
-          style={{ borderColor: styles.warmBorder, backgroundColor: "white" }}
+          style={{ borderColor: styles.Border, backgroundColor: "white" }}
         >
           <div className="relative h-48 bg-gray-100">
             {!imageError ? (
@@ -109,7 +109,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
                   <button
                     className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
                     onClick={handleEditClick}
-                    style={{ color: styles.warmPrimary }}
+                    style={{ color: styles.Primary }}
                     title="Edit item"
                   >
                     <Edit size={16} />
@@ -155,7 +155,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
           <div className="p-4 flex flex-col flex-grow">
             <h3
               className="font-medium text-lg mb-2 line-clamp-1"
-              style={{ color: styles.warmText }}
+              style={{ color: styles.Text }}
             >
               {item.title}
             </h3>
@@ -163,7 +163,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
               {item.description}
             </p>
             <div className="flex justify-between items-center mt-2">
-              <span className="font-bold" style={{ color: styles.warmText }}>
+              <span className="font-bold" style={{ color: styles.Text }}>
                 ₹{item.price.toFixed(2)}
               </span>
               <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
@@ -181,7 +181,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
         title="Confirm Deletion"
       >
         <div className="py-4">
-          <p>Are you sure you want to delete "{item.title}"?</p>
+          <p>Are you sure you want to delete &#34;{item.title}&quot;?</p>
           <p className="text-gray-500 text-sm mt-2">
             This action cannot be undone.
           </p>
@@ -208,7 +208,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
         title="Mark Item as Sold"
       >
         <div className="py-4">
-          <p>Mark "{item.title}" as sold?</p>
+          <p>Mark &#34;{item.title}&#34; as sold?</p>
           <p className="text-gray-500 text-sm mt-2">
             This will hide the item from the marketplace.
           </p>

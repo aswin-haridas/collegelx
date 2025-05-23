@@ -2,14 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { styles } from "@/shared/lib/styles";
-import { Star, Edit, Trash2, PackageCheck } from "lucide-react";
+import { Edit, Trash2, PackageCheck } from "lucide-react";
 import ItemCard from "./ItemCard";
 
 interface ProfileContentProps {
   activeTab: string;
-  items: any[];
-  wishlistItems: any[];
-  reviews: any[];
+  items: unknown[];
+  wishlistItems: unknown[];
+  reviews: unknown[];
   handleEditItem: (itemId: string) => void;
   handleDeleteItem: (itemId: string) => void;
   handleMarkAsSold: (itemId: string) => void;
@@ -35,14 +35,14 @@ export default function ProfileContent({
           <div className="flex justify-between items-center mb-4">
             <h2
               className="text-xl font-semibold"
-              style={{ color: styles.warmText }}
+              style={{ color: styles.Text }}
             >
               Your Items ({items.length})
             </h2>
             <button
               onClick={() => router.push("/sell")}
               className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-              style={{ backgroundColor: styles.warmPrimary }}
+              style={{ backgroundColor: styles.Primary }}
             >
               Add New Item
             </button>
@@ -66,7 +66,7 @@ export default function ProfileContent({
                             e.preventDefault();
                             handleEditItem(item.id);
                           }}
-                          style={{ color: styles.warmPrimary }}
+                          style={{ color: styles.Primary }}
                           title="Edit item"
                         >
                           <Edit size={16} />
@@ -112,7 +112,7 @@ export default function ProfileContent({
               <button
                 onClick={() => router.push("/sell")}
                 className="mt-4 px-4 py-2 text-white rounded-lg hover:brightness-110"
-                style={{ backgroundColor: styles.warmPrimary }}
+                style={{ backgroundColor: styles.Primary }}
               >
                 Add an Item
               </button>
@@ -126,7 +126,7 @@ export default function ProfileContent({
           <div className="flex justify-between items-center mb-4">
             <h2
               className="text-xl font-semibold"
-              style={{ color: styles.warmText }}
+              style={{ color: styles.Text }}
             >
               Your Wishlist
             </h2>
@@ -159,7 +159,7 @@ export default function ProfileContent({
               <button
                 onClick={() => router.push("/")}
                 className="mt-4 px-4 py-2 text-white rounded-lg hover:brightness-110"
-                style={{ backgroundColor: styles.warmPrimary }}
+                style={{ backgroundColor: styles.Primary }}
               >
                 Browse Items
               </button>
@@ -173,7 +173,7 @@ export default function ProfileContent({
           <div className="flex justify-between items-center mb-4">
             <h2
               className="text-xl font-semibold"
-              style={{ color: styles.warmText }}
+              style={{ color: styles.Text }}
             >
               Your Reviews
             </h2>

@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { Review } from "@/shared/lib/types";
 
-export function useRating(reviews: Review[]) {
+export function useRating() {
   const [averageRating, setAverageRating] = useState<number>(0);
 
   const calculateAverageRating = useCallback((reviewData: Review[]) => {
