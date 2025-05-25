@@ -7,7 +7,7 @@ import ProfileContent from "./ProfileContent";
 import ProfileSettings from "./ProfileSettings";
 import ItemEditModal from "./components/ItemEditModal";
 import UserEditModal from "./components/UserEditModal";
-import { Item, User, Review } from "@/shared/lib/types";
+import { Item, User, Review } from "@/app/lib/types";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("products");

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { styles } from "@/shared/lib/styles";
 import Link from "next/link";
-import { Item } from "@/shared/lib/types";
+import { Item } from "@/app/lib/types";
 import { Edit, Trash2, Star, Heart } from "lucide-react";
 import Modal from "@/shared/components/Modal";
 

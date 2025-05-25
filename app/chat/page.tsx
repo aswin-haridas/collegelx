@@ -5,7 +5,7 @@ import { useChat } from "./useChat";
 import { supabase } from "@/shared/lib/supabase";
 import { styles } from "@/shared/lib/styles";
 import Header from "@/shared/components/Header";
-import { Message as MessageType, User } from "@/shared/lib/types";
+import { Message as MessageType, User } from "@/app/lib/types";
 import { useLoginCheck } from "@/shared/hooks/useLoginCheck";
 import { useRouter } from "next/navigation";
 

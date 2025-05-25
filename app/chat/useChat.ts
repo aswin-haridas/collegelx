@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/shared/lib/supabase";
-import { Chat, Message, User, Item } from "@/shared/lib/types";
+import { Chat, Message, User, Item } from "@/app/lib/types";
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);

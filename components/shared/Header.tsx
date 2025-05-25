@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import {
   UserCircle,
   ShoppingBag,
@@ -11,18 +11,12 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
-import { playfair, styles } from "@/app/lib/styles";
+import { playfair, styles } from "@/lib/styles";
 
 const Header = () => {
-  const router = useRouter();
-
   const handleLogout = () => {
-    // Clear the user session
-    sessionStorage.clear();
-    // Redirect to home page
-    router.push("/auth/login");
-    // Refresh the page to update auth state
-    window.location.reload();
+    localStorage.clear();
+    redirect("/login");
   };
 
   return (
@@ -88,7 +82,6 @@ const Header = () => {
                 <LogOut className="h-6 w-6" />
               </button>
             </>
-            ) : (
             <Link
               href="/auth/login"
               className="flex items-center px-4 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-700"

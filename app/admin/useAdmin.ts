@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/shared/lib/supabase";
-import { User, Item } from "@/shared/lib/types";
+import { User, Item } from "@/app/lib/types";
 
 export function useAdmin() {
   const [users, setUsers] = useState<User[]>([]);
@@ -77,7 +77,7 @@ export function useAdmin() {
 
       // Update local state
       setUsers(
-        users.map((user) => (user.id === updatedUser.id ? updatedUser : user)),
+        users.map((user) => (user.id === updatedUser.id ? updatedUser : user))
       );
       showSuccess("User updated successfully!");
       return true;
@@ -100,17 +100,17 @@ export function useAdmin() {
 
       // Update local state
       setItems(
-        items.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
+        items.map((item) => (item.id === updatedItem.id ? updatedItem : item))
       );
       if (updatedItem.status === "unlisted") {
         setUnlistedItems(
           unlistedItems.map((item) =>
-            item.id === updatedItem.id ? updatedItem : item,
-          ),
+            item.id === updatedItem.id ? updatedItem : item
+          )
         );
       } else {
         setUnlistedItems(
-          unlistedItems.filter((item) => item.id !== updatedItem.id),
+          unlistedItems.filter((item) => item.id !== updatedItem.id)
         );
       }
       showSuccess("Item updated successfully!");

@@ -6,10 +6,10 @@ import { supabase } from "@/shared/lib/supabase";
 import { Star, Edit, Trash2, Package, MessageSquare } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import ItemCard from "@/shared/components/ItemCard";
-import { Item } from "@/shared/lib/types";
+import { Item } from "@/app/lib/types";
 import Header from "@/shared/components/Header";
 import { useReview } from "../useReview";
-import { User } from "@/shared/lib/types";
+import { User } from "@/app/lib/types";
 import Image from "next/image";
 
 export default function ProfilePage() {

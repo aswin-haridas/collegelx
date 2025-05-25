@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { User, Item } from "@/shared/lib/types";
-import Header from "@/shared/components/Header";
+import { User, Item } from "@/app/lib/types";
+import Header from "../components/shared/Header";
 import { useAdmin } from "./useAdmin";
 
 const AdminDashboard: React.FC = () => {
@@ -29,17 +29,17 @@ const AdminDashboard: React.FC = () => {
   const filteredUsers = users.filter(
     (user) =>
       user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchQuery.toLowerCase()),
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Filter items based on search query
   const filteredItems = items.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase()),
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Filter unlisted items based on search query
   const filteredUnlistedItems = unlistedItems.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase()),
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
