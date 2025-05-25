@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { User, Item } from "@/lib/types";
+import { supabase } from "@/shared/lib/supabase";
+import { User, Item } from "@/app/lib/types";
 
 export function useAdmin() {
   const [users, setUsers] = useState<User[]>([]);
@@ -40,7 +40,7 @@ export function useAdmin() {
 
   const fetchItems = async () => {
     try {
-      const { data, error } = await supabase.from("items").select("*");
+      const { data, error } = await supabase.from("products").select("*");
 
       if (error) throw error;
       setItems(data || []);
@@ -53,7 +53,7 @@ export function useAdmin() {
   const fetchUnlistedItems = async () => {
     try {
       const { data, error } = await supabase
-        .from("items")
+        .from("products")
         .select("*")
         .eq("status", "unlisted");
 
@@ -92,7 +92,7 @@ export function useAdmin() {
   const updateItem = async (updatedItem: Item) => {
     try {
       const { error } = await supabase
-        .from("items")
+        .from("products")
         .update(updatedItem)
         .eq("id", updatedItem.id);
 

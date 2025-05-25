@@ -1,39 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { styles } from "@/lib/styles";
-import { supabase } from "@/lib/supabase";
+import { styles } from "@/shared/lib/styles";
+import { supabase } from "@/shared/lib/supabase";
 import { Star, Edit, Trash2, Package, MessageSquare } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
-import ItemCard from "@/components/ItemCard";
-import { Item as ItemType } from "@/lib/types";
-import Header from "@/components/Header";
-import { useAuth } from "@/hooks/useAuth";
-import { useReview } from "@/hooks/useReview";
-
-interface User {
-  name: string;
-  email: string;
-  phone?: string;
-  department?: string;
-  university_id?: string;
-  role: string;
-  profile_image?: string;
-  year?: string;
-  rating?: number;
-}
-
-interface Review {
-  id: string;
-  reviewer_name: string;
-  rating: number;
-  comment: string;
-  created_at: string;
-}
+import ItemCard from "@/shared/components/ItemCard";
+import { Item } from "@/app/lib/types";
+import Header from "@/shared/components/Header";
+import { useReview } from "../useReview";
+import { User } from "@/app/lib/types";
+import Image from "next/image";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
-  const [items, setItems] = useState<ItemType[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [activeTab, setActiveTab] = useState("products");
   const { userId: currentUserId } = useAuth();
   const router = useRouter();
@@ -76,45 +57,24 @@ export default function ProfilePage() {
       if (!profileId) return;
       try {
         const { data, error } = await supabase
-          .from("items")
+          .from("products")
           .select("*")
           .eq("seller_id", profileId);
         if (error) throw error;
 
-        const transformedItems = data.map((item) => ({
-          ...item,
-          title: item.name || item.title,
-          name: item.name || item.title,
-          user_id:
-            item.user_id ||
-            item.sender_id ||
-            item.seller_id_id ||
-            item.seller_id,
-          sender_id:
-            item.sender_id ||
-            item.user_id ||
-            item.seller_id_id ||
-            item.seller_id,
-          seller_id:
-            item.seller_id_id ||
-            item.user_id ||
-            item.sender_id ||
-            item.seller_id,
-          seller:
-            item.seller_id ||
-            item.user_id ||
-            item.sender_id ||
-            item.seller_id_id,
-          images: item.images || (item.image ? [item.image] : []),
-          image:
-            item.image ||
-            (item.images && item.images.length > 0 ? item.images[0] : null),
-          imageUrl:
-            item.image ||
-            (item.images && item.images.length > 0 ? item.images[0] : null),
-        }));
-
-        setItems(transformedItems);
+        setItems(
+          data.map((item) => ({
+            ...item,
+            title: item.name || item.title,
+            name: item.name || item.title,
+            user_id: item.seller_id,
+            seller_id: item.seller_id,
+            seller: item.seller_id,
+            images: item.images || (item.image ? [item.image] : []),
+            image: item.image || item.images?.[0] || null,
+            imageUrl: item.image || item.images?.[0] || null,
+          }))
+        );
       } catch (error) {
         console.error("Error fetching user items:", error);
       }
@@ -139,7 +99,7 @@ export default function ProfilePage() {
     if (confirm("Are you sure you want to delete this item?")) {
       try {
         const { error } = await supabase
-          .from("items")
+          .from("products")
           .delete()
           .eq("id", itemId);
 
@@ -158,7 +118,7 @@ export default function ProfilePage() {
     ) {
       try {
         const { error } = await supabase
-          .from("items")
+          .from("products")
           .update({ status: "sold" })
           .eq("id", itemId);
 
@@ -203,7 +163,7 @@ export default function ProfilePage() {
           <div className="bg-white rounded-lg shadow-md mb-6">
             <div className="flex items-center p-6">
               <div className="mr-4">
-                <img
+                <Image
                   src={
                     user?.profile_image ||
                     "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg"
@@ -216,7 +176,7 @@ export default function ProfilePage() {
                 <h1
                   className="text-2xl font-semibold"
                   style={{
-                    color: styles.warmText,
+                    color: styles.Text,
                     fontFamily: "Playfair Display, serif",
                   }}
                 >
@@ -265,7 +225,7 @@ export default function ProfilePage() {
               <div className="flex justify-between items-center mb-4">
                 <h2
                   className="text-xl font-semibold"
-                  style={{ color: styles.warmText }}
+                  style={{ color: styles.Text }}
                 >
                   {isOwnProfile ? "Your Items" : `${user?.name}'s Items`}
                 </h2>
@@ -273,7 +233,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => router.push("/sell")}
                     className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                    style={{ backgroundColor: styles.warmPrimary }}
+                    style={{ backgroundColor: styles.Primary }}
                   >
                     Add New Item
                   </button>
@@ -284,6 +244,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {items.map((item) => (
                     <div key={item.id} className="relative group">
+<<<<<<< HEAD
                       <ItemCard
                         item={item}
                         showControls={isOwnProfile}
@@ -336,6 +297,48 @@ export default function ProfilePage() {
                           ? "Pending"
                           : "No Status"}
                       </div>
+=======
+                      <ItemCard item={item} />
+                      {isOwnProfile && (
+                        <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            className="p-2 bg-white rounded-full shadow-md"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleEditItem(item.id);
+                            }}
+                            style={{ color: styles.Primary }}
+                            title="Edit item"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          {item.status !== "sold" && (
+                            <button
+                              className="p-2 bg-white rounded-full shadow-md"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleMarkAsSold(item.id);
+                              }}
+                              style={{ color: "#16a34a" }}
+                              title="Mark as sold"
+                            >
+                              <Star size={16} />
+                            </button>
+                          )}
+                          <button
+                            className="p-2 bg-white rounded-full shadow-md"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDeleteItem(item.id);
+                            }}
+                            style={{ color: "#ef4444" }}
+                            title="Delete item"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      )}
+>>>>>>> feature
                     </div>
                   ))}
                 </div>
@@ -346,7 +349,7 @@ export default function ProfilePage() {
                     <button
                       onClick={() => router.push("/sell")}
                       className="mt-4 px-4 py-2 text-white rounded-lg hover:brightness-110"
-                      style={{ backgroundColor: styles.warmPrimary }}
+                      style={{ backgroundColor: styles.Primary }}
                     >
                       Add an Item
                     </button>
@@ -361,7 +364,7 @@ export default function ProfilePage() {
               <div className="flex justify-between items-center mb-4">
                 <h2
                   className="text-xl font-semibold"
-                  style={{ color: styles.warmText }}
+                  style={{ color: styles.Text }}
                 >
                   Your Reviews
                 </h2>
@@ -369,7 +372,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => setIsPostingReview(true)}
                     className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                    style={{ backgroundColor: styles.warmPrimary }}
+                    style={{ backgroundColor: styles.Primary }}
                   >
                     Post Review
                   </button>
@@ -426,7 +429,7 @@ export default function ProfilePage() {
                     <button
                       type="submit"
                       className="px-4 py-2 text-white rounded-lg hover:bg-green-600"
-                      style={{ backgroundColor: styles.warmPrimary }}
+                      style={{ backgroundColor: styles.Primary }}
                     >
                       Submit Review
                     </button>

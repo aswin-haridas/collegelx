@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
@@ -15,6 +17,10 @@
     "next": "15.2.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+<<<<<<< HEAD
+=======
+    "react-hook-form": "^7.56.4",
+>>>>>>> feature
     "react-hot-toast": "^2.5.2"
   },
   "devDependencies": {
@@ -25,6 +31,8 @@
     "@types/react-dom": "^19",
     "eslint": "^8.x.x",
     "eslint-config-next": "^13.x.x",
+    "only-allow": "^1.2.1",
+    "prettier": "^3.5.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

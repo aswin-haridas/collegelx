@@ -1,7 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "./lib/supabase";
+import { Loader2 } from "lucide-react";
+import { styles, playfair } from "./lib/styles";
 import Link from "next/link";
+<<<<<<< HEAD
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { playfair } from "@/lib/fonts";
@@ -17,40 +21,120 @@ import Header from "@/components/Header";
 import { Item } from "@/lib/types";
 import ItemCard from "@/components/ItemCard";
 import "@/app/styles.css";
+=======
+import Header from "@/app/components/shared/Header";
+import Image from "next/image";
 
-const Home = () => {
-  const router = useRouter();
-  const { isAuthenticated, userId } = useAuth();
-  const [featuredItems, setFeaturedItems] = useState<Item[]>([]);
+type Item = {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  year: number;
+  department: string;
+  images: string[];
+  status: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+};
+>>>>>>> feature
+
+const departments = [
+  "All",
+  "Computer Science",
+  "Electronics",
+  "Mechanical",
+  "Civil",
+  "Electrical",
+  "Other",
+];
+const category = ["Notes", "Uniform", "Stationary", "Others", "All"];
+const years = [1, 2, 3, 4, "All"];
+
+export default function ItemsPage() {
+  const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    search: "",
+    year: "All",
+    department: "All",
+    category: "All",
+    sortPrice: "asc",
+  });
 
-  // Fetch featured items on page load
+  const name =
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("name") || "User"
+      : "User";
+
+  const clearFilters = () =>
+    setFilters({
+      search: "",
+      year: "All",
+      department: "All",
+      category: "All",
+      sortPrice: "asc",
+    });
+
   useEffect(() => {
-    const fetchFeaturedItems = async () => {
+    async function fetchItems() {
       try {
-        const { data, error } = await supabase
-          .from("items")
+        let query = supabase
+          .from("products")
           .select("*")
-          .eq("status", "available")
-          .order("created_at", { ascending: false })
-          .limit(4);
+          .eq("status", "available");
+
+        if (filters.year !== "All") query = query.eq("year", filters.year);
+        if (filters.department !== "All")
+          query = query.eq("department", filters.department);
+        if (filters.category !== "All")
+          query = query.eq("category", filters.category);
+
+        query = query.order("price", {
+          ascending: filters.sortPrice === "asc",
+        });
+        const { data, error } = await query;
 
         if (error) throw error;
-        setFeaturedItems(data || []);
+        setItems(data || []);
       } catch (error) {
-        console.error("Error fetching featured items:", error);
+        console.error("Error fetching items:", error);
       } finally {
         setLoading(false);
       }
-    };
+    }
 
-    fetchFeaturedItems();
-  }, []);
+    fetchItems();
+  }, [filters.year, filters.department, filters.category, filters.sortPrice]);
+
+  const filteredItems = items.filter((item) =>
+    item.title.toLowerCase().includes(filters.search.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <Header />
+      <div className="min-h-screen p-4">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-gray-600 italic text-sm">Welcome {name}</p>
+          <h1
+            className="text-4xl font-semibold mb-6 mt-6"
+            style={{ color: styles.primary_dark }}
+          >
+            Available Items
+          </h1>
 
+<<<<<<< HEAD
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-amber-50 to-amber-100 py-16 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center">
@@ -73,20 +157,40 @@ const Home = () => {
                 <ShoppingBag className="mr-2 h-5 w-5" />
                 Browse Products
               </button>
+=======
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="flex flex-wrap gap-4">
+              <input
+                type="text"
+                placeholder="Search by title..."
+                value={filters.search}
+                onChange={(e) =>
+                  setFilters({ ...filters, search: e.target.value })
+                }
+                className="p-2 border rounded-lg border-yellow-600 flex-grow md:flex-grow-0"
+              />
+>>>>>>> feature
               <button
                 onClick={() =>
-                  router.push(isAuthenticated ? "/sell" : "/login")
+                  setFilters({
+                    ...filters,
+                    sortPrice: filters.sortPrice === "asc" ? "desc" : "asc",
+                  })
                 }
-                className="px-6 py-3 border-2 border-amber-600 text-amber-700 rounded-lg hover:bg-amber-50 transition flex items-center justify-center"
+                className="p-2 border border-amber-700 rounded-lg"
               >
-                <PlusCircle className="mr-2 h-5 w-5" />
-                Sell Product
+                Price:{" "}
+                {filters.sortPrice === "asc" ? "Low to High" : "High to Low"}
+              </button>
+              <button
+                onClick={clearFilters}
+                className="p-2 border border-amber-700 rounded-lg bg-amber-50 hover:bg-amber-100"
+              >
+                Clear Filters
               </button>
             </div>
-          </div>
-        </div>
-      </section>
 
+<<<<<<< HEAD
       {/* Featured Items Section */}
       <section className="py-12 px-4">
         <div className="max-w-7xl mx-auto">
@@ -103,32 +207,112 @@ const Home = () => {
               View All <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
+=======
+            <div className="flex flex-wrap gap-4">
+              <select
+                value={filters.year}
+                onChange={(e) =>
+                  setFilters({ ...filters, year: e.target.value })
+                }
+                className="p-2 border rounded-lg border-yellow-600"
+              >
+                {years.map((year) => (
+                  <option key={year} value={year}>
+                    {year === "All" ? "All Years" : `Year ${year}`}
+                  </option>
+                ))}
+              </select>
+>>>>>>> feature
 
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div
-                  key={i}
-                  className="border border-gray-200 rounded-lg p-4 h-64 animate-pulse"
-                >
-                  <div className="bg-gray-200 h-40 rounded-md mb-4"></div>
-                  <div className="bg-gray-200 h-4 rounded w-3/4 mb-2"></div>
-                  <div className="bg-gray-200 h-4 rounded w-1/2"></div>
-                </div>
-              ))}
+              <select
+                value={filters.department}
+                onChange={(e) =>
+                  setFilters({ ...filters, department: e.target.value })
+                }
+                className="p-2 border rounded-lg border-yellow-600"
+              >
+                {departments.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept === "All" ? "All Departments" : dept}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={filters.category}
+                onChange={(e) =>
+                  setFilters({ ...filters, category: e.target.value })
+                }
+                className="p-2 border rounded-lg border-yellow-600"
+              >
+                {category.map((type) => (
+                  <option key={type} value={type}>
+                    {type === "All" ? "All Product Types" : type}
+                  </option>
+                ))}
+              </select>
             </div>
-          ) : featuredItems.length === 0 ? (
-            <p className="text-center text-gray-500">
-              No featured items available at the moment.
-            </p>
+          </div>
+
+          {filteredItems.length === 0 ? (
+            <p>No items available matching the criteria.</p>
           ) : (
+<<<<<<< HEAD
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {featuredItems.map((item) => (
                 <ItemCard key={item.id} item={item} />
+=======
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredItems.map((item) => (
+                <Link
+                  href={`/buy/${item.id}`}
+                  key={item.id}
+                  className="block h-full"
+                >
+                  <div className="border border-stone-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
+                    <div className="relative h-44 bg-gray-100">
+                      {item.images?.length > 0 ? (
+                        <Image
+                          src={item.images[0]}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          No Image
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4 flex flex-col flex-grow">
+                      <h3
+                        className="font-medium text-lg mb-2"
+                        style={{ color: styles.text }}
+                      >
+                        {item.title}
+                      </h3>
+                      <p className="text-gray-600 mb-2 text-sm flex-grow">
+                        {item.description}
+                      </p>
+                      <div className="flex justify-between items-center mt-2">
+                        <span
+                          className="font-bold"
+                          style={{ color: styles.text }}
+                        >
+                          ₹{item.price.toFixed(2)}
+                        </span>
+                        <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                          {item.category}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+>>>>>>> feature
               ))}
             </div>
           )}
         </div>
+<<<<<<< HEAD
       </section>
 
       {/* Features Highlight Section */}
@@ -181,7 +365,9 @@ const Home = () => {
         </div>
       </section>
     </div>
+=======
+      </div>
+    </>
+>>>>>>> feature
   );
-};
-
-export default Home;
+}

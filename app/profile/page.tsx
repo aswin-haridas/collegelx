@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -21,11 +22,20 @@ import {
 import Header from "@/components/Header";
 import ItemCard from "@/components/ItemCard";
 import toast from "react-hot-toast";
+=======
+import { useEffect, useState } from "react";
+import { supabase } from "@/shared/lib/supabase";
+import ProfileHeader from "./ProfileHeader";
+import ProfileContent from "./ProfileContent";
+import ProfileSettings from "./ProfileSettings";
+import ItemEditModal from "./components/ItemEditModal";
+import UserEditModal from "./components/UserEditModal";
+import { Item, User, Review } from "@/app/lib/types";
+>>>>>>> feature
 
 export default function ProfilePage() {
   // State for tabs and modals
   const [activeTab, setActiveTab] = useState("products");
-  const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -46,6 +56,7 @@ export default function ProfilePage() {
     confirmPassword: "",
   });
   const [passwordError, setPasswordError] = useState("");
+<<<<<<< HEAD
 
   // Item edit modal states
   const [modalTitle, setModalTitle] = useState("");
@@ -58,13 +69,21 @@ export default function ProfilePage() {
 
   // Hooks
   const router = useRouter();
+=======
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isUserEditModalOpen, setIsUserEditModalOpen] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [editingItemId, setEditingItemId] = useState("");
+  const [user, setUser] = useState<User | null>(null);
+  const [items, setItems] = useState<Item[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<Item[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+>>>>>>> feature
   const { userId } = useAuth();
   const {
-    user,
-    items,
-    reviews,
-    wishlistItems,
-    fetchUserData,
+    fetchUserProfile,
     fetchUserItems,
     fetchUserReviews,
     fetchUserWishlist,
@@ -73,27 +92,55 @@ export default function ProfilePage() {
 
   // Effects
   useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name,
-        email: user.email,
-        department: user.department || "",
-        university_id: user.university_id || "",
-        year: user.year || "",
-      });
-    }
-  }, [user]);
+    const loadUserProfile = async () => {
+      if (!userId) return;
+      const userData = await fetchUserProfile();
+      setUser(userData);
+
+      // Set initial form data
+      if (userData) {
+        setFormData({
+          name: userData.name || "",
+          email: userData.email || "",
+          department: userData.department || "",
+          university_id: userData.university_id || "",
+          year: userData.year || "",
+        });
+      }
+    };
+
+    loadUserProfile();
+  }, [userId, fetchUserProfile]);
 
   useEffect(() => {
-    if (!userId) return;
-    if (activeTab === "products") fetchUserItems();
-    else if (activeTab === "reviews") fetchUserReviews();
-    else if (activeTab === "wishlist") fetchUserWishlist();
-  }, [userId, activeTab, fetchUserItems, fetchUserReviews, fetchUserWishlist]);
+    const loadData = async () => {
+      if (!userId) return;
+      setIsLoading(true);
+      console.log("Loading data for user:", userId);
 
-  useEffect(() => {
-    if (userId) fetchUserData();
-  }, [userId, fetchUserData]);
+      try {
+        // Fetch user items
+        console.log("Fetching user items...");
+        const userItems = await fetchUserItems();
+        console.log("Items fetched:", userItems?.length || 0);
+        setItems(userItems || []);
+
+        // Fetch user wishlist
+        const wishlist = await fetchUserWishlist();
+        setWishlistItems(wishlist || []);
+
+        // Fetch user reviews
+        const userReviews = await fetchUserReviews();
+        setReviews(userReviews || []);
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [userId, fetchUserItems, fetchUserWishlist, fetchUserReviews]);
 
   useEffect(() => {
     if (isEditModalOpen && editingItemId) {
@@ -113,13 +160,23 @@ export default function ProfilePage() {
   const handleSaveWithFeedback = async () => {
     const result = await updateUserProfile(formData);
     if (result) {
+<<<<<<< HEAD
       setIsEditing(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
+=======
+      setUser(result);
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+        setIsUserEditModalOpen(false);
+      }, 2000);
+>>>>>>> feature
     }
   };
 
   const handleChangePassword = async () => {
+<<<<<<< HEAD
     setPasswordError("");
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setPasswordError("Passwords don't match");
@@ -137,6 +194,37 @@ export default function ProfilePage() {
       newPassword: "",
       confirmPassword: "",
     });
+=======
+    if (
+      !passwordData.currentPassword ||
+      !passwordData.newPassword ||
+      !passwordData.confirmPassword
+    ) {
+      setPasswordError("All fields are required.");
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("New password and confirm password do not match.");
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      password: passwordData.newPassword,
+    });
+
+    if (error) {
+      setPasswordError(error.message);
+    } else {
+      setPasswordError("");
+      setIsChangingPassword(false);
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    }
+>>>>>>> feature
   };
 
   const handleEditItem = (itemId: string) => {
@@ -144,7 +232,12 @@ export default function ProfilePage() {
     setIsEditModalOpen(true);
   };
 
+  const handleEditProfile = () => {
+    setIsUserEditModalOpen(true);
+  };
+
   const handleDeleteItem = async (itemId: string) => {
+<<<<<<< HEAD
     if (confirm("Are you sure you want to delete this item?")) {
       try {
         const { error } = await supabase
@@ -158,10 +251,18 @@ export default function ProfilePage() {
         console.error("Error deleting item:", error);
         toast.error("Failed to delete item.");
       }
+=======
+    const { error } = await supabase.from("products").delete().eq("id", itemId);
+
+    if (!error) {
+      const updatedItems = await fetchUserItems();
+      setItems(updatedItems || []);
+>>>>>>> feature
     }
   };
 
   const handleMarkAsSold = async (itemId: string) => {
+<<<<<<< HEAD
     if (confirm("Mark this item as sold? It will no longer be visible to buyers.")) {
       try {
         const { error } = await supabase
@@ -175,10 +276,21 @@ export default function ProfilePage() {
         console.error("Error marking item as sold:", error);
         toast.error("Failed to mark item as sold.");
       }
+=======
+    const { error } = await supabase
+      .from("products")
+      .update({ status: "sold" })
+      .eq("id", itemId);
+
+    if (!error) {
+      const updatedItems = await fetchUserItems();
+      setItems(updatedItems || []);
+>>>>>>> feature
     }
   };
 
   const handleRemoveFromWishlist = async (itemId: string) => {
+<<<<<<< HEAD
     if (confirm("Remove this item from your wishlist?")) {
       try {
         const { error } = await supabase
@@ -193,6 +305,23 @@ export default function ProfilePage() {
         console.error("Error removing from wishlist:", error);
         toast.error("Failed to remove item from wishlist.");
       }
+=======
+    try {
+      const { error } = await supabase
+        .from("wishlist")
+        .delete()
+        .eq("product_id", itemId)
+        .eq("user_id", userId);
+
+      if (!error) {
+        const updatedWishlist = await fetchUserWishlist();
+        setWishlistItems(updatedWishlist || []);
+      } else {
+        console.error("Error removing from wishlist:", error);
+      }
+    } catch (err) {
+      console.error("Exception removing from wishlist:", err);
+>>>>>>> feature
     }
   };
 
@@ -249,6 +378,7 @@ export default function ProfilePage() {
   // Render
   return (
     <div className="min-h-screen bg-gray-50">
+<<<<<<< HEAD
       <Header />
       <div className="max-w-4xl mx-auto p-4">
         {/* Profile Header */}
@@ -786,6 +916,80 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+=======
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      ) : (
+        <>
+          <ProfileHeader
+            user={user}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+          {activeTab !== "settings" && (
+            <ProfileContent
+              activeTab={activeTab}
+              items={items}
+              wishlistItems={wishlistItems}
+              reviews={reviews}
+              handleEditItem={handleEditItem}
+              handleDeleteItem={handleDeleteItem}
+              handleMarkAsSold={handleMarkAsSold}
+              handleRemoveFromWishlist={handleRemoveFromWishlist}
+            />
+          )}
+          {activeTab === "settings" && (
+            <ProfileSettings
+              user={user}
+              isEditing={isEditing}
+              setIsEditing={handleEditProfile}
+              isChangingPassword={isChangingPassword}
+              setIsChangingPassword={setIsChangingPassword}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+              formData={formData}
+              passwordData={passwordData}
+              passwordError={passwordError}
+              handleInputChange={handleInputChange}
+              handlePasswordChange={handlePasswordChange}
+              handleSave={handleSave}
+              handleChangePassword={handleChangePassword}
+              resetPasswordData={() => {
+                setPasswordData({
+                  currentPassword: "",
+                  newPassword: "",
+                  confirmPassword: "",
+                });
+                setPasswordError("");
+              }}
+            />
+          )}
+
+          <ItemEditModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            itemId={editingItemId}
+            onItemUpdated={async () => {
+              const updatedItems = await fetchUserItems();
+              if (updatedItems) {
+                setItems(updatedItems);
+              }
+            }}
+          />
+
+          <UserEditModal
+            isOpen={isUserEditModalOpen}
+            onClose={() => setIsUserEditModalOpen(false)}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleSave={handleSave}
+            saveSuccess={saveSuccess}
+          />
+        </>
+      )}
+>>>>>>> feature
     </div>
   );
 }

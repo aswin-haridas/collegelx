@@ -2,11 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { styles } from "@/lib/styles";
-import { supabase } from "@/lib/supabase";
+import { styles } from "@/shared/lib/styles";
+import { supabase } from "@/shared/lib/supabase";
 import { Loader2, Upload } from "lucide-react";
+<<<<<<< HEAD
 import Header from "@/components/Header";
 import toast from "react-hot-toast";
+=======
+import Header from "@/shared/components/Header";
+import Image from "next/image";
+>>>>>>> feature
 
 export default function SellPage() {
   const router = useRouter();
@@ -20,7 +25,6 @@ export default function SellPage() {
   const [images, setImages] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   const userId = sessionStorage.getItem("user_id"); // Get userId from sessionStorage
 
@@ -63,7 +67,7 @@ export default function SellPage() {
       );
 
       // Insert item into database with seller field instead of user_id
-      const { error: insertError } = await supabase.from("items").insert({
+      const { error: insertError } = await supabase.from("products").insert({
         seller_id: userId, // Changed to seller field to match the database schema
         title,
         description,
@@ -107,7 +111,7 @@ export default function SellPage() {
         <div className="flex justify-center items-center h-full ">
           <Loader2
             className="h-8 w-8 animate-spin"
-            style={{ color: styles.warmPrimary }}
+            style={{ color: styles.Primary }}
           />
         </div>
       </div>
@@ -122,7 +126,7 @@ export default function SellPage() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h1
               className="text-2xl font-semibold mb-6"
-              style={{ color: styles.warmText }}
+              style={{ color: styles.Text }}
             >
               Create Listing
             </h1>
@@ -140,8 +144,8 @@ export default function SellPage() {
                   required
                   className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                   style={{
-                    borderColor: styles.warmBorder,
-                    color: styles.warmText,
+                    borderColor: styles.Border,
+                    color: styles.Text,
                   }}
                 />
               </div>
@@ -158,8 +162,8 @@ export default function SellPage() {
                   rows={4}
                   className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                   style={{
-                    borderColor: styles.warmBorder,
-                    color: styles.warmText,
+                    borderColor: styles.Border,
+                    color: styles.Text,
                   }}
                 />
               </div>
@@ -179,8 +183,8 @@ export default function SellPage() {
                     step="0.01"
                     className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                     style={{
-                      borderColor: styles.warmBorder,
-                      color: styles.warmText,
+                      borderColor: styles.Border,
+                      color: styles.Text,
                     }}
                   />
                 </div>
@@ -195,8 +199,8 @@ export default function SellPage() {
                     required
                     className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                     style={{
-                      borderColor: styles.warmBorder,
-                      color: styles.warmText,
+                      borderColor: styles.Border,
+                      color: styles.Text,
                     }}
                   >
                     <option value="">Select Product Type</option>
@@ -220,8 +224,8 @@ export default function SellPage() {
                     required
                     className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                     style={{
-                      borderColor: styles.warmBorder,
-                      color: styles.warmText,
+                      borderColor: styles.Border,
+                      color: styles.Text,
                     }}
                   >
                     <option value="">Select Year</option>
@@ -243,8 +247,8 @@ export default function SellPage() {
                     required
                     className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                     style={{
-                      borderColor: styles.warmBorder,
-                      color: styles.warmText,
+                      borderColor: styles.Border,
+                      color: styles.Text,
                     }}
                   >
                     <option value="">Select Department</option>
@@ -271,8 +275,8 @@ export default function SellPage() {
                   placeholder="e.g., mathematics, sem3, engineering"
                   className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                   style={{
-                    borderColor: styles.warmBorder,
-                    color: styles.warmText,
+                    borderColor: styles.Border,
+                    color: styles.Text,
                   }}
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -289,7 +293,7 @@ export default function SellPage() {
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload
                         className="h-10 w-10 mb-3"
-                        style={{ color: styles.warmText }}
+                        style={{ color: styles.Text }}
                       />
                       <p className="mb-2 text-sm text-gray-500">
                         <span className="font-semibold">Click to upload</span>{" "}
@@ -313,7 +317,7 @@ export default function SellPage() {
                   <div className="mt-4 grid grid-cols-3 gap-4">
                     {previewUrls.map((url, index) => (
                       <div key={index} className="relative aspect-square">
-                        <img
+                        <Image
                           src={url}
                           alt={`Preview ${index + 1}`}
                           className="w-full h-full object-cover rounded-lg"
@@ -327,7 +331,7 @@ export default function SellPage() {
               <button
                 type="submit"
                 className="w-full py-2 px-4 rounded-lg text-white flex items-center justify-center disabled:opacity-50"
-                style={{ backgroundColor: styles.warmPrimary }}
+                style={{ backgroundColor: styles.Primary }}
                 disabled={uploading}
               >
                 {uploading ? (
