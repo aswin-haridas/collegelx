@@ -2,19 +2,39 @@
 import Link from "next/link";
 import { styles, playfair } from "@/shared/lib/styles";
 import { FieldValues, useForm } from "react-hook-form";
-import Input from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
+import Input from "@/app/components/ui/Input";
+import Button from "@/app/components/ui/Button";
 import Tagline from "../components/Tagline";
+import { supabase } from "@/shared/lib/supabase";
+import { redirect } from "next/navigation";
+import toast from "react-hot-toast";
 
-export default function SignupPage() {
+export default function LoginPage() {
   const {
     register,
     handleSubmit,
     formState: { isSubmitting },
   } = useForm();
 
-  const onSubmit = async (data: unknown) => {
-    console.log("Form submitted:", data);
+  const onSubmit = async (data: any) => {
+    const { data: userData, error } = await supabase
+      .from("users")
+      .select(
+        "id,email,full_name,college_id,department,phone,profile_picture,is_active"
+      )
+      .eq("email", data.email)
+      .single();
+    if (error) {
+      toast.error(`Error fetching user: ${error.message}`);
+      return;
+    }
+    if (!userData) {
+      toast.error("User not found. Please sign up first.");
+      return;
+    }
+    if (userData) {
+      redirect("/");
+    }
   };
 
   return (
@@ -29,9 +49,6 @@ export default function SignupPage() {
     </div>
   );
 }
-
-
-
 function SignupForm({
   register,
   handleSubmit,
