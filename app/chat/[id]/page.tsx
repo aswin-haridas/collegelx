@@ -18,7 +18,7 @@ export default function ChatPage() {
 
   const [participantInfo, setParticipantInfo] = useState({
     receiverName: null as string | null,
-    listingInfo: null as { title: string; price: number; id: string } | null,
+    listingInfo: null as { name: string; price: number; id: string } | null,
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -121,7 +121,7 @@ export default function ChatPage() {
     try {
       const { data, error } = await supabase
         .from("listings")
-        .select("title, price, id")
+        .select("name, price, id")
         .eq("id", listingId)
         .single();
 
@@ -263,7 +263,7 @@ export default function ChatPage() {
             >
               <div>
                 <p className="text-sm font-medium">
-                  {participantInfo.listingInfo.title}
+                  {participantInfo.listingInfo.name}
                 </p>
                 <p className="text-sm" style={{ color: styles.warmPrimary }}>
                   ₹{participantInfo.listingInfo.price}

@@ -68,7 +68,7 @@ export default function MessagesPage() {
         // Get listing details from items table
         const { data: listingsData, error: listingsError } = await supabase
           .from("items")
-          .select("id, title")
+          .select("id, name")
           .in("id", Array.from(listingIds));
 
         if (listingsError) {
@@ -109,9 +109,9 @@ export default function MessagesPage() {
             ? message.receiver?.name || "Unknown User"
             : message.sender?.name || "Unknown User";
 
-          // Get listing title
-          const listingTitle =
-            message.listing?.title ||
+          // Get listing name
+          const listingname =
+            message.listing?.name ||
             `Listing #${message.listing_id?.substring(0, 8)}`;
 
           // If this is a new conversation we haven't processed yet, or this is a newer message
@@ -126,7 +126,7 @@ export default function MessagesPage() {
             conversationsMap.set(conversationKey, {
               id: conversationKey,
               listing_id: message.listing_id,
-              listing_title: listingTitle,
+              listing_name: listingname,
               participant_id: participantId,
               participant_name: participantName,
               last_message: message.message,
@@ -213,10 +213,10 @@ export default function MessagesPage() {
     );
   };
 
-  // Replace the getListingTitle function with this one that uses the stored title
-  const getListingTitle = (conversation: Conversation) => {
+  // Replace the getListingname function with this one that uses the stored name
+  const getListingname = (conversation: Conversation) => {
     return (
-      conversation.listing_title ||
+      conversation.listing_name ||
       `Listing #${conversation.listing_id.substring(0, 8)}`
     );
   };
@@ -306,8 +306,8 @@ export default function MessagesPage() {
                       className="bg-gray-100 p-3 font-medium text-sm sticky top-0"
                       style={{ color: styles.warmText }}
                     >
-                      {conversationsGroup[0].listing_title ||
-                        getListingTitle(conversationsGroup[0])}
+                      {conversationsGroup[0].listing_name ||
+                        getListingname(conversationsGroup[0])}
                     </div>
                     <ul className="divide-y divide-gray-200">
                       {conversationsGroup.map((conversation) => (

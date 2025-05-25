@@ -59,7 +59,7 @@ export default function ProfilePage() {
 <<<<<<< HEAD
 
   // Item edit modal states
-  const [modalTitle, setModalTitle] = useState("");
+  const [modalname, setModalname] = useState("");
   const [modalDescription, setModalDescription] = useState("");
   const [modalPrice, setModalPrice] = useState("");
   const [modalCategory, setModalCategory] = useState("");
@@ -334,7 +334,7 @@ export default function ProfilePage() {
         .eq("id", editingItemId)
         .single();
       if (error) throw error;
-      setModalTitle(data.title);
+      setModalname(data.name);
       setModalDescription(data.description);
       setModalPrice(data.price.toString());
       setModalCategory(data.category);
@@ -355,7 +355,7 @@ export default function ProfilePage() {
       const { error } = await supabase
         .from("items")
         .update({
-          title: modalTitle,
+          name: modalname,
           description: modalDescription,
           price: parseFloat(modalPrice),
           category: modalCategory,
@@ -809,11 +809,11 @@ export default function ProfilePage() {
               ) : (
                 <form onSubmit={handleUpdateItem} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600">Title</label>
+                    <label className="block text-sm font-medium text-gray-600">name</label>
                     <input
                       type="text"
-                      value={modalTitle}
-                      onChange={(e) => setModalTitle(e.target.value)}
+                      value={modalname}
+                      onChange={(e) => setModalname(e.target.value)}
                       required
                       className="mt-1 w-full p-2 border rounded-lg"
                     />

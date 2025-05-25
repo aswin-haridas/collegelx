@@ -65,8 +65,8 @@ export default function ProfilePage() {
         setItems(
           data.map((item) => ({
             ...item,
-            title: item.name || item.title,
-            name: item.name || item.title,
+            name: item.name || item.name,
+            name: item.name || item.name,
             user_id: item.seller_id,
             seller_id: item.seller_id,
             seller: item.seller_id,
@@ -308,7 +308,7 @@ export default function ProfilePage() {
                               handleEditItem(item.id);
                             }}
                             style={{ color: styles.Primary }}
-                            title="Edit item"
+                            name="Edit item"
                           >
                             <Edit size={16} />
                           </button>
@@ -320,7 +320,7 @@ export default function ProfilePage() {
                                 handleMarkAsSold(item.id);
                               }}
                               style={{ color: "#16a34a" }}
-                              title="Mark as sold"
+                              name="Mark as sold"
                             >
                               <Star size={16} />
                             </button>
@@ -332,7 +332,7 @@ export default function ProfilePage() {
                               handleDeleteItem(item.id);
                             }}
                             style={{ color: "#ef4444" }}
-                            title="Delete item"
+                            name="Delete item"
                           >
                             <Trash2 size={16} />
                           </button>

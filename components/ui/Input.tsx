@@ -1,10 +1,11 @@
-import { styles } from "@/shared/lib/styles";
+import { styles } from "@/lib/styles";
 
 interface InputProps {
   placeholder: string;
   type?: string;
   autoComplete?: string;
   className?: string;
+  value?: string | number;
 }
 
 export default function Input({

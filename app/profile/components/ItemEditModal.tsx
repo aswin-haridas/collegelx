@@ -20,7 +20,7 @@ export default function ItemEditModal({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    title: "",
+    name: "",
     price: "",
     description: "",
     category: "",
@@ -45,7 +45,7 @@ export default function ItemEditModal({
         if (data) {
           setItem(data);
           setFormData({
-            title: data.title || "",
+            name: data.name || "",
             price: data.price ? String(data.price) : "",
             description: data.description || "",
             category: data.category || "",
@@ -82,14 +82,14 @@ export default function ItemEditModal({
 
     try {
       // Validate form
-      if (!formData.title || !formData.price) {
-        throw new Error("Title and price are required");
+      if (!formData.name || !formData.price) {
+        throw new Error("name and price are required");
       }
 
       const { error } = await supabase
         .from("products")
         .update({
-          title: formData.title,
+          name: formData.name,
           price: parseFloat(formData.price),
           description: formData.description,
           category: formData.category,
@@ -178,12 +178,12 @@ export default function ItemEditModal({
                     className="block text-sm font-medium mb-1"
                     style={{ color: styles.Text }}
                   >
-                    Title
+                    name
                   </label>
                   <input
                     type="text"
-                    name="title"
-                    value={formData.title}
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
                     className="w-full p-2 border rounded-md"
                     style={{ borderColor: styles.Border }}

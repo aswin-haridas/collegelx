@@ -1,11 +1,11 @@
 "use client";
 import Link from "next/link";
-import { styles, playfair } from "@/shared/lib/styles";
+import { styles, playfair } from "@/lib/styles";
 import { FieldValues, useForm } from "react-hook-form";
-import Input from "@/app/components/ui/Input";
-import Button from "@/app/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
 import Tagline from "../components/Tagline";
-import { supabase } from "@/shared/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { redirect } from "next/navigation";
 import toast from "react-hot-toast";
 

@@ -208,7 +208,7 @@ export default function ChatPage() {
                             className="font-medium"
                             style={{ color: styles.Text }}
                           >
-                            {product.title || "Untitled Product"}
+                            {product.name || "Unnamed Product"}
                           </h3>
                           <p
                             className="text-xs"
@@ -387,7 +387,7 @@ export default function ChatPage() {
                       }}
                     >
                       {truncateText(
-                        chatProducts[selectedChatId].title ||
+                        chatProducts[selectedChatId].name ||
                           "View product details"
                       )}
                     </div>

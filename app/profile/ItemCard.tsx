@@ -86,7 +86,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
             {!imageError ? (
               <Image
                 src={displayImage}
-                alt={item.title}
+                alt={item.name}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 style={{
@@ -110,7 +110,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
                     className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
                     onClick={handleEditClick}
                     style={{ color: styles.Primary }}
-                    title="Edit item"
+                    name="Edit item"
                   >
                     <Edit size={16} />
                   </button>
@@ -121,7 +121,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
                     className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
                     onClick={handleMarkAsSoldClick}
                     style={{ color: "#16a34a" }}
-                    title="Mark as sold"
+                    name="Mark as sold"
                   >
                     <Star size={16} fill="#16a34a" />
                   </button>
@@ -132,7 +132,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
                     className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
                     onClick={handleDeleteClick}
                     style={{ color: "#ef4444" }}
-                    title="Delete item"
+                    name="Delete item"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -143,7 +143,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
                     className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
                     onClick={handleWishlistRemoveClick}
                     style={{ color: "#ef4444" }}
-                    title="Remove from wishlist"
+                    name="Remove from wishlist"
                   >
                     <Heart size={16} fill="#ef4444" />
                   </button>
@@ -157,7 +157,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
               className="font-medium text-lg mb-2 line-clamp-1"
               style={{ color: styles.Text }}
             >
-              {item.title}
+              {item.name}
             </h3>
             <p className="text-gray-600 mb-2 text-sm flex-grow line-clamp-2">
               {item.description}
@@ -178,10 +178,10 @@ const ItemCard: React.FC<ItemCardProps> = ({
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Confirm Deletion"
+        name="Confirm Deletion"
       >
         <div className="py-4">
-          <p>Are you sure you want to delete &#34;{item.title}&quot;?</p>
+          <p>Are you sure you want to delete &#34;{item.name}&quot;?</p>
           <p className="text-gray-500 text-sm mt-2">
             This action cannot be undone.
           </p>
@@ -205,10 +205,10 @@ const ItemCard: React.FC<ItemCardProps> = ({
       <Modal
         isOpen={isMarkAsSoldModalOpen}
         onClose={() => setIsMarkAsSoldModalOpen(false)}
-        title="Mark Item as Sold"
+        name="Mark Item as Sold"
       >
         <div className="py-4">
-          <p>Mark &#34;{item.title}&#34; as sold?</p>
+          <p>Mark &#34;{item.name}&#34; as sold?</p>
           <p className="text-gray-500 text-sm mt-2">
             This will hide the item from the marketplace.
           </p>

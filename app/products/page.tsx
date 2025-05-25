@@ -69,7 +69,7 @@ export default function ItemsPage() {
   }, [selectedYear, selectedDepartment, selectedcategory, sortByPrice]);
 
   const filteredItems = items.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -82,7 +82,7 @@ export default function ItemsPage() {
 
   return (
     <>
-      <Header/>
+      <Header />
       <div className="min-h-screen">
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
@@ -97,7 +97,7 @@ export default function ItemsPage() {
               <div className="flex flex-wrap gap-4">
                 <input
                   type="text"
-                  placeholder="Search by title..."
+                  placeholder="Search by name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="p-2 border rounded-lg border-yellow-600 flex-grow md:flex-grow-0"
@@ -177,7 +177,7 @@ export default function ItemsPage() {
                         {item.images?.length > 0 ? (
                           <img
                             src={item.images[0]}
-                            alt={item.title}
+                            alt={item.name}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -191,7 +191,7 @@ export default function ItemsPage() {
                           className="font-medium text-lg mb-2"
                           style={{ color: styles.warmText }}
                         >
-                          {item.title}
+                          {item.name}
                         </h3>
                         <p className="text-gray-600 mb-2 text-sm flex-grow">
                           {item.description}

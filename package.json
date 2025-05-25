@@ -17,10 +17,7 @@
     "next": "15.2.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-<<<<<<< HEAD
-=======
     "react-hook-form": "^7.56.4",
->>>>>>> feature
     "react-hot-toast": "^2.5.2"
   },
   "devDependencies": {

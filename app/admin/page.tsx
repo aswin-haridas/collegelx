@@ -34,12 +34,12 @@ const AdminDashboard: React.FC = () => {
 
   // Filter items based on search query
   const filteredItems = items.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Filter unlisted items based on search query
   const filteredUnlistedItems = unlistedItems.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -190,7 +190,7 @@ const AdminDashboard: React.FC = () => {
                       <thead>
                         <tr className="bg-gray-200">
                           <th className="p-2 text-left">ID</th>
-                          <th className="p-2 text-left">Title</th>
+                          <th className="p-2 text-left">name</th>
                           <th className="p-2 text-left">Category</th>
                           <th className="p-2 text-left">Price</th>
                           <th className="p-2 text-left">Status</th>
@@ -202,7 +202,7 @@ const AdminDashboard: React.FC = () => {
                         {filteredItems.map((item) => (
                           <tr key={item.id} className="border-t">
                             <td className="p-2">{item.id}</td>
-                            <td className="p-2">{item.title}</td>
+                            <td className="p-2">{item.name}</td>
                             <td className="p-2">{item.category}</td>
                             <td className="p-2">${item.price}</td>
                             <td className="p-2">
@@ -241,7 +241,7 @@ const AdminDashboard: React.FC = () => {
                       <thead>
                         <tr className="bg-gray-200">
                           <th className="p-2 text-left">ID</th>
-                          <th className="p-2 text-left">Title</th>
+                          <th className="p-2 text-left">name</th>
                           <th className="p-2 text-left">Category</th>
                           <th className="p-2 text-left">Price</th>
                           <th className="p-2 text-left">Seller</th>
@@ -253,7 +253,7 @@ const AdminDashboard: React.FC = () => {
                         {filteredUnlistedItems.map((item) => (
                           <tr key={item.id} className="border-t">
                             <td className="p-2">{item.id}</td>
-                            <td className="p-2">{item.title}</td>
+                            <td className="p-2">{item.name}</td>
                             <td className="p-2">{item.category}</td>
                             <td className="p-2">${item.price}</td>
                             <td className="p-2">{item.seller_id}</td>
@@ -373,12 +373,12 @@ const AdminDashboard: React.FC = () => {
                 }}
               >
                 <div className="mb-4">
-                  <label className="block text-gray-800 mb-1">Title</label>
+                  <label className="block text-gray-800 mb-1">name</label>
                   <input
                     type="text"
-                    value={editingItem.title}
+                    value={editingItem.name}
                     onChange={(e) =>
-                      setEditingItem({ ...editingItem, title: e.target.value })
+                      setEditingItem({ ...editingItem, name: e.target.value })
                     }
                     className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
                   />

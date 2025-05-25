@@ -1,26 +1,15 @@
 "use client";
 import Link from "next/link";
-import { styles, playfair } from "@/shared/lib/styles";
+import { styles, playfair } from "@/lib/styles";
 import { FieldValues, useForm } from "react-hook-form";
-import Input from "@/app/components/ui/Input";
-import Button from "@/app/components/ui/Button";
-import Tagline from "../components/Tagline"; // Assuming path is correct: app/(auth)/components/Tagline
-import { supabase } from "@/shared/lib/supabase";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
+import Tagline from "../components/Tagline";
+import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
 import { redirect } from "next/navigation";
+import { departments } from "@/lib/constants";
 
-const departments = [
-  "Computer Science",
-  "Information Technology",
-  "Electrical Engineering",
-  "Mechanical Engineering",
-  "Civil Engineering",
-  "Chemical Engineering",
-  "Biotechnology",
-  "Business Administration",
-  "Economics",
-  "Psychology",
-];
 
 export default function SignupPage() {
   const {

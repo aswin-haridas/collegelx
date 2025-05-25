@@ -10,7 +10,7 @@ const playfair = Playfair_Display_SC({
 });
 
 export const metadata: Metadata = {
-  title: "CollegeLX",
+  name: "CollegeLX",
   description: "Minimal college marketplace for AISAT students",
 };
 

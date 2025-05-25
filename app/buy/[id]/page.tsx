@@ -121,7 +121,7 @@ export default function ItemPage() {
     }
 
 <<<<<<< HEAD
-    toast.success(`Opening chat with seller about: ${item?.title}`);
+    toast.success(`Opening chat with seller about: ${item?.name}`);
 
     // Store in session storage before navigation
     sessionStorage.setItem("listing_id", chatItemId);
@@ -245,7 +245,7 @@ export default function ItemPage() {
                 <div className="rounded-lg overflow-hidden mb-4">
                   <Image
                     src={item.images[selectedImageIndex]}
-                    alt={`${item.title} - Image ${selectedImageIndex + 1}`}
+                    alt={`${item.name} - Image ${selectedImageIndex + 1}`}
                     className="w-full h-96 object-cover rounded-lg"
                   />
                 </div>
@@ -271,7 +271,7 @@ export default function ItemPage() {
                       >
                         <Image
                           src={image}
-                          alt={`${item.title} - Thumbnail ${index + 1}`}
+                          alt={`${item.name} - Thumbnail ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
                       </button>
@@ -286,7 +286,7 @@ export default function ItemPage() {
               <h1
                 className={`${playfair.className} text-4xl font-bold text-gray-800 mb-4`}
               >
-                {item.title}
+                {item.name}
               </h1>
 
               <div className="bg-gray-50 p-4 rounded-lg mb-6">

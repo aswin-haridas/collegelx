@@ -15,7 +15,7 @@ import Image from "next/image";
 
 export default function SellPage() {
   const router = useRouter();
-  const [title, setTitle] = useState("");
+  const [name, setname] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [category, setcategory] = useState("");
@@ -69,7 +69,7 @@ export default function SellPage() {
       // Insert item into database with seller field instead of user_id
       const { error: insertError } = await supabase.from("products").insert({
         seller_id: userId, // Changed to seller field to match the database schema
-        title,
+        name,
         description,
         price: parseFloat(price),
         category: category,
@@ -132,15 +132,15 @@ export default function SellPage() {
             </h1>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Title Row */}
+              {/* name Row */}
               <div>
                 <label className="block text-sm font-medium text-gray-600">
-                  Title
+                  name
                 </label>
                 <input
                   type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={name}
+                  onChange={(e) => setname(e.target.value)}
                   required
                   className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                   style={{

@@ -67,7 +67,7 @@ export default function ProfileContent({
                             handleEditItem(item.id);
                           }}
                           style={{ color: styles.Primary }}
-                          title="Edit item"
+                          name="Edit item"
                         >
                           <Edit size={16} />
                         </button>
@@ -79,7 +79,7 @@ export default function ProfileContent({
                               handleMarkAsSold(item.id);
                             }}
                             style={{ color: "#16a34a" }}
-                            title="Mark as sold"
+                            name="Mark as sold"
                           >
                             <PackageCheck size={16} />
                           </button>
@@ -91,7 +91,7 @@ export default function ProfileContent({
                             handleDeleteItem(item.id);
                           }}
                           style={{ color: "#ef4444" }}
-                          title="Delete item"
+                          name="Delete item"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -145,7 +145,7 @@ export default function ProfileContent({
                         handleRemoveFromWishlist(item.id);
                       }}
                       style={{ color: "#ef4444" }}
-                      title="Remove from wishlist"
+                      name="Remove from wishlist"
                     >
                       <Trash2 size={16} />
                     </button>
