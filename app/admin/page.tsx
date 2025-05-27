@@ -1,10 +1,10 @@
 "use client";
 import React, { useState } from "react";
-import { User, Item } from "@/app/lib/types";
-import Header from "../components/shared/Header";
+import { User, Item } from "@/types";
+import Header from "@/components/shared/Header";
 import { useAdmin } from "./useAdmin";
 
-const AdminDashboard: React.FC = () => {
+function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<
     "users" | "allItems" | "unlistedItems"
   >("users");
@@ -295,9 +295,9 @@ const AdminDashboard: React.FC = () => {
                   <label className="block text-gray-800 mb-1">Name</label>
                   <input
                     type="text"
-                    value={editingUser.name || ""}
+                    value={editingUser.full_name || ""}
                     onChange={(e) =>
-                      setEditingUser({ ...editingUser, name: e.target.value })
+                      setEditingUser({ ...editingUser, full_name: e.target.value })
                     }
                     className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
                   />
@@ -446,6 +446,6 @@ const AdminDashboard: React.FC = () => {
       </div>
     </>
   );
-};
+}
 
 export default AdminDashboard;

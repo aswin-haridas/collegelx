@@ -5,8 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Search } from "lucide-react";
-import Header from "@/components/Header";
-import { Message, Conversation } from "@/lib/types";
+import Header from "@/components/shared/Header";
 
 // Styles
 const styles = {

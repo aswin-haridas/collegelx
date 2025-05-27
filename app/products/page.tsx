@@ -5,8 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
 import { styles } from "@/lib/styles";
 import Link from "next/link";
-import Header from "@/components/Header";
-import { Item } from "@/lib/types";
+import Header from "@/components/shared/Header";
+import { Item } from "@/types";
 
 const departments = [
   "All",

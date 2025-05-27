@@ -2,31 +2,38 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { styles } from "@/shared/lib/styles";
-import { supabase } from "@/shared/lib/supabase";
+import { styles } from "@/lib/styles";
+import { supabase } from "@/lib/supabase";
 import { Loader2, Upload } from "lucide-react";
-<<<<<<< HEAD
-import Header from "@/components/Header";
+import Header from "@/components/shared/Header";
 import toast from "react-hot-toast";
-=======
-import Header from "@/shared/components/Header";
 import Image from "next/image";
->>>>>>> feature
+import { useForm, SubmitHandler } from "react-hook-form";
+import { departments } from "@/lib/constants";
+
+interface FormInputs {
+  name: string;
+  description: string;
+  price: string;
+  category: string;
+  year: string;
+  department: string;
+  tags: string;
+}
 
 export default function SellPage() {
   const router = useRouter();
-  const [name, setname] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [category, setcategory] = useState("");
-  const [year, setYear] = useState("");
-  const [department, setDepartment] = useState("");
-  const [tags, setTags] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
   const [images, setImages] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-  const userId = sessionStorage.getItem("user_id"); // Get userId from sessionStorage
+  const userId = sessionStorage.getItem("user_id");
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -37,12 +44,12 @@ export default function SellPage() {
     setPreviewUrls(urls);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     // Check if userId exists
-    if (!userId) {
-      toast.error("You must be logged in to create a listing.");
+
+    // Check if images are selected
+    if (images.length === 0) {
+      toast.error("Please select at least one image.");
       return;
     }
 
@@ -68,13 +75,13 @@ export default function SellPage() {
 
       // Insert item into database with seller field instead of user_id
       const { error: insertError } = await supabase.from("products").insert({
-        seller_id: userId, // Changed to seller field to match the database schema
-        name,
-        description,
-        price: parseFloat(price),
-        category: category,
-        year,
-        department,
+        seller_id: userId,
+        name: data.name,
+        description: data.description,
+        price: parseFloat(data.price),
+        category: data.category,
+        year: data.year,
+        department: data.department,
         images: imageUrls,
         status: "unlisted",
         created_at: new Date().toISOString(),
@@ -98,55 +105,24 @@ export default function SellPage() {
     }
   };
 
-  // Cleanup preview URLs on unmount
-  useEffect(() => {
-    return () => {
-      previewUrls.forEach(URL.revokeObjectURL);
-    };
-  }, [previewUrls]);
-
-  if (isLoading) {
-    return (
-      <div className="h-screen">
-        <div className="flex justify-center items-center h-full ">
-          <Loader2
-            className="h-8 w-8 animate-spin"
-            style={{ color: styles.Primary }}
-          />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
       <Header />
       <div className="h-screen">
         <div className="max-w-4xl mx-auto p-4 ">
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h1
-              className="text-2xl font-semibold mb-6"
-              style={{ color: styles.Text }}
-            >
-              Create Listing
-            </h1>
+            <h1 className="text-2xl font-semibold mb-6">Create Listing</h1>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* name Row */}
               <div>
                 <label className="block text-sm font-medium text-gray-600">
-                  name
+                  Name
                 </label>
                 <input
+                  {...register("name", { required: "Name is required" })}
                   type="text"
-                  value={name}
-                  onChange={(e) => setname(e.target.value)}
-                  required
                   className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
-                  style={{
-                    borderColor: styles.Border,
-                    color: styles.Text,
-                  }}
                 />
               </div>
 
@@ -156,15 +132,11 @@ export default function SellPage() {
                   Description
                 </label>
                 <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
+                  {...register("description", {
+                    required: "Description is required",
+                  })}
                   rows={4}
                   className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
-                  style={{
-                    borderColor: styles.Border,
-                    color: styles.Text,
-                  }}
                 />
               </div>
 
@@ -175,17 +147,21 @@ export default function SellPage() {
                     Price (₹)
                   </label>
                   <input
+                    {...register("price", {
+                      required: "Price is required",
+                      min: {
+                        value: 0,
+                        message: "Price cannot be negative",
+                      },
+                      pattern: {
+                        value: /^\d+(\.\d{1,2})?$/,
+                        message: "Enter a valid price",
+                      },
+                    })}
                     type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    required
                     min="0"
                     step="0.01"
                     className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
-                    style={{
-                      borderColor: styles.Border,
-                      color: styles.Text,
-                    }}
                   />
                 </div>
 
@@ -194,14 +170,10 @@ export default function SellPage() {
                     Product Type
                   </label>
                   <select
-                    value={category}
-                    onChange={(e) => setcategory(e.target.value)}
-                    required
+                    {...register("category", {
+                      required: "Product type is required",
+                    })}
                     className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
-                    style={{
-                      borderColor: styles.Border,
-                      color: styles.Text,
-                    }}
                   >
                     <option value="">Select Product Type</option>
                     <option value="Notes">Notes</option>
@@ -219,14 +191,8 @@ export default function SellPage() {
                     Year
                   </label>
                   <select
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                    required
+                    {...register("year", { required: "Year is required" })}
                     className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
-                    style={{
-                      borderColor: styles.Border,
-                      color: styles.Text,
-                    }}
                   >
                     <option value="">Select Year</option>
                     <option value="1">1</option>
@@ -242,23 +208,17 @@ export default function SellPage() {
                     Department
                   </label>
                   <select
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    required
+                    {...register("department", {
+                      required: "Department is required",
+                    })}
                     className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
-                    style={{
-                      borderColor: styles.Border,
-                      color: styles.Text,
-                    }}
                   >
                     <option value="">Select Department</option>
-                    <option value="Computer Science">Computer Science</option>
-                    <option value="AI">AI</option>
-                    <option value="Mechanical">Mechanical</option>
-                    <option value="EC">EC</option>
-                    <option value="EEE">EEE</option>
-                    <option value="Civil">Civil</option>
-                    <option value="all">All</option>
+                    {departments.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -269,9 +229,8 @@ export default function SellPage() {
                   Tags (comma separated)
                 </label>
                 <input
+                  {...register("tags")}
                   type="text"
-                  value={tags}
-                  onChange={(e) => setTags(e.target.value)}
                   placeholder="e.g., mathematics, sem3, engineering"
                   className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                   style={{
@@ -293,7 +252,7 @@ export default function SellPage() {
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload
                         className="h-10 w-10 mb-3"
-                        style={{ color: styles.Text }}
+                        style={{ color: styles.text }}
                       />
                       <p className="mb-2 text-sm text-gray-500">
                         <span className="font-semibold">Click to upload</span>{" "}
@@ -321,6 +280,8 @@ export default function SellPage() {
                           src={url}
                           alt={`Preview ${index + 1}`}
                           className="w-full h-full object-cover rounded-lg"
+                          width={100}
+                          height={100}
                         />
                       </div>
                     ))}
@@ -331,7 +292,7 @@ export default function SellPage() {
               <button
                 type="submit"
                 className="w-full py-2 px-4 rounded-lg text-white flex items-center justify-center disabled:opacity-50"
-                style={{ backgroundColor: styles.Primary }}
+                style={{ backgroundColor: styles.primary }}
                 disabled={uploading}
               >
                 {uploading ? (

@@ -19,8 +19,8 @@ import {
   EyeOff,
   Loader2,
 } from "lucide-react";
-import Header from "@/components/Header";
-import ItemCard from "@/components/ItemCard";
+import Header from "@/components/shared/Header";
+import ItemCard from "@/components/shared/ItemCard";
 import toast from "react-hot-toast";
 =======
 import { useEffect, useState } from "react";

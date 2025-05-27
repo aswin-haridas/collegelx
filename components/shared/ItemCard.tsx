@@ -2,7 +2,6 @@ import { useState } from "react";
 import Image from "next/image";
 import { styles } from "@/lib/styles";
 import Link from "next/link";
-<<<<<<< HEAD:components/ItemCard.tsx
 import { Item } from "@/lib/types";
 import { Edit, Trash2, Star, Heart } from "lucide-react";
 
@@ -27,11 +26,8 @@ const ItemCard: React.FC<ItemCardProps> = ({
   onMarkAsSold,
   onRemoveFromWishlist,
 }) => {
-=======
-import { items } from "@/types/item";
 
 export default function ItemCard({ item }: { item: items }) {
->>>>>>> feature:components/shared/ItemCard.tsx
   const [imageError, setImageError] = useState(false);
 
   const handleImageError = () => {
@@ -41,7 +37,6 @@ export default function ItemCard({ item }: { item: items }) {
   // Get the first image URL or use the legacy imageUrl property
   const displayImage = item.images?.[0] ?? "/images/placeholder.png";
 
-<<<<<<< HEAD:components/ItemCard.tsx
   const handleAction = (
     e: React.MouseEvent,
     action: (id: string) => void,
@@ -52,8 +47,6 @@ export default function ItemCard({ item }: { item: items }) {
     action(id);
   };
   
-=======
->>>>>>> feature:components/shared/ItemCard.tsx
   return (
     <Link href={`/buy/${item.id}`} className="block h-full">
       <div
@@ -77,7 +70,6 @@ export default function ItemCard({ item }: { item: items }) {
               <span className="text-gray-500 text-sm">Image not available</span>
             </div>
           )}
-<<<<<<< HEAD:components/ItemCard.tsx
           {item.status !== "available" && (
             <div className="absolute top-2 right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
               {item.status}
@@ -91,7 +83,7 @@ export default function ItemCard({ item }: { item: items }) {
                 <button
                   className="p-2 bg-white rounded-full shadow-md"
                   onClick={(e) => handleAction(e, onEdit, item.id)}
-                  style={{ color: styles.warmPrimary }}
+                  style={{ color: styles.primary }}
                   title="Edit item"
                 >
                   <Edit size={16} />
@@ -134,8 +126,6 @@ export default function ItemCard({ item }: { item: items }) {
               )}
             </div>
           )}
-=======
->>>>>>> feature:components/shared/ItemCard.tsx
         </div>
         <div className="p-4 flex flex-col flex-grow">
           <h3

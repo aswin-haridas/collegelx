@@ -1,33 +1,15 @@
 "use client";
-import { styles } from "@/shared/lib/styles";
-interface ProfileSettingsProps {
-  user: unknown;
-  isEditing: boolean;
-  setIsEditing: (value: boolean) => void;
-  isChangingPassword: boolean;
-  setIsChangingPassword: (value: boolean) => void;
-  showPassword: boolean;
-  setShowPassword: (value: boolean) => void;
-  formData: unknown;
-  passwordData: unknown;
-  passwordError: string;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handlePasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSave: () => void;
-  handleChangePassword: () => void;
-  resetPasswordData?: () => void; // Add optional reset function
-}
+import { styles } from "@/lib/styles";
+
 
 export default function ProfileSettings({
-  user,
-  setIsEditing,
-}: ProfileSettingsProps) {
+}) {
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2
           className="text-xl font-semibold mb-4"
-          style={{ color: styles.TEXT }}
+          style={{ color: styles.text }}
         >
           Account Settings
         </h2>
@@ -63,7 +45,7 @@ export default function ProfileSettings({
           <div className="mt-4">
             <button
               className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-              style={{ backgroundColor: styles.PRIMARY }}
+              style={{ backgroundColor: styles.primary }}
               onClick={() => setIsEditing(true)}
             >
               Edit Profile

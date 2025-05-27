@@ -4,7 +4,6 @@ import { Loader2, AlertCircle, ArrowLeft, Send } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { styles } from "@/lib/styles";
-import { Message } from "@/lib/types";
 import toast from "react-hot-toast";
 
 export default function ChatPage() {
