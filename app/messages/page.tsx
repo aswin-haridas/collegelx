@@ -1,18 +1,12 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import Sidebar from "@/components/Sidebar";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Search } from "lucide-react";
 import Header from "@/components/shared/Header";
-
-// Styles
-const styles = {
-  warmPrimary: "#FF5A5F",
-  warmText: "#484848",
-  warmBorder: "#DDDDDD",
-};
+import { styles } from "@/lib/styles";
+import SearchBar from "./SearchBar";
+import ConversationList from "./ConversationList";
+import { Conversation } from "@/types";
 
 export default function MessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -219,126 +213,35 @@ export default function MessagesPage() {
       `Listing #${conversation.listing_id.substring(0, 8)}`
     );
   };
-
   return (
     <>
-      {" "}
       <Header />
       <div className="h-screen flex bg-gray-50">
-        <div className="flex-1  p-6">
+        <div className="flex-1 p-6">
           <div className="flex justify-between items-center mb-6">
             <h1
               className="text-2xl font-bold"
-              style={{ color: styles.warmText }}
+              style={{ color: styles.primary }}
             >
               Conversations
             </h1>
           </div>
 
-          {/* Search bar */}
-          <div className="mb-4 relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white 
-                     placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2"
-              style={{
-                borderColor: styles.warmBorder,
-              }}
-              placeholder="Search conversations..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+          <SearchBar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
 
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div
-                className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
-                style={{ borderColor: styles.warmPrimary }}
-              ></div>
-            </div>
-          ) : error ? (
-            <div className="bg-red-50 p-4 rounded-md">
-              <p className="text-red-500">{error}</p>
-              <button
-                onClick={() => router.push("/")}
-                className="mt-4 px-4 py-2 rounded-lg text-white"
-                style={{ backgroundColor: styles.warmPrimary }}
-              >
-                Back to Home
-              </button>
-            </div>
-          ) : filteredConversations.length === 0 ? (
-            <div className="text-center p-12 bg-white rounded-lg shadow-sm">
-              <h2
-                className="text-xl font-semibold mb-2"
-                style={{ color: styles.warmText }}
-              >
-                {searchQuery
-                  ? "No matching conversations"
-                  : "No conversations found"}
-              </h2>
-              <p className="text-gray-500 mb-4">
-                {searchQuery
-                  ? "Try a different search term"
-                  : "You don't have any messages yet"}
-              </p>
-              {!searchQuery && (
-                <button
-                  onClick={() => router.push("/buy")}
-                  className="mt-4 px-4 py-2 rounded-lg text-white"
-                  style={{ backgroundColor: styles.warmPrimary }}
-                >
-                  Browse Listings
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow-sm">
-              {Object.entries(groupedConversations).map(
-                ([listingId, conversationsGroup]) => (
-                  <div key={listingId} className="mb-4">
-                    <div
-                      className="bg-gray-100 p-3 font-medium text-sm sticky top-0"
-                      style={{ color: styles.warmText }}
-                    >
-                      {conversationsGroup[0].listing_name ||
-                        getListingname(conversationsGroup[0])}
-                    </div>
-                    <ul className="divide-y divide-gray-200">
-                      {conversationsGroup.map((conversation) => (
-                        <li
-                          key={conversation.id}
-                          className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                          onClick={() => handleConversationClick(conversation)}
-                        >
-                          <div className="flex justify-between">
-                            <div className="flex-1">
-                              <h3
-                                className="font-medium text-lg"
-                                style={{ color: styles.warmText }}
-                              >
-                                {conversation.participant_name}
-                              </h3>
-                              <p className="text-gray-600 mt-1 line-clamp-1">
-                                {conversation.last_message}
-                              </p>
-                            </div>
-                            <div className="text-sm text-gray-500 whitespace-nowrap ml-4">
-                              {formatDate(conversation.last_message_time)}
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )
-              )}
-            </div>
-          )}
+          <ConversationList
+            loading={loading}
+            error={error}
+            filteredConversations={filteredConversations}
+            searchQuery={searchQuery}
+            groupedConversations={groupedConversations}
+            handleConversationClick={handleConversationClick}
+            formatDate={formatDate}
+            getListingname={getListingname}
+          />
         </div>
       </div>
     </>

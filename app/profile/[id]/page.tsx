@@ -176,7 +176,7 @@ export default function ProfilePage() {
                 <h1
                   className="text-2xl font-semibold"
                   style={{
-                    color: styles.Text,
+                    color: styles.text,
                     fontFamily: "Playfair Display, serif",
                   }}
                 >
@@ -225,7 +225,7 @@ export default function ProfilePage() {
               <div className="flex justify-between items-center mb-4">
                 <h2
                   className="text-xl font-semibold"
-                  style={{ color: styles.Text }}
+                  style={{ color: styles.text }}
                 >
                   {isOwnProfile ? "Your Items" : `${user?.name}'s Items`}
                 </h2>
@@ -233,7 +233,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => router.push("/sell")}
                     className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                    style={{ backgroundColor: styles.Primary }}
+                    style={{ backgroundColor: styles.primary }}
                   >
                     Add New Item
                   </button>
@@ -307,7 +307,7 @@ export default function ProfilePage() {
                               e.preventDefault();
                               handleEditItem(item.id);
                             }}
-                            style={{ color: styles.Primary }}
+                            style={{ color: styles.primary }}
                             name="Edit item"
                           >
                             <Edit size={16} />
@@ -349,7 +349,7 @@ export default function ProfilePage() {
                     <button
                       onClick={() => router.push("/sell")}
                       className="mt-4 px-4 py-2 text-white rounded-lg hover:brightness-110"
-                      style={{ backgroundColor: styles.Primary }}
+                      style={{ backgroundColor: styles.primary }}
                     >
                       Add an Item
                     </button>
@@ -364,7 +364,7 @@ export default function ProfilePage() {
               <div className="flex justify-between items-center mb-4">
                 <h2
                   className="text-xl font-semibold"
-                  style={{ color: styles.Text }}
+                  style={{ color: styles.text }}
                 >
                   Your Reviews
                 </h2>
@@ -372,7 +372,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => setIsPostingReview(true)}
                     className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-                    style={{ backgroundColor: styles.Primary }}
+                    style={{ backgroundColor: styles.primary }}
                   >
                     Post Review
                   </button>
@@ -429,7 +429,7 @@ export default function ProfilePage() {
                     <button
                       type="submit"
                       className="px-4 py-2 text-white rounded-lg hover:bg-green-600"
-                      style={{ backgroundColor: styles.Primary }}
+                      style={{ backgroundColor: styles.primary }}
                     >
                       Submit Review
                     </button>

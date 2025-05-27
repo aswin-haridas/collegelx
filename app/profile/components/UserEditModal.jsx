@@ -39,7 +39,7 @@ export default function UserEditModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg  bg-opacity-50 overflow-y-auto">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center border-b p-4">
-          <h3 className="text-lg font-medium" style={{ color: styles.Text }}>
+          <h3 className="text-lg font-medium" style={{ color: styles.text }}>
             Edit Profile
           </h3>
           <button
@@ -70,7 +70,7 @@ export default function UserEditModal({
                 onChange={handleInputChange}
                 placeholder="Full Name"
                 className="w-full border p-2 rounded focus:ring-2 focus:ring-offset-0 focus:ring-opacity-50"
-                style={{ focusRing: styles.Primary }}
+                style={{ focusRing: styles.primary }}
               />
             </div>
 
@@ -163,7 +163,7 @@ export default function UserEditModal({
             </button>
             <button
               className="px-4 py-2 text-white rounded-lg hover:brightness-110"
-              style={{ backgroundColor: styles.Primary }}
+              style={{ backgroundColor: styles.primary }}
               onClick={handleSaveAndClose}
             >
               Save Changes

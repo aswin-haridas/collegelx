@@ -23,3 +23,14 @@ export type User = {
   password: string;
   phone: number;
 };
+
+export type Conversation = {
+  id: string;
+  listing_id: string;
+  listing_name: string;
+  participant_id: string;
+  participant_name: string;
+  last_message: string;
+  last_message_time: string;
+  unread_count: number;
+};

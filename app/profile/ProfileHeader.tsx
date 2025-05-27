@@ -37,7 +37,7 @@ export default function ProfileHeader({
               <h1
                 className="text-2xl font-semibold"
                 style={{
-                  color: styles.Text,
+                  color: styles.text,
                   fontFamily: "Playfair Display, serif",
                 }}
               >

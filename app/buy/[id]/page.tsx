@@ -191,7 +191,7 @@ export default function ItemPage() {
         <div className="flex justify-center items-center h-full ">
           <Loader2
             className="h-8 w-8 animate-spin"
-            style={{ color: styles.Primary }}
+            style={{ color: styles.primary }}
           />
         </div>
       </div>
@@ -205,14 +205,14 @@ export default function ItemPage() {
           <div className="text-center">
             <h2
               className="text-xl font-semibold mb-2"
-              style={{ color: styles.Text }}
+              style={{ color: styles.text }}
             >
               Item not found
             </h2>
             <button
               onClick={() => router.push("/")}
               className="mt-4 px-4 py-2 rounded-lg text-white"
-              style={{ backgroundColor: styles.Primary }}
+              style={{ backgroundColor: styles.primary }}
             >
               Back to Home
             </button>
@@ -265,7 +265,7 @@ export default function ItemPage() {
                         style={{
                           borderColor:
                             selectedImageIndex === index
-                              ? styles.Primary
+                              ? styles.primary
                               : undefined,
                         }}
                       >
@@ -293,7 +293,7 @@ export default function ItemPage() {
                 <div className="flex items-center justify-between mb-4">
                   <p
                     className="text-3xl font-bold"
-                    style={{ color: styles.Primary }}
+                    style={{ color: styles.primary }}
                   >
                     ₹{item.price}
                   </p>
@@ -311,7 +311,7 @@ export default function ItemPage() {
                     <button
                       onClick={handleChat}
                       className="flex-grow py-3 px-4 rounded-lg flex items-center justify-center transition-colors text-white hover:bg-opacity-90"
-                      style={{ backgroundColor: styles.Primary }}
+                      style={{ backgroundColor: styles.primary }}
                     >
                       <MessageSquare className="mr-2 h-5 w-5" />
                       Chat with Seller
@@ -350,7 +350,7 @@ export default function ItemPage() {
                       style={{ color: styles.warmPrimary }}
 =======
                       onClick={() => router.push(`/profile/${item.seller_id}`)}
-                      style={{ color: styles.Primary }}
+                      style={{ color: styles.primary }}
 >>>>>>> feature
                     >
                       {seller?.name}
@@ -362,7 +362,7 @@ export default function ItemPage() {
               <div className="mb-6">
                 <h2
                   className="text-xl font-semibold mb-2"
-                  style={{ color: styles.Text }}
+                  style={{ color: styles.text }}
                 >
                   Description
                 </h2>
@@ -375,7 +375,7 @@ export default function ItemPage() {
               <div className="mb-6">
                 <h2
                   className="text-xl font-semibold mb-2"
-                  style={{ color: styles.Text }}
+                  style={{ color: styles.text }}
                 >
                   Quick Info
                 </h2>
@@ -392,7 +392,7 @@ export default function ItemPage() {
 <<<<<<< HEAD
                       style={{ color: styles.warmPrimary }}
 =======
-                      style={{ color: styles.Primary }}
+                      style={{ color: styles.primary }}
 >>>>>>> feature
                     >
                       {seller?.name || "Unknown"}
@@ -406,7 +406,7 @@ export default function ItemPage() {
                 <div className="border-t border-gray-200 pt-6">
                   <h2
                     className="text-xl font-semibold mb-4"
-                    style={{ color: styles.Text }}
+                    style={{ color: styles.text }}
                   >
                     Seller Information
                   </h2>
@@ -440,7 +440,7 @@ export default function ItemPage() {
                     <div className="flex flex-col">
                       <div
                         className="font-medium hover:underline"
-                        style={{ color: styles.Text }}
+                        style={{ color: styles.text }}
                       >
                         {seller?.name || "Anonymous Seller"}
                       </div>

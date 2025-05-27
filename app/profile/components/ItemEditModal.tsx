@@ -120,18 +120,18 @@ export default function ItemEditModal({
         <div
           className="bg-white rounded-lg shadow-xl w-full max-w-md relative"
           style={{
-            borderColor: styles.Border,
+            borderColor: styles.primary,
             borderWidth: "1px",
           }}
         >
           {/* Modal header */}
           <div
             className="flex justify-between items-center p-4 border-b"
-            style={{ borderColor: styles.Border }}
+            style={{ borderColor: styles.primary }}
           >
             <h2
               className="text-xl font-semibold"
-              style={{ color: styles.Text }}
+              style={{ color: styles.text }}
             >
               Edit Item
             </h2>
@@ -162,7 +162,7 @@ export default function ItemEditModal({
               <div className="flex justify-center py-4">
                 <div
                   className="animate-spin rounded-full h-8 w-8 border-b-2"
-                  style={{ borderColor: styles.Primary }}
+                  style={{ borderColor: styles.primary }}
                 ></div>
               </div>
             ) : (
@@ -176,7 +176,7 @@ export default function ItemEditModal({
                 <div className="mb-4">
                   <label
                     className="block text-sm font-medium mb-1"
-                    style={{ color: styles.Text }}
+                    style={{ color: styles.text }}
                   >
                     name
                   </label>
@@ -186,14 +186,14 @@ export default function ItemEditModal({
                     value={formData.name}
                     onChange={handleChange}
                     className="w-full p-2 border rounded-md"
-                    style={{ borderColor: styles.Border }}
+                    style={{ borderColor: styles.primary }}
                   />
                 </div>
 
                 <div className="mb-4">
                   <label
                     className="block text-sm font-medium mb-1"
-                    style={{ color: styles.Text }}
+                    style={{ color: styles.text }}
                   >
                     Price
                   </label>
@@ -203,14 +203,14 @@ export default function ItemEditModal({
                     value={formData.price}
                     onChange={handleChange}
                     className="w-full p-2 border rounded-md"
-                    style={{ borderColor: styles.Border }}
+                    style={{ borderColor: styles.primary }}
                   />
                 </div>
 
                 <div className="mb-4">
                   <label
                     className="block text-sm font-medium mb-1"
-                    style={{ color: styles.Text }}
+                    style={{ color: styles.text }}
                   >
                     Description
                   </label>
@@ -220,7 +220,7 @@ export default function ItemEditModal({
                     onChange={handleChange}
                     rows={3}
                     className="w-full p-2 border rounded-md"
-                    style={{ borderColor: styles.Border }}
+                    style={{ borderColor: styles.primary }}
                   />
                 </div>
 
@@ -228,7 +228,7 @@ export default function ItemEditModal({
                   <div>
                     <label
                       className="block text-sm font-medium mb-1"
-                      style={{ color: styles.Text }}
+                      style={{ color: styles.text }}
                     >
                       Category
                     </label>
@@ -237,7 +237,7 @@ export default function ItemEditModal({
                       value={formData.category}
                       onChange={handleChange}
                       className="w-full p-2 border rounded-md"
-                      style={{ borderColor: styles.Border }}
+                      style={{ borderColor: styles.primary }}
                     >
                       <option value="">Select category</option>
                       <option value="textbooks">Textbooks</option>
@@ -253,7 +253,7 @@ export default function ItemEditModal({
                 <div className="mb-4">
                   <label
                     className="block text-sm font-medium mb-1"
-                    style={{ color: styles.Text }}
+                    style={{ color: styles.text }}
                   >
                     Status
                   </label>
@@ -262,7 +262,7 @@ export default function ItemEditModal({
                     value={formData.status}
                     onChange={handleChange}
                     className="w-full p-2 border rounded-md"
-                    style={{ borderColor: styles.Border }}
+                    style={{ borderColor: styles.primary }}
                   >
                     <option value="available">Available</option>
                     <option value="sold">Sold</option>
@@ -276,8 +276,8 @@ export default function ItemEditModal({
                     onClick={onClose}
                     className="px-4 py-2 rounded-md border"
                     style={{
-                      borderColor: styles.Border,
-                      color: styles.Text,
+                      borderColor: styles.primary,
+                      color: styles.text,
                     }}
                   >
                     Cancel
@@ -287,7 +287,7 @@ export default function ItemEditModal({
                     disabled={saving}
                     className="px-4 py-2 rounded-md text-white"
                     style={{
-                      backgroundColor: saving ? styles.Accent : styles.Primary,
+                      backgroundColor: saving ? styles.Accent : styles.primary,
                       opacity: saving ? 0.7 : 1,
                     }}
                   >

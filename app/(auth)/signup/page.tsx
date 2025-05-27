@@ -10,7 +10,6 @@ import toast from "react-hot-toast";
 import { redirect } from "next/navigation";
 import { departments } from "@/lib/constants";
 
-
 export default function SignupPage() {
   const {
     register,

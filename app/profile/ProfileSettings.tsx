@@ -1,9 +1,7 @@
 "use client";
 import { styles } from "@/lib/styles";
 
-
-export default function ProfileSettings({
-}) {
+export default function ProfileSettings({}) {
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="bg-white rounded-lg shadow-md p-6">
