@@ -41,46 +41,42 @@ function ItemCard({ id, name, images, price, category }: Item) {
                 </span>
               </div>
             )}
-
             {/* Item Controls - Now with opacity transition on hover */}
-              <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
-                    style={{ color: styles.primary }}
-                    name="Edit item"
-                  >
-                    <Edit size={16} />
-                  </button>
-                )}
-
-                  <button
-                    className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
-                    style={{ color: "#16a34a" }}
-                    name="Mark as sold"
-                  >
-                    <Star size={16} fill="#16a34a" />
-                  </button>
-                )}
-
-                  <button
-                    className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
-                    style={{ color: "#ef4444" }}
-                    name="Delete item"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
-
-                  <button
-                    className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
-                    style={{ color: "#ef4444" }}
-                    name="Remove from wishlist"
-                  >
-                    <Heart size={16} fill="#ef4444" />
-                  </button>
-                )}
-              </div>
-            )}
+            <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+                style={{ color: styles.primary }}
+                name="Edit item"
+              >
+                <Edit size={16} />
+              </button>
+              )
+              <button
+                className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+                style={{ color: "#16a34a" }}
+                name="Mark as sold"
+              >
+                <Star size={16} fill="#16a34a" />
+              </button>
+              )
+              <button
+                className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+                style={{ color: "#ef4444" }}
+                name="Delete item"
+              >
+                <Trash2 size={16} />
+              </button>
+              )
+              <button
+                className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+                style={{ color: "#ef4444" }}
+                name="Remove from wishlist"
+              >
+                <Heart size={16} fill="#ef4444" />
+              </button>
+              )
+            </div>
+            )
           </div>
 
           <div className="p-4 flex flex-col flex-grow">
@@ -91,9 +87,7 @@ function ItemCard({ id, name, images, price, category }: Item) {
               {name}
             </h3>
             <div className="flex justify-between items-center mt-2">
-              <span className="font-bold" >
-                ₹{price}
-              </span>
+              <span className="font-bold">₹{price}</span>
               <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
                 {category}
               </span>
