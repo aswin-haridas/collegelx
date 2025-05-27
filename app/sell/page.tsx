@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { styles } from "@/lib/styles";
 import { supabase } from "@/lib/supabase";
@@ -9,25 +9,14 @@ import Header from "@/components/shared/Header";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { departments } from "@/lib/constants";
-
-interface FormInputs {
-  name: string;
-  description: string;
-  price: string;
-  category: string;
-  year: string;
-  department: string;
-  tags: string;
-}
-
+import { Item } from "@/types";
 export default function SellPage() {
   const router = useRouter();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm<Item>();
 
   const [images, setImages] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -39,15 +28,16 @@ export default function SellPage() {
     const files = Array.from(e.target.files || []);
     setImages(files);
 
-    // Create preview URLs
     const urls = files.map((file) => URL.createObjectURL(file));
     setPreviewUrls(urls);
   };
 
-  const onSubmit: SubmitHandler<FormInputs> = async (data) => {
-    // Check if userId exists
+  const onSubmit: SubmitHandler<Item> = async (data) => {
+    if (!userId) {
+      toast.error("Please login to create a listing");
+      return;
+    }
 
-    // Check if images are selected
     if (images.length === 0) {
       toast.error("Please select at least one image.");
       return;
@@ -55,7 +45,6 @@ export default function SellPage() {
 
     setUploading(true);
     try {
-      // Upload images to storage
       const imageUrls = await Promise.all(
         images.map(async (image) => {
           const fileName = `${Date.now()}-${image.name}`;
@@ -73,19 +62,15 @@ export default function SellPage() {
         })
       );
 
-      // Insert item into database with seller field instead of user_id
       const { error: insertError } = await supabase.from("products").insert({
-        seller_id: userId,
-        name: data.name,
+        user_id: userId,
+        title: data.name,
         description: data.description,
-        price: parseFloat(data.price),
+        price: data.price,
         category: data.category,
-        year: data.year,
-        department: data.department,
+        condition: data.condition,
         images: imageUrls,
-        status: "unlisted",
-        created_at: new Date().toISOString(),
-        // Note: tags field has been removed as it's not in the database schema
+        status: "active",
       });
 
       if (insertError) {
@@ -95,7 +80,6 @@ export default function SellPage() {
       }
 
       toast.success("Listing created successfully!");
-      // Redirect to home page on success
       router.push("/");
     } catch (error) {
       console.error("Error creating listing:", error);
@@ -114,19 +98,17 @@ export default function SellPage() {
             <h1 className="text-2xl font-semibold mb-6">Create Listing</h1>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* name Row */}
               <div>
                 <label className="block text-sm font-medium text-gray-600">
                   Name
                 </label>
                 <input
-                  {...register("name", { required: "Name is required" })}
+                  {...register("name", { required: "Title is required" })}
                   type="text"
                   className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                 />
               </div>
 
-              {/* Description Row */}
               <div>
                 <label className="block text-sm font-medium text-gray-600">
                   Description
@@ -140,7 +122,6 @@ export default function SellPage() {
                 />
               </div>
 
-              {/* Price and Product Type Row */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-600">
@@ -184,46 +165,25 @@ export default function SellPage() {
                 </div>
               </div>
 
-              {/* Year and Department Row */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600">
-                    Year
-                  </label>
-                  <select
-                    {...register("year", { required: "Year is required" })}
-                    className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
-                  >
-                    <option value="">Select Year</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="all">All</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-600">
-                    Department
-                  </label>
-                  <select
-                    {...register("department", {
-                      required: "Department is required",
-                    })}
-                    className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
-                  >
-                    <option value="">Select Department</option>
-                    {departments.map((dept) => (
-                      <option key={dept} value={dept}>
-                        {dept}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">
+                  Condition
+                </label>
+                <select
+                  {...register("condition", {
+                    required: "Condition is required",
+                  })}
+                  className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
+                >
+                  <option value="">Select Condition</option>
+                  <option value="New">New</option>
+                  <option value="Like New">Like New</option>
+                  <option value="Good">Good</option>
+                  <option value="Fair">Fair</option>
+                  <option value="Poor">Poor</option>
+                </select>
               </div>
 
-              {/* Tags Row */}
               <div>
                 <label className="block text-sm font-medium text-gray-600">
                   Tags (comma separated)
@@ -234,8 +194,8 @@ export default function SellPage() {
                   placeholder="e.g., mathematics, sem3, engineering"
                   className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
                   style={{
-                    borderColor: styles.Border,
-                    color: styles.Text,
+                    borderColor: styles.primary,
+                    color: styles.text,
                   }}
                 />
                 <p className="text-xs text-gray-500 mt-1">

@@ -1,6 +1,6 @@
 export type Item = {
   id: string;
-  user_id: string;
+  owner: string;
   name: string;
   description: string;
   price: number;
@@ -8,6 +8,7 @@ export type Item = {
   status: string;
   images: string[];
   category: string;
+  tags: string[];
 };
 
 export type User = {

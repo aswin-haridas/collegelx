@@ -6,15 +6,7 @@ import { Item } from "@/types";
 import { Edit, Trash2, Star, Heart } from "lucide-react";
 
 function ItemCard({ id, name, images, price, category }: Item) {
-  const [imageError, setImageError] = useState(false);
-
-  const handleImageError = () => {
-    setImageError(true);
-  };
-
-  // Get the first image URL or use a placeholder
   const displayImage = images?.[0] ?? "/images/placeholder.png";
-
   return (
     <>
       <Link href={`/buy/${id}`} className="block h-full">
@@ -23,25 +15,15 @@ function ItemCard({ id, name, images, price, category }: Item) {
           style={{ borderColor: styles.primary, backgroundColor: "white" }}
         >
           <div className="relative h-48 bg-gray-100">
-            {!imageError ? (
-              <Image
-                src={displayImage}
-                alt={name}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                style={{
-                  objectFit: "cover",
-                }}
-                onError={handleImageError}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                <span className="text-gray-500 text-sm">
-                  Image not available
-                </span>
-              </div>
-            )}
-            {/* Item Controls - Now with opacity transition on hover */}
+            <Image
+              src={displayImage}
+              alt={name}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              style={{
+                objectFit: "cover",
+              }}
+            />
             <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
