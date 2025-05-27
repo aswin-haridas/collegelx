@@ -5,19 +5,12 @@ import { useState, useEffect } from "react";
 import { styles } from "@/shared/lib/styles";
 import { Loader2, MessageSquare, ArrowLeft, Heart } from "lucide-react";
 import { useParams } from "next/navigation";
-<<<<<<< HEAD
-import { useItem } from "@/hooks/useItem";
-import { useWishlist } from "@/hooks/useWishlist";
-import { useChatSave } from "@/hooks/useChatSave";
-import toast from "react-hot-toast";
-=======
 import { useWishlist } from "@/shared/hooks/useWishlist";
 import { useProduct } from "@/shared/hooks/useProducts";
 import Header from "@/shared/components/Header";
 import { supabase } from "@/shared/lib/supabase";
 import { useLoginCheck } from "@/shared/hooks/useLoginCheck";
 import Image from "next/image";
->>>>>>> feature
 
 export default function ItemPage() {
   const router = useRouter();
@@ -25,8 +18,6 @@ export default function ItemPage() {
   const itemId = params?.id as string;
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-<<<<<<< HEAD
-=======
   useLoginCheck();
 
   const { userId, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -34,21 +25,12 @@ export default function ItemPage() {
   const [seller, setSellerData] = useState(null);
   const [sellerLoading, setSellerLoading] = useState(false);
 
->>>>>>> feature
   const {
     isWishlisted,
     toggleWishlist,
     loading: wishlistLoading,
   } = useWishlist(itemId);
 
-<<<<<<< HEAD
-  // Added useChatSave hook
-  const { saveChat, loading: chatSaving } = useChatSave();
-
-  const loading = authLoading || itemLoading;
-
-  const isseller = userId && item?.seller_id === userId;
-=======
   const loading = authLoading || itemLoading || sellerLoading;
 
   const isseller = userId && item?.seller_id === userId;
@@ -75,7 +57,6 @@ export default function ItemPage() {
 
     fetchSellerData();
   }, [item]);
->>>>>>> feature
 
   // Store item ID in session storage when it becomes available
   useEffect(() => {
@@ -85,27 +66,6 @@ export default function ItemPage() {
   }, [item]);
 
   const handleChat = async () => {
-<<<<<<< HEAD
-    if (!userId || !item) return;
-
-    const sellerId = item?.seller_id || item?.user_id;
-
-    // Save the chat and get the chat ID
-    await saveChat({
-      senderId: userId,
-      receiverId: sellerId,
-      listingId: item?.id,
-    });
-
-    const chatItemId = item?.id || sessionStorage.getItem("listing_id");
-    // Get seller ID consistently with no duplicates
-    const sellerIdForChat = sellerId || sessionStorage.getItem("seller_id");
-
-    if (!chatItemId || !sellerIdForChat) {
-      console.error("Missing required data for chat:", {
-        chatItemId,
-        sellerId: sellerIdForChat,
-=======
     const chatItemId = item?.id || sessionStorage.getItem("listing_id");
     const sellerId =
       item?.seller_id || item?.user_id || sessionStorage.getItem("seller_id");
@@ -115,21 +75,10 @@ export default function ItemPage() {
         chatItemId,
         sellerId,
         userId,
->>>>>>> feature
       });
       return;
     }
 
-<<<<<<< HEAD
-    toast.success(`Opening chat with seller about: ${item?.name}`);
-
-    // Store in session storage before navigation
-    sessionStorage.setItem("listing_id", chatItemId);
-    sessionStorage.setItem("receiver_id", sellerIdForChat);
-
-    // Navigate with query parameters to ensure data persistence
-    router.push(`/chat?receiverId=${sellerIdForChat}&listingId=${chatItemId}`);
-=======
     try {
       // Check if a chat already exists between the buyer and seller for this product
       const { data: existingChats, error: fetchError } = await supabase
@@ -173,7 +122,6 @@ export default function ItemPage() {
     } catch (error) {
       console.error("Error handling chat:", error);
     }
->>>>>>> feature
   };
 
   const handleWishlist = async () => {
@@ -341,17 +289,8 @@ export default function ItemPage() {
                     <span className="mr-1">Posted by:</span>
                     <span
                       className="font-medium cursor-pointer hover:underline"
-<<<<<<< HEAD
-                      onClick={() =>
-                        router.push(
-                          `/profile/${item.seller_id || item.seller_id}`
-                        )
-                      }
-                      style={{ color: styles.warmPrimary }}
-=======
                       onClick={() => router.push(`/profile/${item.seller_id}`)}
                       style={{ color: styles.primary }}
->>>>>>> feature
                     >
                       {seller?.name}
                     </span>
@@ -389,11 +328,7 @@ export default function ItemPage() {
                     <span
                       className="font-medium cursor-pointer hover:underline"
                       onClick={() => router.push(`/profile/${item.seller_id}`)}
-<<<<<<< HEAD
-                      style={{ color: styles.warmPrimary }}
-=======
                       style={{ color: styles.primary }}
->>>>>>> feature
                     >
                       {seller?.name || "Unknown"}
                     </span>
@@ -414,13 +349,7 @@ export default function ItemPage() {
                     className="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
                     onClick={() =>
                       router.push(
-<<<<<<< HEAD
-                        `/profile/${
-                          item.seller_id || item.seller_id || seller?.userid
-                        }`
-=======
                         `/profile/${item.seller_id || seller?.userid}`
->>>>>>> feature
                       )
                     }
                   >

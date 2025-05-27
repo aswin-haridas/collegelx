@@ -244,60 +244,6 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {items.map((item) => (
                     <div key={item.id} className="relative group">
-<<<<<<< HEAD
-                      <ItemCard
-                        item={item}
-                        showControls={isOwnProfile}
-                        isOwnItem={isOwnProfile}
-                        onEdit={(id) => {
-                          // Need to wrap to prevent default link navigation
-                          // but handleAction in ItemCard already does e.preventDefault() and e.stopPropagation()
-                          // So, directly passing might be fine if ItemCard's Link is the one triggering.
-                          // However, these buttons are on top, so they should handle their own events.
-                          // Let's keep original onClick={(e) => { e.preventDefault(); handleEditItem(id); }} structure
-                          // by ensuring handleEditItem itself is passed if it handles prevention,
-                          // or wrap it here.
-                          // The original ProfileItemCard had handleAction that took the event.
-                          // The merged ItemCard now has that.
-                          handleEditItem(id);
-                        }}
-                        onMarkAsSold={(id) => {
-                          handleMarkAsSold(id);
-                        }}
-                        onDelete={(id) => {
-                          handleDeleteItem(id);
-                        }}
-                      />
-                      <div
-                        className="absolute bottom-2 right-2 px-2 py-1 text-xs font-medium rounded-full"
-                        style={{
-                          backgroundColor:
-                            item.status === "available"
-                              ? "#dcfce7"
-                              : item.status === "pending"
-                              ? "#fef3c7"
-                              : item.status === "sold"
-                              ? "#dbeafe"
-                              : "#fee2e2",
-                          color:
-                            item.status === "available"
-                              ? "#166534"
-                              : item.status === "pending"
-                              ? "#92400e"
-                              : item.status === "sold"
-                              ? "#1e40af"
-                              : "#b91c1c",
-                        }}
-                      >
-                        {item.status === "sold"
-                          ? "Sold"
-                          : item.status === "available"
-                          ? "Available"
-                          : item.status === "pending"
-                          ? "Pending"
-                          : "No Status"}
-                      </div>
-=======
                       <ItemCard item={item} />
                       {isOwnProfile && (
                         <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -338,7 +284,6 @@ export default function ProfilePage() {
                           </button>
                         </div>
                       )}
->>>>>>> feature
                     </div>
                   ))}
                 </div>
