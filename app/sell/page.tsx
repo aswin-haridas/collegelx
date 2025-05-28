@@ -12,11 +12,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { Item } from "@/types";
 export default function SellPage() {
   const router = useRouter();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<Item>();
+  const { register, handleSubmit } = useForm<Item>();
 
   const [images, setImages] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);

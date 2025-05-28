@@ -30,26 +30,7 @@ export default function Sidebar({ items, filters, setFilters }: SidebarProps) {
       sortPrice: "asc",
     });
   };
-  const filteredItems = items
-    .filter((item) => {
-      const searchMatch = item.name
-        ? item.name.toLowerCase().includes(filters.search.toLowerCase())
-        : false;
-      const conditionMatch =
-        filters.condition === "All" ||
-        (item.condition && item.condition === filters.condition);
-      const categoryMatch =
-        filters.category === "All" ||
-        (item.category && item.category === filters.category);
-      return searchMatch && conditionMatch && categoryMatch;
-    })
-    .sort((a, b) => {
-      if (filters.sortPrice === "asc") {
-        return (a.price || 0) - (b.price || 0);
-      } else {
-        return (b.price || 0) - (a.price || 0);
-      }
-    });
+
   return (
     <div className="w-70 bg-white border-r border-gray-200">
       <div className="h-full overflow-y-auto p-6">

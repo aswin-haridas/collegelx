@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { Review } from "@/lib/types";
 import { useRating } from "./useRating";
 
 export function useReview(

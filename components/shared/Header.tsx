@@ -1,7 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { redirect, useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import {
   UserCircle,
   ShoppingBag,

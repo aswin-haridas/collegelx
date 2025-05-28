@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { useChat } from "./useChat";
 import Header from "@/components/shared/Header";
-import Sidebar from "@/components/chat/Sidebar";
-import ChatWindow from "@/components/chat/ChatWindow";
 import { User } from "@/types";
 import { supabase } from "@/lib/supabase";
 

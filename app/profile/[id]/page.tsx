@@ -7,70 +7,16 @@ import { Star, Edit, Trash2, Package, MessageSquare } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import ItemCard from "../ItemCard";
 import Header from "@/components/shared/Header";
-import { useReview } from "../useReview";
 import Image from "next/image";
 import { Item, User } from "@/types";
-import useSupabase from "@/hooks/useSupabase";
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user] = useState<User | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [activeTab, setActiveTab] = useState("products");
   const router = useRouter();
   const params = useParams();
   const profileId = params.id as string;
-
-  // Use our custom review hook
-  const {
-    reviews,
-    isPostingReview,
-    setIsPostingReview,
-    reviewData,
-    handleReviewInputChange,
-    handlePostReview,
-    fetchUserReviews,
-    averageRating,
-  } = useReview(profileId, currentUserId);
-
-  const data = useSupabase("users", ["id", "name", "profile_image"]);
-
-  useEffect(() => {
-    async function fetchUserItems() {
-      if (!profileId) return;
-      try {
-        const { data, error } = await supabase
-          .from("products")
-          .select("*")
-          .eq("seller_id", profileId);
-        if (error) throw error;
-
-        setItems(
-          data.map((item) => ({
-            ...item,
-            name: item.name || item.name,
-            user_id: item.seller_id,
-            seller_id: item.seller_id,
-            seller: item.seller_id,
-            images: item.images || (item.image ? [item.image] : []),
-            image: item.image || item.images?.[0] || null,
-            imageUrl: item.image || item.images?.[0] || null,
-          }))
-        );
-      } catch (error) {
-        console.error("Error fetching user items:", error);
-      }
-    }
-
-    if (profileId) {
-      fetchUserItems();
-    }
-  }, [profileId]);
-
-  useEffect(() => {
-    if (profileId && activeTab === "reviews") {
-      fetchUserReviews();
-    }
-  }, [profileId, activeTab, fetchUserReviews]);
 
   const handleEditItem = (itemId: string) => {
     router.push(`/sell/edit/${itemId}`);

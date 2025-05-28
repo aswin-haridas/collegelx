@@ -1,16 +1,15 @@
 import { useState, useCallback } from "react";
-import { Review } from "@/app/lib/types";
 
-export function useRating(reveiws) {
+export function useRating() {
   const [averageRating, setAverageRating] = useState<number>(0);
 
-  const calculateAverageRating = useCallback((reviewData: Review[]) => {
+  const calculateAverageRating = useCallback((reviewData: []) => {
     if (!reviewData || reviewData.length === 0) {
       setAverageRating(0);
       return;
     }
 
-    const sum = reviewData.reduce((total, review) => total + review.rating, 0);
+    const sum = reviewData.reduce((total, review) => total + review, 0);
     const average = sum / reviewData.length;
     setAverageRating(Number(average.toFixed(1)));
   }, []);

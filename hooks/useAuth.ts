@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import useSupabase from "./useSupabase";
 import { supabase } from "@/lib/supabase";
 
 export default function useAuth() {

@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { Loader2 } from "lucide-react";
+import { useState } from "react";
 import { styles } from "@/lib/styles";
 import Link from "next/link";
 import Header from "@/components/shared/Header";
-import { Item } from "@/types";
 import useSupabase from "@/hooks/useSupabase";
+import Image from "next/image";
 
 const departments = [
   "All",
@@ -23,8 +21,6 @@ const category = ["Notes", "Uniform", "Stationary", "Others", "All"];
 const years = [1, 2, 3, 4, "All"];
 
 export default function ItemsPage() {
-  const [loading, setLoading] = useState(true);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState<string | number>("All");
   const [selectedDepartment, setSelectedDepartment] = useState("All");
@@ -144,7 +140,7 @@ export default function ItemsPage() {
                     <div className="border border-stone-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
                       <div className="relative h-44 bg-gray-100">
                         {item.images?.length > 0 ? (
-                          <img
+                          <Image
                             src={item.images[0]}
                             alt={item.name}
                             className="w-full h-full object-cover"

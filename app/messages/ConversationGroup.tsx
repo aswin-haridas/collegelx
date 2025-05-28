@@ -1,4 +1,3 @@
-import { styles } from "@/lib/styles";
 import { Conversation } from "@/types";
 import ConversationItem from "./ConversationItem";
 

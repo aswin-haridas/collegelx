@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from "react"; // Add useCallback
+import { useState, useCallback } from "react"; // Add useCallback
 import { supabase } from "@/lib/supabase";
-import { Item as ItemType } from "@/lib/types";
 
 interface User {
   name: string;
@@ -137,7 +136,7 @@ export const useProfile = (userId: string | null) => {
           .single();
 
         if (error) throw error;
-        setUser((prevUser) => ({ ...prevUser, ...formData } as User));
+        setUser((prevUser) => ({ ...prevUser, ...formData }) as User);
         return data;
       } catch (error: any) {
         console.error("Error updating user data:", error);
