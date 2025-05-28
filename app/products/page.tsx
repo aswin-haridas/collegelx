@@ -6,52 +6,61 @@ import { Loader2 } from "lucide-react";
 import { styles } from "@/lib/styles";
 import Link from "next/link";
 import Header from "@/components/shared/Header";
-import { Item } from "@/types";
+import { Listing } from "@/types/index.ts"; // MODIFIED: Import Listing
+// Removed Item import as it's replaced by Listing
 
-const departments = [
-  "All",
-  "Computer Science",
-  "Electronics",
-  "Mechanical",
-  "Civil",
-  "Electrical",
-  "Other",
-];
+// These filter arrays might need to be updated based on available categories from the DB
+// const departments = [
+//   "All",
+//   "Computer Science",
+//   "Electronics",
+//   "Mechanical",
+//   "Civil",
+//   "Electrical",
+//   "Other",
+// ];
 
-const category = ["Notes", "Uniform", "Stationary", "Others", "All"];
-const years = [1, 2, 3, 4, "All"];
+// const category = ["Notes", "Uniform", "Stationary", "Others", "All"];
+// const years = [1, 2, 3, 4, "All"];
+
+// TODO: Fetch categories from the database to populate filters dynamically
+const categories = [ {id: 0, name: "All"}, {id: 1, name: "Textbooks"}, {id: 2, name: "Electronics"}, /* ... other categories */];
+
 
 export default function ItemsPage() {
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<Listing[]>([]); // MODIFIED: Item[] to Listing[]
   const [loading, setLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedYear, setSelectedYear] = useState<string | number>("All");
-  const [selectedDepartment, setSelectedDepartment] = useState("All");
-  const [selectedcategory, setSelectedcategory] = useState("All");
+  // const [selectedYear, setSelectedYear] = useState<string | number>("All"); // REMOVED: Year filter
+  // const [selectedDepartment, setSelectedDepartment] = useState("All"); // REMOVED: Department filter
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0); // MODIFIED: selectedcategory to selectedCategoryId, default to 0 for "All"
   const [sortByPrice, setSortByPrice] = useState("asc");
 
   const clearAllFilters = () => {
     setSearchQuery("");
-    setSelectedYear("All");
-    setSelectedDepartment("All");
-    setSelectedcategory("All");
+    // setSelectedYear("All"); // REMOVED
+    // setSelectedDepartment("All"); // REMOVED
+    setSelectedCategoryId(0); // Reset to "All" categories
     setSortByPrice("asc");
   };
 
   useEffect(() => {
     async function fetchItems() {
+      setLoading(true); // Moved setLoading to the beginning of fetch
       try {
         let query = supabase
-          .from("items")
-          .select("*")
+          .from("listings") // MODIFIED: "items" to "listings"
+          // MODIFIED: Select specific columns needed for display
+          .select("id, title, description, price, images, category_id, status, condition, created_at") 
           .eq("status", "available");
 
-        if (selectedYear !== "All") query = query.eq("year", selectedYear);
-        if (selectedDepartment !== "All")
-          query = query.eq("department", selectedDepartment);
-        if (selectedcategory !== "All")
-          query = query.eq("category", selectedcategory);
+        // if (selectedYear !== "All") query = query.eq("year", selectedYear); // REMOVED: Year filter
+        // if (selectedDepartment !== "All") query = query.eq("department", selectedDepartment); // REMOVED: Department filter
+        
+        if (selectedCategoryId !== 0) { // 0 represents "All"
+          query = query.eq("category_id", selectedCategoryId);
+        }
         query = query.order("price", { ascending: sortByPrice === "asc" });
 
         const { data, error } = await query;
@@ -60,16 +69,17 @@ export default function ItemsPage() {
         setItems(data || []);
       } catch (error) {
         console.error("Error fetching items:", error);
+        // Optionally set an error state here to display to the user
       } finally {
         setLoading(false);
       }
     }
 
     fetchItems();
-  }, [selectedYear, selectedDepartment, selectedcategory, sortByPrice]);
+  }, [selectedCategoryId, sortByPrice]); // MODIFIED: Dependencies for useEffect
 
   const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()) // MODIFIED: item.name to item.title
   );
 
   if (loading) {
@@ -120,42 +130,16 @@ export default function ItemsPage() {
               </div>
 
               <div className="flex flex-wrap gap-4">
+                {/* REMOVED: Year and Department select dropdowns */}
                 <select
-                  value={selectedYear}
-                  onChange={(e) =>
-                    setSelectedYear(
-                      e.target.value === "All" ? "All" : Number(e.target.value)
-                    )
-                  }
+                  value={selectedCategoryId}
+                  onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
                   className="p-2 border rounded-lg border-yellow-600"
                 >
-                  {years.map((year) => (
-                    <option key={year} value={year}>
-                      {year === "All" ? "All Years" : `Year ${year}`}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={selectedDepartment}
-                  onChange={(e) => setSelectedDepartment(e.target.value)}
-                  className="p-2 border rounded-lg border-yellow-600"
-                >
-                  {departments.map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept === "All" ? "All Departments" : dept}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={selectedcategory}
-                  onChange={(e) => setSelectedcategory(e.target.value)}
-                  className="p-2 border rounded-lg border-yellow-600"
-                >
-                  {category.map((type) => (
-                    <option key={type} value={type}>
-                      {type === "All" ? "All Product Types" : type}
+                  {/* TODO: Dynamically populate categories from a fetch call */}
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
                     </option>
                   ))}
                 </select>
@@ -177,7 +161,7 @@ export default function ItemsPage() {
                         {item.images?.length > 0 ? (
                           <img
                             src={item.images[0]}
-                            alt={item.name}
+                            alt={item.title} // MODIFIED: item.name to item.title
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -191,7 +175,7 @@ export default function ItemsPage() {
                           className="font-medium text-lg mb-2"
                           style={{ color: styles.warmText }}
                         >
-                          {item.name}
+                          {item.title} {/* MODIFIED: item.name to item.title */}
                         </h3>
                         <p className="text-gray-600 mb-2 text-sm flex-grow">
                           {item.description}
@@ -203,8 +187,9 @@ export default function ItemsPage() {
                           >
                             ₹{item.price.toFixed(2)}
                           </span>
+                          {/* TODO: Display category name by fetching categories or joining */}
                           <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                            {item.category}
+                            Cat ID: {item.category_id} 
                           </span>
                         </div>
                       </div>

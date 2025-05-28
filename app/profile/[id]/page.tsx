@@ -6,22 +6,27 @@ import { supabase } from "@/shared/lib/supabase";
 import { Star, Edit, Trash2, Package, MessageSquare } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import ItemCard from "@/shared/components/ItemCard";
-import { Item } from "@/app/lib/types";
 import Header from "@/shared/components/Header";
 import { useReview } from "../useReview";
-import { User } from "@/app/lib/types";
 import Image from "next/image";
+
+import { Listing as Item, User, Review as ReviewType } from "@/types/index.ts"; 
+import { useAuth } from "@/hooks/useAuth"; 
+
+// Define specific columns for listings on this page
+const profileListingColumns = "id, user_id, category_id, title, description, price, condition, status, images, created_at";
+const profileUserColumns = "id, full_name, email, profile_picture, college_id, created_at";
+
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<Item[]>([]); 
   const [activeTab, setActiveTab] = useState("products");
   const { userId: currentUserId } = useAuth();
   const router = useRouter();
   const params = useParams();
   const profileId = params.id as string;
 
-  // Use our custom review hook
   const {
     reviews,
     isPostingReview,
@@ -30,7 +35,7 @@ export default function ProfilePage() {
     handleReviewInputChange,
     handlePostReview,
     fetchUserReviews,
-    averageRating, // Include the averageRating from the hook
+    averageRating,
   } = useReview(profileId, currentUserId);
 
   useEffect(() => {
@@ -39,11 +44,11 @@ export default function ProfilePage() {
       try {
         const { data, error } = await supabase
           .from("users")
-          .select("*")
+          .select(profileUserColumns) // MODIFIED: Specific columns
           .eq("id", profileId)
           .single();
         if (error) throw error;
-        setUser(data);
+        setUser(data as User);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -57,24 +62,12 @@ export default function ProfilePage() {
       if (!profileId) return;
       try {
         const { data, error } = await supabase
-          .from("products")
-          .select("*")
-          .eq("seller_id", profileId);
+          .from("listings") 
+          .select(profileListingColumns) // MODIFIED: Specific columns
+          .eq("user_id", profileId); 
         if (error) throw error;
-
-        setItems(
-          data.map((item) => ({
-            ...item,
-            name: item.name || item.name,
-            name: item.name || item.name,
-            user_id: item.seller_id,
-            seller_id: item.seller_id,
-            seller: item.seller_id,
-            images: item.images || (item.image ? [item.image] : []),
-            image: item.image || item.images?.[0] || null,
-            imageUrl: item.image || item.images?.[0] || null,
-          }))
-        );
+        // Data should already conform to Listing (aliased as Item) if columns match
+        setItems(data as Item[] || []); 
       } catch (error) {
         console.error("Error fetching user items:", error);
       }
@@ -87,19 +80,19 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (profileId && activeTab === "reviews") {
-      fetchUserReviews();
+      fetchUserReviews(); // Assuming useReview hook handles its own specific column selections
     }
   }, [profileId, activeTab, fetchUserReviews]);
 
   const handleEditItem = (itemId: string) => {
-    router.push(`/sell/edit/${itemId}`);
+    router.push(`/sell/edit/${itemId}`); 
   };
 
   const handleDeleteItem = async (itemId: string) => {
     if (confirm("Are you sure you want to delete this item?")) {
       try {
         const { error } = await supabase
-          .from("products")
+          .from("listings") 
           .delete()
           .eq("id", itemId);
 
@@ -117,18 +110,22 @@ export default function ProfilePage() {
       confirm("Mark this item as sold? It will no longer be visible to buyers.")
     ) {
       try {
-        const { error } = await supabase
-          .from("products")
+        const { data: updatedItem, error } = await supabase // Fetch the updated item
+          .from("listings") 
           .update({ status: "sold" })
-          .eq("id", itemId);
+          .eq("id", itemId)
+          .select(profileListingColumns) // Select the updated item with specific columns
+          .single();
 
         if (error) throw error;
 
-        setItems(
-          items.map((item) =>
-            item.id === itemId ? { ...item, status: "sold" } : item
-          )
-        );
+        if (updatedItem) {
+            setItems(
+              items.map((item) =>
+                item.id === itemId ? (updatedItem as Item) : item
+              )
+            );
+        }
       } catch (error) {
         console.error("Error marking item as sold:", error);
       }
@@ -165,10 +162,11 @@ export default function ProfilePage() {
               <div className="mr-4">
                 <Image
                   src={
-                    user?.profile_image ||
+                    user?.profile_picture || 
                     "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg"
                   }
                   alt="Profile"
+                  width={96} height={96} 
                   className="w-24 h-24 rounded-full object-cover border-2 border-yellow-800"
                 />
               </div>
@@ -176,21 +174,20 @@ export default function ProfilePage() {
                 <h1
                   className="text-2xl font-semibold"
                   style={{
-                    color: styles.text,
+                    color: styles.text, 
                     fontFamily: "Playfair Display, serif",
                   }}
                 >
-                  {user?.name}
+                  {user?.full_name || user?.username} 
                 </h1>
                 <div className="flex items-center mt-2">
                   {renderStars(averageRating || 0)}
                   <span className="ml-2 text-sm text-gray-600">
-                    {averageRating ? `${averageRating}/5` : "No ratings yet"}
+                    {averageRating ? `${averageRating.toFixed(1)}/5` : "No ratings yet"}
                   </span>
                 </div>
               </div>
             </div>
-            {/* Tabs */}
             <div className="border-b border-gray-200">
               <div className="flex">
                 <button
@@ -219,7 +216,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Tab Content */}
           {activeTab === "products" && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-center mb-4">
@@ -227,7 +223,7 @@ export default function ProfilePage() {
                   className="text-xl font-semibold"
                   style={{ color: styles.text }}
                 >
-                  {isOwnProfile ? "Your Items" : `${user?.name}'s Items`}
+                  {isOwnProfile ? "Your Items" : `${user?.full_name || user?.username}'s Items`}
                 </h2>
                 {isOwnProfile && (
                   <button
@@ -242,63 +238,9 @@ export default function ProfilePage() {
 
               {items.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {items.map((item) => (
+                  {items.map((item) => ( 
                     <div key={item.id} className="relative group">
-<<<<<<< HEAD
-                      <ItemCard
-                        item={item}
-                        showControls={isOwnProfile}
-                        isOwnItem={isOwnProfile}
-                        onEdit={(id) => {
-                          // Need to wrap to prevent default link navigation
-                          // but handleAction in ItemCard already does e.preventDefault() and e.stopPropagation()
-                          // So, directly passing might be fine if ItemCard's Link is the one triggering.
-                          // However, these buttons are on top, so they should handle their own events.
-                          // Let's keep original onClick={(e) => { e.preventDefault(); handleEditItem(id); }} structure
-                          // by ensuring handleEditItem itself is passed if it handles prevention,
-                          // or wrap it here.
-                          // The original ProfileItemCard had handleAction that took the event.
-                          // The merged ItemCard now has that.
-                          handleEditItem(id);
-                        }}
-                        onMarkAsSold={(id) => {
-                          handleMarkAsSold(id);
-                        }}
-                        onDelete={(id) => {
-                          handleDeleteItem(id);
-                        }}
-                      />
-                      <div
-                        className="absolute bottom-2 right-2 px-2 py-1 text-xs font-medium rounded-full"
-                        style={{
-                          backgroundColor:
-                            item.status === "available"
-                              ? "#dcfce7"
-                              : item.status === "pending"
-                              ? "#fef3c7"
-                              : item.status === "sold"
-                              ? "#dbeafe"
-                              : "#fee2e2",
-                          color:
-                            item.status === "available"
-                              ? "#166534"
-                              : item.status === "pending"
-                              ? "#92400e"
-                              : item.status === "sold"
-                              ? "#1e40af"
-                              : "#b91c1c",
-                        }}
-                      >
-                        {item.status === "sold"
-                          ? "Sold"
-                          : item.status === "available"
-                          ? "Available"
-                          : item.status === "pending"
-                          ? "Pending"
-                          : "No Status"}
-                      </div>
-=======
-                      <ItemCard item={item} />
+                      <ItemCard item={item} /> 
                       {isOwnProfile && (
                         <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
@@ -308,7 +250,7 @@ export default function ProfilePage() {
                               handleEditItem(item.id);
                             }}
                             style={{ color: styles.primary }}
-                            name="Edit item"
+                            aria-label="Edit item" 
                           >
                             <Edit size={16} />
                           </button>
@@ -320,7 +262,7 @@ export default function ProfilePage() {
                                 handleMarkAsSold(item.id);
                               }}
                               style={{ color: "#16a34a" }}
-                              name="Mark as sold"
+                              aria-label="Mark as sold" 
                             >
                               <Star size={16} />
                             </button>
@@ -332,13 +274,12 @@ export default function ProfilePage() {
                               handleDeleteItem(item.id);
                             }}
                             style={{ color: "#ef4444" }}
-                            name="Delete item"
+                            aria-label="Delete item" 
                           >
                             <Trash2 size={16} />
                           </button>
                         </div>
                       )}
->>>>>>> feature
                     </div>
                   ))}
                 </div>
@@ -366,7 +307,7 @@ export default function ProfilePage() {
                   className="text-xl font-semibold"
                   style={{ color: styles.text }}
                 >
-                  Your Reviews
+                  {isOwnProfile ? "Your Reviews" : `Reviews for ${user?.full_name || user?.username}`}
                 </h2>
                 {!isOwnProfile && currentUserId && (
                   <button
@@ -446,14 +387,14 @@ export default function ProfilePage() {
 
               {reviews.length > 0 ? (
                 <div className="space-y-4">
-                  {reviews.map((review) => (
+                  {reviews.map((review: ReviewType) => ( 
                     <div
                       key={review.id}
                       className="border-b pb-4 last:border-b-0"
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="font-medium">{review.reviewer_name}</p>
+                          <p className="font-medium">{(review as any).reviewer_name || "Anonymous"}</p>
                           <div className="flex mt-1">
                             {renderStars(review.rating)}
                             <span className="ml-2 text-sm text-gray-500">

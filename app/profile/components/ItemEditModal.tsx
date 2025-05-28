@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/shared/lib/supabase";
 import { styles } from "@/shared/lib/styles";
+// It would be good to import the Listing type here for formData and setItem
+// import { Listing } from "@/types/index.ts"; 
 
 type ItemEditModalProps = {
   isOpen: boolean;
@@ -19,14 +21,17 @@ export default function ItemEditModal({
 }: ItemEditModalProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  // TODO: Consider using Listing type for formData for better type safety
   const [formData, setFormData] = useState({
-    name: "",
+    title: "", // MODIFIED: name to title
     price: "",
     description: "",
-    category: "",
-    status: "",
+    category_id: "", // MODIFIED: category to category_id (assuming it's an ID)
+    status: "", // e.g., "available", "sold"
+    condition: "", // Added field
   });
   const [error, setError] = useState("");
+  // const [item, setItem] = useState<any>(null); // Consider using Listing type: useState<Listing | null>(null)
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -34,27 +39,29 @@ export default function ItemEditModal({
 
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from("products")
-          .select("*")
+        // MODIFIED: "products" to "listings"
+        const { data, error: fetchError } = await supabase
+          .from("listings")
+          .select("title, price, description, category_id, status, condition") // Select specific fields
           .eq("id", itemId)
           .single();
 
-        if (error) throw error;
+        if (fetchError) throw fetchError;
 
         if (data) {
-          setItem(data);
+          // setItem(data); // If using a state for the full item
           setFormData({
-            name: data.name || "",
+            title: data.title || "", // MODIFIED: name to title
             price: data.price ? String(data.price) : "",
             description: data.description || "",
-            category: data.category || "",
+            category_id: data.category_id ? String(data.category_id) : "", // MODIFIED: category to category_id
             status: data.status || "available",
+            condition: data.condition || "", // Added condition
           });
         }
-      } catch (err) {
+      } catch (err:any) {
         console.error("Error fetching item:", err);
-        setError("Failed to load item details");
+        setError("Failed to load item details: " + err.message);
       } finally {
         setLoading(false);
       }
@@ -81,27 +88,34 @@ export default function ItemEditModal({
     setError("");
 
     try {
-      // Validate form
-      if (!formData.name || !formData.price) {
-        throw new Error("name and price are required");
+      if (!formData.title || !formData.price) {
+        throw new Error("Title and price are required");
       }
 
-      const { error } = await supabase
-        .from("products")
-        .update({
-          name: formData.name,
-          price: parseFloat(formData.price),
-          description: formData.description,
-          category: formData.category,
-          status: formData.status,
-        })
+      const updateData: any = { // Use 'any' for now, or define a specific update type
+        title: formData.title,
+        price: parseFloat(formData.price),
+        description: formData.description,
+        status: formData.status,
+        condition: formData.condition,
+        updated_at: new Date().toISOString(), // Add updated_at timestamp
+      };
+      if (formData.category_id) {
+        updateData.category_id = parseInt(formData.category_id);
+      }
+
+
+      // MODIFIED: "products" to "listings"
+      const { error: updateError } = await supabase
+        .from("listings")
+        .update(updateData)
         .eq("id", itemId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       onItemUpdated();
       onClose();
-    } catch (err: unknown) {
+    } catch (err: any) {
       setError(err.message || "Failed to update item");
     } finally {
       setSaving(false);
@@ -112,10 +126,7 @@ export default function ItemEditModal({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop with blur */}
       <div className="fixed inset-0 backdrop-blur-lg " onClick={onClose} />
-
-      {/* Modal content */}
       <div className="flex items-center justify-center min-h-screen p-4">
         <div
           className="bg-white rounded-lg shadow-xl w-full max-w-md relative"
@@ -124,7 +135,6 @@ export default function ItemEditModal({
             borderWidth: "1px",
           }}
         >
-          {/* Modal header */}
           <div
             className="flex justify-between items-center p-4 border-b"
             style={{ borderColor: styles.primary }}
@@ -156,7 +166,6 @@ export default function ItemEditModal({
             </button>
           </div>
 
-          {/* Modal body */}
           <div className="p-6">
             {loading ? (
               <div className="flex justify-center py-4">
@@ -178,12 +187,12 @@ export default function ItemEditModal({
                     className="block text-sm font-medium mb-1"
                     style={{ color: styles.text }}
                   >
-                    name
+                    Title {/* MODIFIED: name to Title */}
                   </label>
                   <input
                     type="text"
-                    name="name"
-                    value={formData.name}
+                    name="title" // MODIFIED: name to title
+                    value={formData.title} // MODIFIED: name to title
                     onChange={handleChange}
                     className="w-full p-2 border rounded-md"
                     style={{ borderColor: styles.primary }}
@@ -223,32 +232,50 @@ export default function ItemEditModal({
                     style={{ borderColor: styles.primary }}
                   />
                 </div>
-
-                <div className="mb-4 grid grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      className="block text-sm font-medium mb-1"
-                      style={{ color: styles.text }}
-                    >
-                      Category
-                    </label>
-                    <select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleChange}
-                      className="w-full p-2 border rounded-md"
-                      style={{ borderColor: styles.primary }}
-                    >
-                      <option value="">Select category</option>
-                      <option value="textbooks">Textbooks</option>
-                      <option value="electronics">Electronics</option>
-                      <option value="furniture">Furniture</option>
-                      <option value="clothing">Clothing</option>
-                      <option value="accessories">Accessories</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
+                
+                <div className="mb-4">
+                  <label
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: styles.text }}
+                  >
+                    Condition
+                  </label>
+                  <select
+                    name="condition"
+                    value={formData.condition}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded-md"
+                    style={{ borderColor: styles.primary }}
+                  >
+                    <option value="">Select Condition</option>
+                    <option value="New">New</option>
+                    <option value="Like New">Like New</option>
+                    <option value="Good">Good</option>
+                    <option value="Fair">Fair</option>
+                    <option value="Poor">Poor</option>
+                  </select>
                 </div>
+
+
+                <div className="mb-4">
+                  <label
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: styles.text }}
+                  >
+                    Category ID {/* MODIFIED: Category to Category ID */}
+                  </label>
+                  <input
+                    type="number" // Assuming category_id is a number
+                    name="category_id" // MODIFIED: category to category_id
+                    value={formData.category_id} // MODIFIED: category to category_id
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded-md"
+                    style={{ borderColor: styles.primary }}
+                    placeholder="Enter Category ID (e.g., 1, 2)"
+                  />
+                  {/* Ideally, this would be a dropdown fetching from the 'categories' table */}
+                </div>
+                
 
                 <div className="mb-4">
                   <label

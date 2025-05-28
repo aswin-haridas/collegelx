@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { Item, User } from "@/lib/types";
+import { Listing, User } from "@/types/index.ts";
+
+type ListingWithSeller = Listing & {
+  seller: User | null;
+};
 
 export function useItem(itemId: string, includeSellerInfo = false) {
-  const [item, setItem] = useState<Item | null>(null);
+  const [item, setItem] = useState<Listing | null>(null);
+  const [seller, setSeller] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [seller, setSeller] = useState<User | null>(null);
-  const [sellerLoading, setSellerLoading] = useState(false);
 
   useEffect(() => {
-    async function fetchItem() {
+    async function fetchItemAndSeller() {
       if (!itemId) {
         setLoading(false);
         return;
@@ -18,61 +21,53 @@ export function useItem(itemId: string, includeSellerInfo = false) {
 
       setLoading(true);
       setError(null);
+      setItem(null);
+      setSeller(null);
 
       try {
-        const { data, error } = await supabase
-          .from("items")
-          .select("*")
+        // Define base listing columns to select
+        const listingColumns = "id, user_id, category_id, title, description, price, condition, status, images, created_at, updated_at";
+        
+        let query = supabase
+          .from("listings")
+          .select(
+            includeSellerInfo
+              ? `${listingColumns}, seller:users(id, email, username, full_name, profile_picture, college_id, created_at, updated_at, is_active)`
+              : listingColumns // Use specific columns when not including seller
+          )
           .eq("id", itemId)
           .single();
 
-        if (error) {
-          throw error;
+        const { data, error: queryError } = await query;
+
+        if (queryError) {
+          throw queryError;
         }
 
         if (data) {
-          setItem(data as Item);
-
-          // Fetch seller data if requested
           if (includeSellerInfo) {
-            setSellerLoading(true);
-            let sellerIdToFetch: string | undefined = undefined;
-            if (data.seller_id) {
-              sellerIdToFetch = data.seller_id;
-            } else if (data.user_id) {
-              sellerIdToFetch = data.user_id;
-            } else if (data.sender_id) {
-              sellerIdToFetch = data.sender_id;
-            } else if (typeof data.seller === 'string') {
-              sellerIdToFetch = data.seller;
-            }
-            const sellerId = sellerIdToFetch;
-
-            if (sellerId) {
-              const { data: userData, error: userError } = await supabase
-                .from("users")
-                .select("*")
-                .eq("id", sellerId)
-                .single();
-
-              if (!userError && userData) {
-                setSeller(userData as User);
-              }
-            }
-            setSellerLoading(false);
+            const { seller: sellerData, ...listingData } = data as any; // Use 'any' for initial destructure due to dynamic select
+            setItem(listingData as Listing);
+            setSeller(sellerData as User | null);
+          } else {
+            setItem(data as Listing);
+            setSeller(null);
           }
+        } else {
+          setItem(null);
+          setSeller(null);
         }
       } catch (err) {
-        console.error("Error fetching item:", err);
+        console.error("Error fetching item/seller:", err);
         setError(
-          err instanceof Error ? err : new Error("Failed to fetch item")
+          err instanceof Error ? err : new Error("Failed to fetch item data")
         );
       } finally {
         setLoading(false);
       }
     }
 
-    fetchItem();
+    fetchItemAndSeller();
   }, [itemId, includeSellerInfo]);
 
   return {
@@ -80,6 +75,5 @@ export function useItem(itemId: string, includeSellerInfo = false) {
     loading,
     error,
     seller,
-    sellerLoading,
   };
 }

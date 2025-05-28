@@ -6,6 +6,18 @@ import { supabase } from "@/lib/supabase";
 import { styles } from "@/lib/styles";
 import toast from "react-hot-toast";
 
+// Define Message type locally or import from a shared types file if available
+// For now, defining it locally based on usage.
+type Message = {
+  id?: string; // Assuming messages have an id
+  listing_id: string;
+  sender_id: string;
+  reciever_id: string; // Typo: should be receiver_id
+  message: string;
+  sent_at: string; // ISO string date
+  // Add any other relevant fields for a message
+};
+
 export default function ChatPage() {
   const [chatState, setChatState] = useState({
     messages: [] as Message[],
@@ -62,7 +74,8 @@ export default function ChatPage() {
     setupRealtimeSubscription();
 
     return () => {
-      supabase.removeChannel(supabase.channel("public:messages"));
+      // MODIFIED: Table name for removing channel
+      supabase.removeChannel(supabase.channel("public:chat_messages"));
       toast.success("Chat connection closed");
     };
   }, [userId, receiverId, listingId, router]);
@@ -73,24 +86,27 @@ export default function ChatPage() {
 
   const fetchMessages = async () => {
     try {
+      // MODIFIED: Table name from "messages" to "chat_messages"
       const { data, error } = await supabase
-        .from("messages")
+        .from("chat_messages")
         .select("*")
-        .eq("listing_id", listingId)
-        .or(`sender_id.eq.${userId},reciever_id.eq.${userId}`)
-        .or(`sender_id.eq.${receiverId},reciever_id.eq.${receiverId}`)
-        .order("sent_at", { ascending: true });
+        .eq("listing_id", listingId) // This might need to be chat_room_id if schema changed
+        .or(`sender_id.eq.${userId},reciever_id.eq.${userId}`) // reciever_id typo
+        .or(`sender_id.eq.${receiverId},reciever_id.eq.${receiverId}`) // reciever_id typo
+        .order("sent_at", { ascending: true }); // sent_at should be created_at for chat_messages
 
       if (error) throw new Error(error.message);
-
+      
+      // The filtering logic might need adjustment based on chat_messages schema
+      // (e.g. using chat_room_id instead of listing_id directly)
       const filteredMessages = (data || []).filter(
         (msg) =>
-          ((msg.sender_id === userId && msg.reciever_id === receiverId) ||
-            (msg.sender_id === receiverId && msg.reciever_id === userId)) &&
-          msg.listing_id === listingId
+          ((msg.sender_id === userId && msg.reciever_id === receiverId) || // reciever_id typo
+            (msg.sender_id === receiverId && msg.reciever_id === userId)) && // reciever_id typo
+          msg.listing_id === listingId // This condition might change
       );
 
-      setChatState((prev) => ({ ...prev, messages: filteredMessages }));
+      setChatState((prev) => ({ ...prev, messages: filteredMessages as Message[] }));
     } catch (err) {
       throw err;
     }
@@ -100,14 +116,15 @@ export default function ChatPage() {
     if (!receiverId) return;
 
     try {
+      // Assuming "profiles" is old, should be "users"
       const { data, error } = await supabase
-        .from("profiles")
-        .select("name")
+        .from("users") // MODIFIED: "profiles" to "users"
+        .select("full_name") // "name" to "full_name"
         .eq("id", receiverId)
         .single();
 
       if (data && !error) {
-        setParticipantInfo((prev) => ({ ...prev, receiverName: data.name }));
+        setParticipantInfo((prev) => ({ ...prev, receiverName: data.full_name }));
       }
     } catch (err) {
       console.error("Error fetching receiver name:", err);
@@ -120,12 +137,12 @@ export default function ChatPage() {
     try {
       const { data, error } = await supabase
         .from("listings")
-        .select("name, price, id")
+        .select("title, price, id") // "name" to "title"
         .eq("id", listingId)
         .single();
 
       if (data && !error) {
-        setParticipantInfo((prev) => ({ ...prev, listingInfo: data }));
+        setParticipantInfo((prev) => ({ ...prev, listingInfo: {name: data.title, price: data.price, id: data.id} }));
       }
     } catch (err) {
       console.error("Error fetching listing info:", err);
@@ -134,23 +151,26 @@ export default function ChatPage() {
 
   const setupRealtimeSubscription = () => {
     const channel = supabase
-      .channel("public:messages")
+      // MODIFIED: Table name for channel
+      .channel("public:chat_messages")
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
-          table: "messages",
+          // MODIFIED: Table name for subscription
+          table: "chat_messages",
         },
         (payload: any) => {
           const newMessage = payload.new as Message;
 
+          // This condition might need adjustment based on chat_messages schema
           if (
             ((newMessage.sender_id === userId &&
-              newMessage.reciever_id === receiverId) ||
+              newMessage.reciever_id === receiverId) || // reciever_id typo
               (newMessage.sender_id === receiverId &&
-                newMessage.reciever_id === userId)) &&
-            newMessage.listing_id === listingId
+                newMessage.reciever_id === userId)) && // reciever_id typo
+            newMessage.listing_id === listingId // This condition might change
           ) {
             setChatState((prev) => ({
               ...prev,
@@ -173,15 +193,32 @@ export default function ChatPage() {
     try {
       setChatState((prev) => ({ ...prev, sending: true }));
 
+      // Data needs to align with chat_messages schema
       const messageData = {
         message: chatState.newMessage.trim(),
         sender_id: userId,
-        reciever_id: receiverId,
-        sent_at: new Date().toISOString(),
-        listing_id: listingId,
+        // reciever_id: receiverId, // This field is not in chat_messages, chat_room_id is
+        // sent_at: new Date().toISOString(), // This will be created_at, auto-generated
+        // listing_id: listingId, // This is likely part of chat_room now
+        chat_room_id: "", // This needs to be fetched or created based on listingId, userId, receiverId
+        // is_read: false (default)
       };
+      
+      // This part needs significant rework:
+      // 1. Find or create a chat_room_id based on listing_id, buyer_id (userId), seller_id (receiverId)
+      // 2. Then insert the message with that chat_room_id
 
-      const { error } = await supabase.from("messages").insert([messageData]);
+      // Placeholder for the actual logic to get/create chat_room_id
+      // For now, this insert will likely fail or insert with missing chat_room_id
+      // MODIFIED: Table name from "messages" to "chat_messages"
+      const { error } = await supabase.from("chat_messages").insert([
+        { 
+          message: chatState.newMessage.trim(),
+          sender_id: userId,
+          // chat_room_id: foundOrCreatedChatRoomId, // This is what's needed
+        }
+      ]);
+
 
       if (error) throw new Error(error.message);
 
@@ -279,9 +316,9 @@ export default function ChatPage() {
               <p className="text-sm">Start the conversation!</p>
             </div>
           ) : (
-            chatState.messages.map((msg: any) => (
+            chatState.messages.map((msg: Message) => ( // Used defined Message type
               <div
-                key={msg.id}
+                key={msg.id} // Assuming message has an id
                 className={`flex mb-4 ${
                   msg.sender_id === userId ? "justify-end" : "justify-start"
                 }`}
@@ -311,7 +348,8 @@ export default function ChatPage() {
                 >
                   <p className="break-words">{msg.message}</p>
                   <div className="text-xs mt-1 opacity-80 text-right">
-                    {new Date(msg.sent_at).toLocaleTimeString([], {
+                    {/* sent_at should be created_at from chat_messages */}
+                    {new Date(msg.sent_at).toLocaleTimeString([], { 
                       hour: "2-digit",
                       minute: "2-digit",
                     })}

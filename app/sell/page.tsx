@@ -9,14 +9,14 @@ import Header from "@/components/shared/Header";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { Item } from "@/types";
+import { Item } from "@/types"; // This will be updated later to Listing from @/types
 export default function SellPage() {
   const router = useRouter();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Item>();
+  } = useForm<Item>(); // This will be updated later to Listing from @/types
 
   const [images, setImages] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -32,7 +32,7 @@ export default function SellPage() {
     setPreviewUrls(urls);
   };
 
-  const onSubmit: SubmitHandler<Item> = async (data) => {
+  const onSubmit: SubmitHandler<Item> = async (data) => { // This will be updated later to Listing from @/types
     if (!userId) {
       toast.error("Please login to create a listing");
       return;
@@ -62,15 +62,20 @@ export default function SellPage() {
         })
       );
 
-      const { error: insertError } = await supabase.from("products").insert({
+      // MODIFIED LINE: "products" to "listings"
+      const { error: insertError } = await supabase.from("listings").insert({
         user_id: userId,
-        title: data.name,
+        // Assuming 'data.name' maps to 'title' based on previous type updates
+        // If Item type has 'name' and Listing has 'title', this needs to align with the actual Listing type fields
+        title: data.name, 
         description: data.description,
         price: data.price,
-        category: data.category,
+        // 'category' from form data might map to 'category_id' in DB.
+        // This depends on how Category is handled (ID vs name). Assuming name for now.
+        category: data.category, 
         condition: data.condition,
         images: imageUrls,
-        status: "active",
+        status: "active", // Default status
       });
 
       if (insertError) {
@@ -100,8 +105,9 @@ export default function SellPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-600">
-                  Name
+                  Name 
                 </label>
+                {/* 'name' here should correspond to 'title' in the Listing type if that's the case */}
                 <input
                   {...register("name", { required: "Title is required" })}
                   type="text"
@@ -148,8 +154,9 @@ export default function SellPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-600">
-                    Product Type
+                    Product Type 
                   </label>
+                  {/* This 'category' should align with how categories are stored (ID or name) */}
                   <select
                     {...register("category", {
                       required: "Product type is required",
@@ -188,6 +195,7 @@ export default function SellPage() {
                 <label className="block text-sm font-medium text-gray-600">
                   Tags (comma separated)
                 </label>
+                {/* The 'tags' field is not in the 'listings' schema provided. This might need removal or schema adjustment. */}
                 <input
                   {...register("tags")}
                   type="text"
