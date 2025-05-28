@@ -30,6 +30,7 @@
     "eslint-config-next": "^13.x.x",
     "only-allow": "^1.2.1",
     "prettier": "^3.5.3",
+    "supabase": ">=1.8.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

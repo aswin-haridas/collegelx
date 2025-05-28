@@ -1,7 +1,7 @@
 "use client";
-import { styles } from "@/shared/lib/styles";
+import { styles } from "@/lib/styles";
 import { Package, MessageSquare, Settings, Heart } from "lucide-react";
-import Header from "@/shared/components/Header";
+import Header from "@/components/shared/Header";
 import Image from "next/image";
 
 interface ProfileHeaderProps {

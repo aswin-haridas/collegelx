@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { styles } from "@/shared/lib/styles";
+import { styles } from "@/lib/styles";
 import { Edit, Trash2, PackageCheck } from "lucide-react";
 import ItemCard from "./ItemCard";
 
@@ -33,10 +33,7 @@ export default function ProfileContent({
       {activeTab === "products" && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2
-              className="text-xl font-semibold"
-              style={{ color: styles.text }}
-            >
+            <h2 className="text-xl font-semibold">
               Your Items ({items.length})
             </h2>
             <button
@@ -124,12 +121,7 @@ export default function ProfileContent({
       {activeTab === "wishlist" && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2
-              className="text-xl font-semibold"
-              style={{ color: styles.text }}
-            >
-              Your Wishlist
-            </h2>
+            <h2 className="text-xl font-semibold">Your Wishlist</h2>
           </div>
           {/* Wishlist content */}
           {wishlistItems.length > 0 ? (
@@ -171,12 +163,7 @@ export default function ProfileContent({
       {activeTab === "reviews" && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2
-              className="text-xl font-semibold"
-              style={{ color: styles.text }}
-            >
-              Your Reviews
-            </h2>
+            <h2 className="text-xl font-semibold">Your Reviews</h2>
           </div>
           {/* Reviews content */}
           {reviews.length > 0 ? (

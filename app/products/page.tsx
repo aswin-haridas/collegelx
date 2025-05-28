@@ -7,6 +7,7 @@ import { styles } from "@/lib/styles";
 import Link from "next/link";
 import Header from "@/components/shared/Header";
 import { Item } from "@/types";
+import useSupabase from "@/hooks/useSupabase";
 
 const departments = [
   "All",
@@ -22,7 +23,6 @@ const category = ["Notes", "Uniform", "Stationary", "Others", "All"];
 const years = [1, 2, 3, 4, "All"];
 
 export default function ItemsPage() {
-  const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,46 +39,15 @@ export default function ItemsPage() {
     setSortByPrice("asc");
   };
 
-  useEffect(() => {
-    async function fetchItems() {
-      try {
-        let query = supabase
-          .from("items")
-          .select("*")
-          .eq("status", "available");
+  const items = useSupabase("listings", [
+    "id",
+    "name",
+    "price",
+    "category",
+    "images",
+  ]);
 
-        if (selectedYear !== "All") query = query.eq("year", selectedYear);
-        if (selectedDepartment !== "All")
-          query = query.eq("department", selectedDepartment);
-        if (selectedcategory !== "All")
-          query = query.eq("category", selectedcategory);
-        query = query.order("price", { ascending: sortByPrice === "asc" });
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-        setItems(data || []);
-      } catch (error) {
-        console.error("Error fetching items:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchItems();
-  }, [selectedYear, selectedDepartment, selectedcategory, sortByPrice]);
-
-  const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  console.log(items);
 
   return (
     <>
@@ -88,7 +57,7 @@ export default function ItemsPage() {
           <div className="max-w-7xl mx-auto">
             <h1
               className="text-4xl font-semibold mb-6 mt-6"
-              style={{ color: styles.warmPrimaryDark }}
+              style={{ color: styles.primary }}
             >
               Available Items
             </h1>
@@ -162,11 +131,11 @@ export default function ItemsPage() {
               </div>
             </div>
 
-            {filteredItems.length === 0 ? (
+            {items.data?.length === 0 ? (
               <p>No items available matching the criteria.</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredItems.map((item) => (
+                {items.data?.map((item) => (
                   <Link
                     href={`/buy/${item.id}`}
                     key={item.id}
@@ -187,20 +156,14 @@ export default function ItemsPage() {
                         )}
                       </div>
                       <div className="p-4 flex flex-col flex-grow">
-                        <h3
-                          className="font-medium text-lg mb-2"
-                          style={{ color: styles.warmText }}
-                        >
+                        <h3 className="font-medium text-lg mb-2">
                           {item.name}
                         </h3>
                         <p className="text-gray-600 mb-2 text-sm flex-grow">
                           {item.description}
                         </p>
                         <div className="flex justify-between items-center mt-2">
-                          <span
-                            className="font-bold"
-                            style={{ color: styles.warmText }}
-                          >
+                          <span className="font-bold">
                             ₹{item.price.toFixed(2)}
                           </span>
                           <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">

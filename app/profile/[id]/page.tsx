@@ -1,22 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { styles } from "@/shared/lib/styles";
-import { supabase } from "@/shared/lib/supabase";
+import { styles } from "@/lib/styles";
+import { supabase } from "@/lib/supabase";
 import { Star, Edit, Trash2, Package, MessageSquare } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
-import ItemCard from "@/shared/components/ItemCard";
-import { Item } from "@/app/lib/types";
-import Header from "@/shared/components/Header";
+import ItemCard from "../ItemCard";
+import Header from "@/components/shared/Header";
 import { useReview } from "../useReview";
-import { User } from "@/app/lib/types";
 import Image from "next/image";
+import { Item, User } from "@/types";
+import useSupabase from "@/hooks/useSupabase";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [activeTab, setActiveTab] = useState("products");
-  const { userId: currentUserId } = useAuth();
   const router = useRouter();
   const params = useParams();
   const profileId = params.id as string;
@@ -30,27 +29,10 @@ export default function ProfilePage() {
     handleReviewInputChange,
     handlePostReview,
     fetchUserReviews,
-    averageRating, // Include the averageRating from the hook
+    averageRating,
   } = useReview(profileId, currentUserId);
 
-  useEffect(() => {
-    async function fetchUserData() {
-      if (!profileId) return;
-      try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", profileId)
-          .single();
-        if (error) throw error;
-        setUser(data);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    }
-
-    fetchUserData();
-  }, [profileId]);
+  const data = useSupabase("users", ["id", "name", "profile_image"]);
 
   useEffect(() => {
     async function fetchUserItems() {
@@ -65,7 +47,6 @@ export default function ProfilePage() {
         setItems(
           data.map((item) => ({
             ...item,
-            name: item.name || item.name,
             name: item.name || item.name,
             user_id: item.seller_id,
             seller_id: item.seller_id,
@@ -223,10 +204,7 @@ export default function ProfilePage() {
           {activeTab === "products" && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2
-                  className="text-xl font-semibold"
-                  style={{ color: styles.text }}
-                >
+                <h2 className="text-xl font-semibold">
                   {isOwnProfile ? "Your Items" : `${user?.name}'s Items`}
                 </h2>
                 {isOwnProfile && (
@@ -307,12 +285,7 @@ export default function ProfilePage() {
           {activeTab === "reviews" && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2
-                  className="text-xl font-semibold"
-                  style={{ color: styles.text }}
-                >
-                  Your Reviews
-                </h2>
+                <h2 className="text-xl font-semibold">Your Reviews</h2>
                 {!isOwnProfile && currentUserId && (
                   <button
                     onClick={() => setIsPostingReview(true)}

@@ -1,184 +1,32 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { styles } from "@/shared/lib/styles";
-import { Loader2, MessageSquare, ArrowLeft, Heart } from "lucide-react";
-import { useParams } from "next/navigation";
-import { useWishlist } from "@/shared/hooks/useWishlist";
-import { useProduct } from "@/shared/hooks/useProducts";
-import Header from "@/shared/components/Header";
-import { supabase } from "@/shared/lib/supabase";
-import { useLoginCheck } from "@/shared/hooks/useLoginCheck";
+import { styles } from "@/lib/styles";
+import { MessageSquare, ArrowLeft, Heart } from "lucide-react";
+import Header from "@/components/shared/Header";
 import Image from "next/image";
+import useAuth from "@/hooks/useAuth";
+import useSupabase from "@/hooks/useSupabase";
+import { useParams } from "next/navigation";
 
 export default function ItemPage() {
-  const router = useRouter();
-  const params = useParams();
-  const itemId = params?.id as string;
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const id = useAuth();
+  const itemId = useParams().id as string;
 
-  useLoginCheck();
+  console.log(id);
 
-  const { userId, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { product: item, loading: itemLoading } = useProduct(itemId);
-  const [seller, setSellerData] = useState(null);
-  const [sellerLoading, setSellerLoading] = useState(false);
-
-  const {
-    isWishlisted,
-    toggleWishlist,
-    loading: wishlistLoading,
-  } = useWishlist(itemId);
-
-  const loading = authLoading || itemLoading || sellerLoading;
-
-  const isseller = userId && item?.seller_id === userId;
-
-  // Fetch seller information when item is loaded
-  useEffect(() => {
-    async function fetchSellerData() {
-      if (item?.seller_id) {
-        setSellerLoading(true);
-        const { data: sellerData, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", item.seller_id)
-          .single();
-
-        if (error) {
-          console.error("Error fetching seller data:", error);
-        } else {
-          setSellerData(sellerData);
-        }
-        setSellerLoading(false);
-      }
-    }
-
-    fetchSellerData();
-  }, [item]);
-
-  // Store item ID in session storage when it becomes available
-  useEffect(() => {
-    if (item) {
-      sessionStorage.setItem("listing_id", item.id);
-    }
-  }, [item]);
-
-  const handleChat = async () => {
-    const chatItemId = item?.id || sessionStorage.getItem("listing_id");
-    const sellerId =
-      item?.seller_id || item?.user_id || sessionStorage.getItem("seller_id");
-
-    if (!chatItemId || !sellerId || !userId) {
-      console.error("Missing required data for chat:", {
-        chatItemId,
-        sellerId,
-        userId,
-      });
-      return;
-    }
-
-    try {
-      // Check if a chat already exists between the buyer and seller for this product
-      const { data: existingChats, error: fetchError } = await supabase
-        .from("chats")
-        .select("id")
-        .eq("buyer_id", userId)
-        .eq("seller_id", sellerId)
-        .eq("product_id", chatItemId);
-
-      if (fetchError) {
-        console.error("Error fetching existing chats:", fetchError);
-        return;
-      }
-
-      let chatId;
-
-      if (existingChats && existingChats.length > 0) {
-        // Use the existing chat ID
-        chatId = existingChats[0].id;
-      } else {
-        // Create a new chat
-        const { data: newChat, error: createError } = await supabase
-          .from("chats")
-          .insert({
-            buyer_id: userId,
-            seller_id: sellerId,
-            product_id: chatItemId,
-          })
-          .select();
-
-        if (createError) {
-          console.error("Error creating new chat:", createError);
-          return;
-        }
-
-        chatId = newChat[0].id;
-      }
-
-      // Navigate to the chat page
-      router.push(`/chat?chatId=${chatId}`);
-    } catch (error) {
-      console.error("Error handling chat:", error);
-    }
-  };
-
-  const handleWishlist = async () => {
-    if (!isAuthenticated) {
-      router.push(`/login`);
-      return;
-    }
-
-    await toggleWishlist();
-  };
-
-  if (loading) {
-    return (
-      <div className="h-screen">
-        <div className="flex justify-center items-center h-full ">
-          <Loader2
-            className="h-8 w-8 animate-spin"
-            style={{ color: styles.primary }}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (!item) {
-    return (
-      <div className="h-screen">
-        <div className="flex justify-center items-center h-full ">
-          <div className="text-center">
-            <h2
-              className="text-xl font-semibold mb-2"
-              style={{ color: styles.text }}
-            >
-              Item not found
-            </h2>
-            <button
-              onClick={() => router.push("/")}
-              className="mt-4 px-4 py-2 rounded-lg text-white"
-              style={{ backgroundColor: styles.primary }}
-            >
-              Back to Home
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const item = useSupabase(
+    "listings",
+    ["id", "name", "price", "category", "images", "description", "seller_id"],
+    itemId
+  );
+  console.log(item);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       <div className="max-w-6xl mx-auto p-4  py-10">
         {/* Back button */}
-        <button
-          onClick={() => router.back()}
-          className="flex items-center text-gray-600 hover:text-gray-800 mb-6 transition-colors"
-        >
+        <button className="flex items-center text-gray-600 hover:text-gray-800 mb-6 transition-colors">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to listings
         </button>
@@ -257,7 +105,6 @@ export default function ItemPage() {
                 ) : (
                   <div className="flex gap-2 mb-2">
                     <button
-                      onClick={handleChat}
                       className="flex-grow py-3 px-4 rounded-lg flex items-center justify-center transition-colors text-white hover:bg-opacity-90"
                       style={{ backgroundColor: styles.primary }}
                     >
@@ -299,12 +146,7 @@ export default function ItemPage() {
               </div>
 
               <div className="mb-6">
-                <h2
-                  className="text-xl font-semibold mb-2"
-                  style={{ color: styles.text }}
-                >
-                  Description
-                </h2>
+                <h2 className="text-xl font-semibold mb-2">Description</h2>
                 <p className="text-gray-600 whitespace-pre-wrap">
                   {item.description}
                 </p>
@@ -312,12 +154,7 @@ export default function ItemPage() {
 
               {/* Item Details */}
               <div className="mb-6">
-                <h2
-                  className="text-xl font-semibold mb-2"
-                  style={{ color: styles.text }}
-                >
-                  Quick Info
-                </h2>
+                <h2 className="text-xl font-semibold mb-2">Quick Info</h2>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col">
                     <span className="text-gray-500 text-sm">Category</span>
@@ -339,10 +176,7 @@ export default function ItemPage() {
               {/* Seller information */}
               {!sellerLoading && seller && (
                 <div className="border-t border-gray-200 pt-6">
-                  <h2
-                    className="text-xl font-semibold mb-4"
-                    style={{ color: styles.text }}
-                  >
+                  <h2 className="text-xl font-semibold mb-4">
                     Seller Information
                   </h2>
                   <div
@@ -367,10 +201,7 @@ export default function ItemPage() {
                       )}
                     </div>
                     <div className="flex flex-col">
-                      <div
-                        className="font-medium hover:underline"
-                        style={{ color: styles.text }}
-                      >
+                      <div className="font-medium hover:underline">
                         {seller?.name || "Anonymous Seller"}
                       </div>
                       <p className="text-sm text-gray-500">

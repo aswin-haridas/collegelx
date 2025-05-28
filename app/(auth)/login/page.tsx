@@ -24,6 +24,8 @@ export default function LoginPage() {
       )
       .eq("email", data.email)
       .single();
+
+    localStorage.setItem("token", userData?.id);
     if (error) {
       toast.error(`Error fetching user: ${error.message}`);
       return;

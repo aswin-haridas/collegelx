@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/shared/lib/supabase";
-import { styles } from "@/shared/lib/styles";
+import { supabase } from "@/lib/supabase";
+import { styles } from "@/lib/styles";
 
 type ItemEditModalProps = {
   isOpen: boolean;
@@ -129,12 +129,7 @@ export default function ItemEditModal({
             className="flex justify-between items-center p-4 border-b"
             style={{ borderColor: styles.primary }}
           >
-            <h2
-              className="text-xl font-semibold"
-              style={{ color: styles.text }}
-            >
-              Edit Item
-            </h2>
+            <h2 className="text-xl font-semibold">Edit Item</h2>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -174,12 +169,7 @@ export default function ItemEditModal({
                 )}
 
                 <div className="mb-4">
-                  <label
-                    className="block text-sm font-medium mb-1"
-                    style={{ color: styles.text }}
-                  >
-                    name
-                  </label>
+                  <label className="block text-sm font-medium mb-1">name</label>
                   <input
                     type="text"
                     name="name"
@@ -191,10 +181,7 @@ export default function ItemEditModal({
                 </div>
 
                 <div className="mb-4">
-                  <label
-                    className="block text-sm font-medium mb-1"
-                    style={{ color: styles.text }}
-                  >
+                  <label className="block text-sm font-medium mb-1">
                     Price
                   </label>
                   <input
@@ -208,10 +195,7 @@ export default function ItemEditModal({
                 </div>
 
                 <div className="mb-4">
-                  <label
-                    className="block text-sm font-medium mb-1"
-                    style={{ color: styles.text }}
-                  >
+                  <label className="block text-sm font-medium mb-1">
                     Description
                   </label>
                   <textarea
@@ -226,10 +210,7 @@ export default function ItemEditModal({
 
                 <div className="mb-4 grid grid-cols-2 gap-4">
                   <div>
-                    <label
-                      className="block text-sm font-medium mb-1"
-                      style={{ color: styles.text }}
-                    >
+                    <label className="block text-sm font-medium mb-1">
                       Category
                     </label>
                     <select
@@ -251,10 +232,7 @@ export default function ItemEditModal({
                 </div>
 
                 <div className="mb-4">
-                  <label
-                    className="block text-sm font-medium mb-1"
-                    style={{ color: styles.text }}
-                  >
+                  <label className="block text-sm font-medium mb-1">
                     Status
                   </label>
                   <select

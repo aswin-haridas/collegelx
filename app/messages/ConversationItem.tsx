@@ -20,7 +20,7 @@ export default function ConversationItem({
     >
       <div className="flex justify-between">
         <div className="flex-1">
-          <h3 className="font-medium text-lg" style={{ color: styles.text }}>
+          <h3 className="font-medium text-lg">
             {conversation.participant_name}
           </h3>
           <p className="text-gray-600 mt-1 line-clamp-1">

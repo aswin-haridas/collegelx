@@ -89,9 +89,7 @@ export default function Sidebar({
         <div className="p-4 text-red-500">Error: {error}</div>
       ) : Object.keys(chatsByProduct).length === 0 ? (
         <div className="p-4 text-center flex flex-col items-center justify-center h-full">
-          <div className="text-lg mb-2" style={{ color: styles.text }}>
-            No chats found
-          </div>
+          <div className="text-lg mb-2">No chats found</div>
           <button
             onClick={() => router.push("/products")}
             className="px-4 py-2 rounded-md text-white"
@@ -103,12 +101,7 @@ export default function Sidebar({
       ) : (
         <div>
           <div className="p-4 sticky top-0 z-10 bg-white border-b border-gray-200">
-            <h2
-              className="font-semibold text-lg"
-              style={{ color: styles.text }}
-            >
-              Products
-            </h2>
+            <h2 className="font-semibold text-lg">Products</h2>
           </div>
           {Object.entries(chatsByProduct).map(([productId, productChats]) => {
             const product = productsList[productId] || ({} as ProductType);
@@ -136,7 +129,7 @@ export default function Sidebar({
                     }}
                   ></div>
                   <div className="flex-1">
-                    <h3 className="font-medium" style={{ color: styles.text }}>
+                    <h3 className="font-medium">
                       {product.name || "Unnamed Product"}
                     </h3>
                     <p
@@ -194,10 +187,7 @@ export default function Sidebar({
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between">
-                            <h2
-                              className="font-semibold"
-                              style={{ color: styles.text }}
-                            >
+                            <h2 className="font-semibold">
                               {getChatName(chat)}
                             </h2>
                             <span
@@ -207,10 +197,7 @@ export default function Sidebar({
                               {formatDate(chat.created_at)}
                             </span>
                           </div>
-                          <p
-                            className="text-xs truncate"
-                            style={{ color: styles.text }}
-                          >
+                          <p className="text-xs truncate">
                             Tap to view conversation
                           </p>
                         </div>

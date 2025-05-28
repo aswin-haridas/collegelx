@@ -62,12 +62,7 @@ function ItemCard({ id, name, images, price, category }: Item) {
           </div>
 
           <div className="p-4 flex flex-col flex-grow">
-            <h3
-              className="font-medium text-lg mb-2 line-clamp-1"
-              style={{ color: styles.text }}
-            >
-              {name}
-            </h3>
+            <h3 className="font-medium text-lg mb-2 line-clamp-1">{name}</h3>
             <div className="flex justify-between items-center mt-2">
               <span className="font-bold">₹{price}</span>
               <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">

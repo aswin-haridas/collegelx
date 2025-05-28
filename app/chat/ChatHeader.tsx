@@ -64,7 +64,7 @@ export default function ChatHeader({
 
       {/* Chat info */}
       <div className="flex flex-col flex-1">
-        <h2 className="text-lg font-semibold" style={{ color: styles.text }}>
+        <h2 className="text-lg font-semibold">
           {/* Chat name should be passed or derived outside */}
           {chat ? "Chat" : ""}
         </h2>

@@ -19,10 +19,7 @@ export default function ConversationGroup({
 }: ConversationGroupProps) {
   return (
     <div key={listingId} className="mb-4">
-      <div
-        className="bg-gray-100 p-3 font-medium text-sm sticky top-0"
-        style={{ color: styles.text }}
-      >
+      <div className="bg-gray-100 p-3 font-medium text-sm sticky top-0">
         {conversationsGroup[0].listing_name ||
           getListingname(conversationsGroup[0])}
       </div>

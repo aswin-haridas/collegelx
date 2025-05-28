@@ -24,7 +24,7 @@ import ItemCard from "@/components/shared/ItemCard";
 import toast from "react-hot-toast";
 =======
 import { useEffect, useState } from "react";
-import { supabase } from "@/shared/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import ProfileHeader from "./ProfileHeader";
 import ProfileContent from "./ProfileContent";
 import ProfileSettings from "./ProfileSettings";

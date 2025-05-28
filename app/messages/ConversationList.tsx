@@ -55,10 +55,7 @@ export default function ConversationList({
   if (filteredConversations.length === 0) {
     return (
       <div className="text-center p-12 bg-white rounded-lg shadow-sm">
-        <h2
-          className="text-xl font-semibold mb-2"
-          style={{ color: styles.text }}
-        >
+        <h2 className="text-xl font-semibold mb-2">
           {searchQuery ? "No matching conversations" : "No conversations found"}
         </h2>
         <p className="text-gray-500 mb-4">

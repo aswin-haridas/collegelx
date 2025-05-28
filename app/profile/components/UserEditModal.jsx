@@ -1,6 +1,6 @@
 "use client";
 
-import { styles } from "@/shared/lib/styles";
+import { styles } from "@/lib/styles";
 import { X, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -39,9 +39,7 @@ export default function UserEditModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg  bg-opacity-50 overflow-y-auto">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center border-b p-4">
-          <h3 className="text-lg font-medium" style={{ color: styles.text }}>
-            Edit Profile
-          </h3>
+          <h3 className="text-lg font-medium">Edit Profile</h3>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
