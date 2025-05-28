@@ -38,7 +38,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
     const handleAction = (
       e: React.MouseEvent,
       action: (id: string) => void,
-      id: string
+      id: string,
     ) => {
       e.preventDefault();
       e.stopPropagation();

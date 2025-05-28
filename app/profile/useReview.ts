@@ -4,7 +4,7 @@ import { useRating } from "./useRating";
 
 export function useReview(
   profileId: string | null,
-  currentUserId: string | null
+  currentUserId: string | null,
 ) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isPostingReview, setIsPostingReview] = useState(false);
@@ -40,7 +40,7 @@ export function useReview(
         e.target.name === "rating" ? parseInt(e.target.value) : e.target.value;
       setReviewData((prev) => ({ ...prev, [e.target.name]: value }));
     },
-    []
+    [],
   );
 
   const handlePostReview = useCallback(
@@ -90,7 +90,7 @@ export function useReview(
         setIsPostingReview(false);
       }
     },
-    [currentUserId, profileId, reviewData, reviews, calculateAverageRating]
+    [currentUserId, profileId, reviewData, reviews, calculateAverageRating],
   );
 
   return {

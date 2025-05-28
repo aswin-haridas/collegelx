@@ -87,7 +87,7 @@ export default function ChatPage() {
         (msg) =>
           ((msg.sender_id === userId && msg.reciever_id === receiverId) ||
             (msg.sender_id === receiverId && msg.reciever_id === userId)) &&
-          msg.listing_id === listingId
+          msg.listing_id === listingId,
       );
 
       setChatState((prev) => ({ ...prev, messages: filteredMessages }));
@@ -157,7 +157,7 @@ export default function ChatPage() {
               messages: [...prev.messages, newMessage],
             }));
           }
-        }
+        },
       )
       .subscribe();
 

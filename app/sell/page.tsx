@@ -55,7 +55,7 @@ export default function SellPage() {
           } = supabase.storage.from("images").getPublicUrl(fileName);
 
           return publicUrl;
-        })
+        }),
       );
 
       const { error: insertError } = await supabase.from("products").insert({

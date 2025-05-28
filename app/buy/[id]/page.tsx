@@ -17,7 +17,7 @@ export default function ItemPage() {
   const item = useSupabase(
     "listings",
     ["id", "name", "price", "category", "images", "description", "seller_id"],
-    itemId
+    itemId,
   );
   console.log(item);
 
@@ -183,7 +183,7 @@ export default function ItemPage() {
                     className="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
                     onClick={() =>
                       router.push(
-                        `/profile/${item.seller_id || seller?.userid}`
+                        `/profile/${item.seller_id || seller?.userid}`,
                       )
                     }
                   >

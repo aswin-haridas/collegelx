@@ -89,7 +89,7 @@ export default function ItemsPage() {
                   value={selectedYear}
                   onChange={(e) =>
                     setSelectedYear(
-                      e.target.value === "All" ? "All" : Number(e.target.value)
+                      e.target.value === "All" ? "All" : Number(e.target.value),
                     )
                   }
                   className="p-2 border rounded-lg border-yellow-600"

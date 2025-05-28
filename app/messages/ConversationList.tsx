@@ -88,7 +88,7 @@ export default function ConversationList({
             formatDate={formatDate}
             getListingname={getListingname}
           />
-        )
+        ),
       )}
     </div>
   );

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-
 export default function ProfilePage() {
   // State for tabs and modals
   const [activeTab, setActiveTab] = useState("products");

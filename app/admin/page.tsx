@@ -29,17 +29,17 @@ function AdminDashboard() {
   const filteredUsers = users.filter(
     (user) =>
       user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // Filter items based on search query
   const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // Filter unlisted items based on search query
   const filteredUnlistedItems = unlistedItems.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -297,7 +297,10 @@ function AdminDashboard() {
                     type="text"
                     value={editingUser.full_name || ""}
                     onChange={(e) =>
-                      setEditingUser({ ...editingUser, full_name: e.target.value })
+                      setEditingUser({
+                        ...editingUser,
+                        full_name: e.target.value,
+                      })
                     }
                     className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
                   />

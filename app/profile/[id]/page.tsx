@@ -53,8 +53,8 @@ export default function ProfilePage() {
 
         setItems(
           items.map((item) =>
-            item.id === itemId ? { ...item, status: "sold" } : item
-          )
+            item.id === itemId ? { ...item, status: "sold" } : item,
+          ),
         );
       } catch (error) {
         console.error("Error marking item as sold:", error);

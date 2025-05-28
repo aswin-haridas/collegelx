@@ -145,7 +145,7 @@ export const useProfile = (userId: string | null) => {
         setLoading(false);
       }
     },
-    [userId]
+    [userId],
   );
 
   // Update an item/product with useCallback
@@ -167,8 +167,8 @@ export const useProfile = (userId: string | null) => {
         // Update local items state
         setItems((prevItems) =>
           prevItems.map((item) =>
-            item.id === itemId ? { ...item, ...updates } : item
-          )
+            item.id === itemId ? { ...item, ...updates } : item,
+          ),
         );
 
         return data;
@@ -180,7 +180,7 @@ export const useProfile = (userId: string | null) => {
         setLoading(false);
       }
     },
-    [userId]
+    [userId],
   );
 
   return {

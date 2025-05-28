@@ -20,7 +20,7 @@ export default function LoginPage() {
     const { data: userData, error } = await supabase
       .from("users")
       .select(
-        "id,email,full_name,college_id,department,phone,profile_picture,is_active"
+        "id,email,full_name,college_id,department,phone,profile_picture,is_active",
       )
       .eq("email", data.email)
       .single();

@@ -70,10 +70,10 @@ export default function MessagesPage() {
 
         // Create lookup maps
         const userMap = new Map(
-          usersData?.map((user: any) => [user.id, user]) || []
+          usersData?.map((user: any) => [user.id, user]) || [],
         );
         const listingMap = new Map(
-          listingsData?.map((listing: any) => [listing.id, listing]) || []
+          listingsData?.map((listing: any) => [listing.id, listing]) || [],
         );
 
         // Enrich messages with user and listing data
@@ -112,7 +112,7 @@ export default function MessagesPage() {
             !conversationsMap.has(conversationKey) ||
             new Date(message.sent_at).getTime() >
               new Date(
-                conversationsMap.get(conversationKey)!.last_message_time
+                conversationsMap.get(conversationKey)!.last_message_time,
               ).getTime()
           ) {
             // Create or update conversation entry with the latest message
@@ -133,14 +133,14 @@ export default function MessagesPage() {
         const conversationsList = Array.from(conversationsMap.values()).sort(
           (a, b) =>
             new Date(b.last_message_time).getTime() -
-            new Date(a.last_message_time).getTime()
+            new Date(a.last_message_time).getTime(),
         );
 
         setConversations(conversationsList);
         setFilteredConversations(conversationsList);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
+          err instanceof Error ? err.message : "An unknown error occurred",
         );
         console.error("Error fetching messages:", err);
       } finally {
@@ -165,7 +165,7 @@ export default function MessagesPage() {
           .includes(searchQuery.toLowerCase()) ||
         conversation.last_message
           .toLowerCase()
-          .includes(searchQuery.toLowerCase())
+          .includes(searchQuery.toLowerCase()),
     );
 
     setFilteredConversations(filtered);
@@ -181,7 +181,7 @@ export default function MessagesPage() {
       groups[listingId].push(conversation);
       return groups;
     },
-    {} as Record<string, Conversation[]>
+    {} as Record<string, Conversation[]>,
   );
 
   const handleConversationClick = (conversation: Conversation) => {
@@ -190,7 +190,7 @@ export default function MessagesPage() {
     sessionStorage.setItem("receiver_id", conversation.participant_id);
     sessionStorage.setItem(
       "sender_id",
-      sessionStorage.getItem("user_id") || ""
+      sessionStorage.getItem("user_id") || "",
     );
 
     // Navigate to chat

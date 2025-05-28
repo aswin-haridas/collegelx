@@ -12,7 +12,7 @@ export default function useSupabase<T = any>(
   tableName: string,
   columns: string[] = ["*"],
   equalColumn: string | null = null,
-  equalValue: string | null = null
+  equalValue: string | null = null,
 ): UseSupabaseResult<T> {
   const [data, setData] = useState<T[] | null>(null);
   const [error, setError] = useState<string | null>(null);
