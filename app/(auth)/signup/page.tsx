@@ -1,14 +1,14 @@
 "use client";
 import Link from "next/link";
-import { styles, playfair } from "@/lib/styles";
+import { styles, playfair } from "@/shared/styles/theme";
 import { FieldValues, useForm } from "react-hook-form";
-import Input from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
+import Input from "@/shared/components/ui/Input";
+import Button from "@/shared/components/ui/Button";
 import Tagline from "../components/Tagline";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/shared/lib/supabase";
 import toast from "react-hot-toast";
 import { redirect } from "next/navigation";
-import { departments } from "@/lib/constants";
+import { departments } from "@/shared/config/constants";
 
 export default function SignupPage() {
   const {

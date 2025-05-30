@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display_SC } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/shared/Header";
+import Header from "@/shared/components/Header";
 
 const inter = Inter({ subsets: ["latin"] });
 const playfair = Playfair_Display_SC({

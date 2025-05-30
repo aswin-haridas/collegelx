@@ -1,11 +1,11 @@
 "use client";
 
-import { styles } from "@/lib/styles";
+import { styles } from "@/shared/styles/theme";
 import { MessageSquare, ArrowLeft, Heart } from "lucide-react";
-import Header from "@/components/shared/Header";
+import Header from "@/shared/components/Header";
 import Image from "next/image";
-import useAuth from "@/hooks/useAuth";
-import useSupabase from "@/hooks/useSupabase";
+import useAuth from "@/shared/hooks/useAuth";
+import useSupabase from "@/shared/hooks/useSupabase";
 import { useParams } from "next/navigation";
 
 export default function ItemPage() {

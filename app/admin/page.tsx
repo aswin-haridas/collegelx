@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { User, Item } from "@/types";
-import Header from "@/components/shared/Header";
+import Header from "@/shared/components/Header";
 import { useAdmin } from "./useAdmin";
 
 function AdminDashboard() {

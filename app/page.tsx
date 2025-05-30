@@ -1,14 +1,14 @@
 "use client";
 
-import Header from "@/components/shared/Header";
-import { LoadingSpinner } from "@/components/ui/Loading";
-import { styles } from "@/lib/styles";
-import { supabase } from "@/lib/supabase";
+import Header from "@/shared/components/Header";
+import { LoadingSpinner } from "@/shared/components/ui/Loading";
+import { styles } from "@/shared/styles/theme";
+import { supabase } from "@/shared/lib/supabase";
 import { Item } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Sidebar from "@/components/FilterSidebar";
+import Sidebar from "@/app/browse/components/FilterSidebar";
 
 export default function ItemsPage() {
   const [loading, setLoading] = useState(true);

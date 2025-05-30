@@ -1,4 +1,4 @@
-import { playfair, styles } from "@/lib/styles";
+import { playfair, styles } from "@/shared/styles/theme";
 
 export default function Tagline() {
   return (

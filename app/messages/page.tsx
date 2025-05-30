@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import Header from "@/components/shared/Header";
-import { styles } from "@/lib/styles";
+import { supabase } from "@/shared/lib/supabase";
+import Header from "@/shared/components/Header";
+import { styles } from "@/shared/styles/theme";
 import SearchBar from "./SearchBar";
 import ConversationList from "./ConversationList";
 import { Conversation } from "@/types";

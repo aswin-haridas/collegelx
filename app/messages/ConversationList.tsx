@@ -1,4 +1,4 @@
-import { styles } from "@/lib/styles";
+import { styles } from "@/shared/styles/theme";
 import { Conversation } from "@/types";
 import ConversationGroup from "./ConversationGroup";
 import { useRouter } from "next/navigation";

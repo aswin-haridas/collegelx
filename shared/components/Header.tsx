@@ -10,7 +10,7 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
-import { playfair, styles } from "@/lib/styles";
+import { playfair, styles } from "@/shared/styles/theme";
 
 const Header = () => {
   const handleLogout = () => {

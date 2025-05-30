@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { styles } from "@/lib/styles";
-import { supabase } from "@/lib/supabase";
+import { styles } from "@/shared/styles/theme";
+import { supabase } from "@/shared/lib/supabase";
 import { Loader2, Upload } from "lucide-react";
-import Header from "@/components/shared/Header";
+import Header from "@/shared/components/Header";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { useForm, SubmitHandler } from "react-hook-form";
