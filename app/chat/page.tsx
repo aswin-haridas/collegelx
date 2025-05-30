@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useChat } from "./useChat";
-import Header from "@/components/shared/Header";
+import Header from "@/shared/components/Header";
 import { User } from "@/types";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/shared/lib/supabase";
 
 export default function ChatPage() {
   const {

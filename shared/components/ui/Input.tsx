@@ -1,4 +1,4 @@
-import { styles } from "@/lib/styles";
+import { styles } from "@/shared/styles/theme";
 
 interface InputProps {
   placeholder: string;

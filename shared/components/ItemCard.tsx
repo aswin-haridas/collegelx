@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Image from "next/image";
-import { styles } from "@/lib/styles";
+import { Item } from "@/types"; // Added import
+import { styles } from "@/shared/styles/theme";
 import Link from "next/link";
 import { Edit, Trash2, Star, Heart } from "lucide-react";
 
@@ -25,7 +26,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
   onMarkAsSold,
   onRemoveFromWishlist,
 }) => {
-  export default function ItemCard({ item }: { item: items }) {
+    // Removed erroneous export default line
     const [imageError, setImageError] = useState(false);
 
     const handleImageError = () => {
@@ -151,5 +152,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
         </div>
       </Link>
     );
-  }
+  // Removed extra curly brace from erroneous line
 };
+
+export default ItemCard; // Added default export

@@ -10,7 +10,7 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
-import { playfair, styles } from "@/lib/styles";
+import { playfair, styles } from "@/shared/styles/theme";
 
 const Header = () => {
   const handleLogout = () => {
@@ -24,7 +24,7 @@ const Header = () => {
         <div className="flex justify-between h-16">
           {/* Logo and Site Name */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center">
+            <Link href="/browse" className="flex items-center">
               <span
                 className={`text-xl font-bold ${playfair.className}`}
                 style={{ color: styles.primary_dark }}

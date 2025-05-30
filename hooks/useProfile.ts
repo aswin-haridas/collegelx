@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react"; // Add useCallback
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/shared/lib/supabase";
 
 interface User {
   name: string;

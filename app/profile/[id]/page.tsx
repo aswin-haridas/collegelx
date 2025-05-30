@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { styles } from "@/lib/styles";
-import { supabase } from "@/lib/supabase";
+import { styles } from "@/shared/styles/theme";
+import { supabase } from "@/shared/lib/supabase";
 import { Star, Edit, Trash2, Package, MessageSquare } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
-import ItemCard from "../ItemCard";
-import Header from "@/components/shared/Header";
+import ItemCard from "@/shared/components/ItemCard";
+import Header from "@/shared/components/Header";
 import Image from "next/image";
 import { Item, User } from "@/types";
 

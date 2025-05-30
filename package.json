@@ -11,6 +11,7 @@
     "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.1",
     "knip": "^5.46.0",
     "lucide-react": "^0.483.0",

@@ -1,5 +1,5 @@
 import React from "react";
-import { styles } from "@/lib/styles";
+import { styles } from "@/shared/styles/theme";
 import { LoaderCircle } from "lucide-react";
 
 export const Loading = () => {
