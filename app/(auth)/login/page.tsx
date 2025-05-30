@@ -5,7 +5,7 @@ import { FieldValues, useForm } from "react-hook-form";
 import Input from "@/shared/components/ui/Input";
 import Button from "@/shared/components/ui/Button";
 import Tagline from "../components/Tagline";
-import { supabase } from "@/shared/lib/supabase";
+import { supabase } from "@/shared/lib/supabase"; // Verified import path
 import { redirect } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -17,32 +17,32 @@ export default function LoginPage() {
   } = useForm();
 
   const onSubmit = async (data: any) => {
-    const { data: userData, error } = await supabase
-      .from("users")
-      .select(
-        "id,email,full_name,college_id,department,phone,profile_picture,is_active",
-      )
-      .eq("email", data.email)
-      .single();
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
 
-    localStorage.setItem("token", userData?.id);
-    if (error) {
-      toast.error(`Error fetching user: ${error.message}`);
-      return;
-    }
-    if (!userData) {
-      toast.error("User not found. Please sign up first.");
-      return;
-    }
-    if (userData) {
+      if (error) {
+        toast.error(`Login failed: ${error.message}`);
+        return;
+      }
+
+      // If login is successful, Supabase handles the session.
+      // The onAuthStateChange listener in useAuth (if used on other pages)
+      // will pick up the new session.
+      // Redirect to the homepage.
       redirect("/");
+
+    } catch (error: any) {
+      toast.error(`An unexpected error occurred: ${error.message}`);
     }
   };
 
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row">
       <Tagline />
-      <SignupForm
+      <LoginForm
         register={register}
         handleSubmit={handleSubmit}
         onSubmit={onSubmit}
@@ -51,7 +51,7 @@ export default function LoginPage() {
     </div>
   );
 }
-function SignupForm({
+function LoginForm({
   register,
   handleSubmit,
   onSubmit,

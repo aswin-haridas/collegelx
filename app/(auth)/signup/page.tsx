@@ -19,35 +19,57 @@ export default function SignupPage() {
   } = useForm();
 
   const onSubmit = async (formData: FieldValues) => {
-    const { data: existingUser } = await supabase
-      .from("users")
-      .select("email")
-      .eq("email", formData.email)
-      .single();
-
-    if (existingUser) {
-      toast.error("Email already exists.");
-      return;
-    }
-
-    const { error: insertError } = await supabase.from("users").insert([
-      {
-        full_name: formData.name,
+    try {
+      // Step 1: Sign up the user with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
-        phone: formData.phone,
         password: formData.password,
-        college_id: formData.college_id,
-        department: formData.department,
-      },
-    ]);
+        // You can add options here if needed, like email_confirm: true
+      });
 
-    if (insertError) {
-      toast.error(`Error creating user: ${insertError.message}`);
-      return;
+      if (authError) {
+        toast.error(`Sign up failed: ${authError.message}`);
+        return;
+      }
+
+      if (!authData.user) {
+        toast.error("Sign up successful, but no user data returned. Please try logging in.");
+        redirect("/login"); // Or handle as appropriate
+        return;
+      }
+
+      // Step 2: Insert additional profile information into the public 'users' table
+      // Link it using the ID from the authenticated user
+      const { error: insertError } = await supabase.from("users").insert([
+        {
+          id: authData.user.id, // Use the ID from the authenticated user
+          full_name: formData.name,
+          email: formData.email, // email is already in auth.users, but can be duplicated if schema requires
+          phone: formData.phone,
+          // DO NOT store password here again, especially not plaintext
+          college_id: formData.college_id,
+          department: formData.department,
+          // is_active: true, // Set default status if applicable
+          // profile_picture: '', // Default or leave null
+        },
+      ]);
+
+      if (insertError) {
+        // If this fails, you might want to consider what to do.
+        // The user is authenticated, but their profile data isn't saved.
+        // For now, we'll show an error and let them proceed.
+        // Ideally, you might have a more robust error handling or retry mechanism.
+        toast.error(`Account created, but failed to save profile details: ${insertError.message}`);
+      } else {
+        toast.success("Account created successfully! Please check your email to confirm your registration if email confirmation is enabled. You can now login.");
+      }
+
+      // Redirect to login page or a page that asks them to confirm their email
+      redirect("/login");
+
+    } catch (error: any) {
+      toast.error(`An unexpected error occurred: ${error.message}`);
     }
-
-    toast.success("Account created successfully! Please login.");
-    redirect("/login");
   };
 
   return (
