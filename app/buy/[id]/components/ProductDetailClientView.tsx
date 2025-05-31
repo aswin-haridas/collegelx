@@ -7,7 +7,7 @@ import { User } from "@supabase/supabase-js"; // Supabase User type
 import { supabase } from "@/shared/lib/supabase"; // Client-side Supabase
 import toast from "react-hot-toast";
 import { styles, playfair } from "@/shared/styles/theme";
-import { MessageSquare, Heart, ArrowLeft } from "lucide-react";
+import { Heart, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -73,19 +73,6 @@ export default function ProductDetailClientView({
       }
     }
     setWishlistLoading(false);
-  };
-
-  const handleChat = () => {
-    if (!user) {
-      toast.error("Please login to chat with the seller.");
-      router.push("/login");
-      return;
-    }
-    if (!item || !item.seller_id) {
-      toast.error("Seller information is not available.");
-      return;
-    }
-    router.push(`/chat?recipientId=${item.seller_id.id}&listingId=${item.id}`);
   };
 
   if (!item) {
@@ -176,15 +163,6 @@ export default function ProductDetailClientView({
                 </div>
               ) : (
                 <div className="flex gap-2 mb-2">
-                  <button
-                    className="flex-grow py-3 px-4 rounded-lg flex items-center justify-center transition-colors text-white hover:bg-opacity-90"
-                    style={{ backgroundColor: styles.primary }}
-                    onClick={handleChat}
-                  >
-                    <MessageSquare className="mr-2 h-5 w-5" />
-                    Chat with Seller
-                  </button>
-
                   <button
                     onClick={handleWishlist}
                     disabled={wishlistLoading}

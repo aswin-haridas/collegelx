@@ -52,13 +52,6 @@ const Header = () => {
                 <PlusCircle className="h-6 w-6" />
               </Link>
               <Link
-                href="/messages"
-                className="p-2 rounded-full hover:bg-amber-50 text-amber-700"
-                title="Messages"
-              >
-                <MessageCircle className="h-6 w-6" />
-              </Link>
-              <Link
                 href="/"
                 className="p-2 rounded-full hover:bg-amber-50 text-amber-700"
                 title="Profile"

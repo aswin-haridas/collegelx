@@ -1,12 +1,3 @@
-export type ChatMessage = {
-  id: string; // uuid
-  chat_room_id?: string; // uuid
-  sender_id?: string; // uuid
-  message: string; // text
-  created_at?: string; // timestamp with time zone
-  is_read?: boolean; // boolean
-};
-
 export type ChatRoom = {
   id: string; // uuid
   listing_id?: string; // uuid
