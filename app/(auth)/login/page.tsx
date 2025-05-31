@@ -8,6 +8,7 @@ import Tagline from "../components/Tagline";
 import { supabase } from "@/shared/lib/supabase"; // Verified import path
 import { redirect } from "next/navigation";
 import toast from "react-hot-toast";
+import { User } from "@/types";
 
 export default function LoginPage() {
   const {
@@ -16,24 +17,20 @@ export default function LoginPage() {
     formState: { isSubmitting },
   } = useForm();
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: User) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
+      const { error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("email", data.email)
+        .single();
 
       if (error) {
         toast.error(`Login failed: ${error.message}`);
         return;
       }
 
-      // If login is successful, Supabase handles the session.
-      // The onAuthStateChange listener in useAuth (if used on other pages)
-      // will pick up the new session.
-      // Redirect to the homepage.
       redirect("/");
-
     } catch (error: any) {
       toast.error(`An unexpected error occurred: ${error.message}`);
     }
