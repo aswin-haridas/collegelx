@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { styles } from "@/shared/styles/theme";
 import { supabase } from "@/shared/lib/supabase";
@@ -20,7 +20,7 @@ export default function SellPage() {
 
   const userId = sessionStorage.getItem("user_id");
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setImages(files);
 
@@ -55,7 +55,7 @@ export default function SellPage() {
           } = supabase.storage.from("images").getPublicUrl(fileName);
 
           return publicUrl;
-        }),
+        })
       );
 
       const { error: insertError } = await supabase.from("products").insert({

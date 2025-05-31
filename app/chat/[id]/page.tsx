@@ -59,8 +59,6 @@ export default function ChatPage() {
       }
     };
 
-    setupRealtimeSubscription();
-
     return () => {
       toast.success("Chat connection closed");
     };
@@ -88,7 +86,7 @@ export default function ChatPage() {
         (msg) =>
           ((msg.sender_id === userId && msg.reciever_id === receiverId) ||
             (msg.sender_id === receiverId && msg.reciever_id === userId)) &&
-          msg.listing_id === listingId,
+          msg.listing_id === listingId
       );
 
       setChatState((prev) => ({ ...prev, messages: filteredMessages }));
@@ -133,67 +131,6 @@ export default function ChatPage() {
     }
   };
 
-  const setupRealtimeSubscription = () => {
-    const channel = supabase
-      .channel("public:messages")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-        },
-        (payload: any) => {
-          const newMessage = payload.new as Message;
-
-          if (
-            ((newMessage.sender_id === userId &&
-              newMessage.reciever_id === receiverId) ||
-              (newMessage.sender_id === receiverId &&
-                newMessage.reciever_id === userId)) &&
-            newMessage.listing_id === listingId
-          ) {
-            setChatState((prev) => ({
-              ...prev,
-              messages: [...prev.messages, newMessage],
-            }));
-          }
-        },
-      )
-      .subscribe();
-
-    toast.success("Chat connection established");
-  };
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!chatState.newMessage.trim() || !userId || !receiverId || !listingId)
-      return;
-
-    try {
-      setChatState((prev) => ({ ...prev, sending: true }));
-
-      const messageData = {
-        message: chatState.newMessage.trim(),
-        sender_id: userId,
-        reciever_id: receiverId,
-        sent_at: new Date().toISOString(),
-        listing_id: listingId,
-      };
-
-      const { error } = await supabase.from("messages").insert([messageData]);
-
-
-
-      setChatState((prev) => ({ ...prev, newMessage: "", sending: false }));
-    } catch (err) {
-      console.error("Error sending message:", err);
-      toast.error("Failed to send message. Please try again.");
-      setChatState((prev) => ({ ...prev, sending: false }));
-    }
-  };
-
   const goToListing = () => {
     if (listingId) {
       router.push(`/buy/${listingId}`);
@@ -205,7 +142,7 @@ export default function ChatPage() {
       <div className="h-screen flex items-center justify-center">
         <Loader2
           className="h-8 w-8 animate-spin"
-          style={{ color: styles.warmPrimary }}
+          style={{ color: styles.primary }}
         />
       </div>
     );
@@ -220,7 +157,7 @@ export default function ChatPage() {
           <button
             onClick={() => router.push("/messages")}
             className="mt-4 px-4 py-2 rounded-lg text-white"
-            style={{ backgroundColor: styles.warmPrimary }}
+            style={{ backgroundColor: styles.primary }}
           >
             Back to Messages
           </button>
@@ -234,22 +171,19 @@ export default function ChatPage() {
       <div className="flex-1 flex flex-col">
         <div
           className="p-4 border-b flex items-center justify-between"
-          style={{ borderColor: styles.warmBorder }}
+          style={{ borderColor: styles.primary_dark }}
         >
           <div className="flex items-center">
             <button
               onClick={() => router.push("/messages")}
               className="mr-4 p-2 rounded-full hover:bg-gray-100"
             >
-              <ArrowLeft
-                className="h-5 w-5"
-                style={{ color: styles.warmText }}
-              />
+              <ArrowLeft className="h-5 w-5" style={{ color: styles.text }} />
             </button>
             <div>
               <h2
                 className="font-medium text-lg"
-                style={{ color: styles.warmText }}
+                style={{ color: styles.text }}
               >
                 {participantInfo.receiverName || "Chat"}
               </h2>
@@ -265,7 +199,7 @@ export default function ChatPage() {
                 <p className="text-sm font-medium">
                   {participantInfo.listingInfo.name}
                 </p>
-                <p className="text-sm" style={{ color: styles.warmPrimary }}>
+                <p className="text-sm" style={{ color: styles.primary }}>
                   ₹{participantInfo.listingInfo.price}
                 </p>
               </div>
@@ -290,7 +224,7 @@ export default function ChatPage() {
                 {msg.sender_id !== userId && (
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm"
-                    style={{ backgroundColor: styles.warmPrimary }}
+                    style={{ backgroundColor: styles.primary }}
                   >
                     {participantInfo.receiverName
                       ? participantInfo.receiverName.charAt(0).toUpperCase()
@@ -305,8 +239,8 @@ export default function ChatPage() {
                   }`}
                   style={{
                     backgroundColor:
-                      msg.sender_id === userId ? styles.warmPrimary : "#F5F5F7",
-                    color: msg.sender_id === userId ? "white" : styles.warmText,
+                      msg.sender_id === userId ? styles.primary : "#F5F5F7",
+                    color: msg.sender_id === userId ? "white" : styles.text,
                     padding: "12px 16px",
                   }}
                 >
@@ -324,9 +258,8 @@ export default function ChatPage() {
           <div ref={messagesEndRef} />
         </div>
         <form
-          onSubmit={handleSendMessage}
           className="p-3 border-t flex"
-          style={{ borderColor: styles.warmBorder }}
+          style={{ borderColor: styles.primary_dark }}
         >
           <input
             type="text"
@@ -335,14 +268,14 @@ export default function ChatPage() {
               setChatState((prev) => ({ ...prev, newMessage: e.target.value }))
             }
             className="flex-grow p-3 border rounded-lg mr-2"
-            style={{ borderColor: styles.warmBorder }}
+            style={{ borderColor: styles.primary_dark }}
             placeholder="Type your message..."
             disabled={chatState.sending}
           />
           <button
             type="submit"
             className="p-3 rounded-lg text-white"
-            style={{ backgroundColor: styles.warmPrimary }}
+            style={{ backgroundColor: styles.primary }}
             disabled={!chatState.newMessage.trim() || chatState.sending}
           >
             {chatState.sending ? (
