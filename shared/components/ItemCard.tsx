@@ -16,7 +16,7 @@ interface ItemCardProps {
   onRemoveFromWishlist?: (id: string) => void;
 }
 
-const ItemCard: React.FC<ItemCardProps> = ({
+export default function ItemCard({
   item,
   showControls = false,
   isOwnItem = false,

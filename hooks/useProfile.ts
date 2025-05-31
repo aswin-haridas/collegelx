@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react"; // Add useCallback
 import { supabase } from "@/shared/lib/supabase";
+import { Listing } from "@/types";
 
 interface User {
   name: string;
@@ -23,8 +24,8 @@ interface Review {
 
 export const useProfile = (userId: string | null) => {
   const [user, setUser] = useState<User | null>(null);
-  const [items, setItems] = useState<ItemType[]>([]);
-  const [wishlistItems, setWishlistItems] = useState<ItemType[]>([]);
+  const [items, setItems] = useState<Listing[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<Listing[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -150,7 +151,7 @@ export const useProfile = (userId: string | null) => {
 
   // Update an item/product with useCallback
   const updateItem = useCallback(
-    async (itemId: string, updates: Partial<ItemType>) => {
+    async (itemId: string, updates: Partial<Listing>) => {
       if (!userId) return null;
       setLoading(true);
       try {
@@ -167,8 +168,8 @@ export const useProfile = (userId: string | null) => {
         // Update local items state
         setItems((prevItems) =>
           prevItems.map((item) =>
-            item.id === itemId ? { ...item, ...updates } : item,
-          ),
+            item.id === itemId ? { ...item, ...updates } : item
+          )
         );
 
         return data;
@@ -180,7 +181,7 @@ export const useProfile = (userId: string | null) => {
         setLoading(false);
       }
     },
-    [userId],
+    [userId]
   );
 
   return {

@@ -2,7 +2,7 @@
 import Header from "@/shared/components/Header";
 import { supabase } from "@/shared/lib/supabase";
 import ItemListings from "./components/ItemListings"; // New client component
-import { Item } from "@/types"; // Keep Item type if needed for casting
+import { Listing } from "@/types"; // Keep Item type if needed for casting
 
 export default async function ItemsPage() {
   const { data, error } = await supabase.from("listings").select("*");
@@ -23,7 +23,7 @@ export default async function ItemsPage() {
   return (
     <>
       <Header />
-      <ItemListings initialItems={(data as Item[]) || []} />
+      <ItemListings initialItems={(data as Listing[]) || []} />
     </>
   );
 }

@@ -1,69 +1,38 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/shared/lib/supabase";
-import { User, Item } from "@/app/lib/types";
+import useSupabase from "@/shared/hooks/useSupabase";
+import { User, Listing } from "@/types";
 
 export function useAdmin() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
-  const [unlistedItems, setUnlistedItems] = useState<Item[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Fetch users from Supabase
+  // Use useSupabase hooks for data fetching
+  const {
+    data: users,
+    error: usersError,
+    loading: usersLoading,
+  } = useSupabase<User>("users");
+  const {
+    data: items,
+    error: itemsError,
+    loading: itemsLoading,
+  } = useSupabase<Listing>("products");
+  const {
+    data: unlistedItems,
+    error: unlistedError,
+    loading: unlistedLoading,
+  } = useSupabase<Listing>("products", ["*"], "status", "unlisted");
+
+  const isLoading = usersLoading || itemsLoading || unlistedLoading;
+
+  // Set error state if any of the queries fail
   useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  // Fetch all items and unlisted items from Supabase
-  useEffect(() => {
-    const fetchAllData = async () => {
-      await Promise.all([fetchItems(), fetchUnlistedItems()]);
-      setIsLoading(false);
-    };
-
-    fetchAllData();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      const { data, error } = await supabase.from("users").select("*");
-
-      if (error) throw error;
-      setUsers(data || []);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users");
+    if (usersError || itemsError || unlistedError) {
+      setError(usersError || itemsError || unlistedError);
     }
-  };
-
-  const fetchItems = async () => {
-    try {
-      const { data, error } = await supabase.from("products").select("*");
-
-      if (error) throw error;
-      setItems(data || []);
-    } catch (err) {
-      console.error("Error fetching items:", err);
-      setError("Failed to load items");
-    }
-  };
-
-  const fetchUnlistedItems = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("status", "unlisted");
-
-      if (error) throw error;
-      setUnlistedItems(data || []);
-    } catch (err) {
-      console.error("Error fetching unlisted items:", err);
-      setError("Failed to load unlisted items");
-    }
-  };
+  }, [usersError, itemsError, unlistedError]);
 
   // Function to update user
   const updateUser = async (updatedUser: User) => {
@@ -75,10 +44,6 @@ export function useAdmin() {
 
       if (error) throw error;
 
-      // Update local state
-      setUsers(
-        users.map((user) => (user.id === updatedUser.id ? updatedUser : user)),
-      );
       showSuccess("User updated successfully!");
       return true;
     } catch (err) {
@@ -89,7 +54,7 @@ export function useAdmin() {
   };
 
   // Function to update item
-  const updateItem = async (updatedItem: Item) => {
+  const updateItem = async (updatedItem: Listing) => {
     try {
       const { error } = await supabase
         .from("products")
@@ -98,21 +63,6 @@ export function useAdmin() {
 
       if (error) throw error;
 
-      // Update local state
-      setItems(
-        items.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
-      );
-      if (updatedItem.status === "unlisted") {
-        setUnlistedItems(
-          unlistedItems.map((item) =>
-            item.id === updatedItem.id ? updatedItem : item,
-          ),
-        );
-      } else {
-        setUnlistedItems(
-          unlistedItems.filter((item) => item.id !== updatedItem.id),
-        );
-      }
       showSuccess("Item updated successfully!");
       return true;
     } catch (err) {
@@ -130,9 +80,9 @@ export function useAdmin() {
   };
 
   return {
-    users,
-    items,
-    unlistedItems,
+    users: users || [],
+    items: items || [],
+    unlistedItems: unlistedItems || [],
     isLoading,
     error,
     showSuccessMessage,

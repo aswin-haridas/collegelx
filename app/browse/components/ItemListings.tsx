@@ -2,20 +2,19 @@
 "use client";
 
 import { useState, useEffect } from "react"; // useEffect might still be needed for reactions to prop changes or other client-side effects, but not for initial fetch.
-import { Item } from "@/types";
+import { Listing } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "./FilterSidebar"; // Adjusted path
 import { LoadingSpinner } from "@/shared/components/ui/Loading"; // Keep if client-side loading state is used
 import { styles } from "@/shared/styles/theme";
 
-
 interface ItemListingsProps {
-  initialItems: Item[];
+  initialItems: Listing[];
 }
 
 export default function ItemListings({ initialItems }: ItemListingsProps) {
-  const [items, setItems] = useState<Item[]>(initialItems);
+  const [items, setItems] = useState<Listing[]>(initialItems);
   const [loading, setLoading] = useState(false); // For client-side operations, initial load is done by server
   const [filters, setFilters] = useState({
     search: "",
@@ -60,7 +59,7 @@ export default function ItemListings({ initialItems }: ItemListingsProps) {
       <Sidebar items={items} filters={filters} setFilters={setFilters} />
       <div className="flex-1">
         <div className="p-4">
-          {loading && ( /* This loading is for client-side changes if any */
+          {loading /* This loading is for client-side changes if any */ && (
             <div className="flex justify-center items-center h-screen">
               <LoadingSpinner />
             </div>
@@ -79,7 +78,7 @@ export default function ItemListings({ initialItems }: ItemListingsProps) {
                 >
                   <div className="border border-stone-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
                     <div className="relative h-48 bg-gray-50">
-                      {item.images?.length > 0 ? (
+                      {item.images && item.images.length > 0 ? (
                         <Image
                           src={item.images[0]}
                           alt={item.name}

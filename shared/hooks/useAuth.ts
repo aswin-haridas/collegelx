@@ -1,7 +1,7 @@
 // hooks/useAuth.ts
-import { useEffect, useState } from 'react';
-import { supabase } from '@/shared/lib/supabase';
-import { User, Session } from '@supabase/supabase-js';
+import { useEffect, useState } from "react";
+import { supabase } from "@/shared/lib/supabase";
+import { User, Session } from "@supabase/supabase-js";
 
 interface AuthState {
   user: User | null;
@@ -27,13 +27,16 @@ export default function useAuth(): AuthState {
           loading: false,
           error: null,
         });
-      }
+      },
     );
 
     // Check initial session
     const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
         if (error) throw error;
         setAuthState({
           user: session?.user ?? null,
@@ -51,11 +54,6 @@ export default function useAuth(): AuthState {
       }
     };
 
-    getInitialSession();
-
-    return () => {
-      authListener?.unsubscribe();
-    };
   }, []);
 
   return authState;

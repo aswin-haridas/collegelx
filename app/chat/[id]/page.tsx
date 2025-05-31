@@ -5,10 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/shared/lib/supabase";
 import { styles } from "@/shared/styles/theme";
 import toast from "react-hot-toast";
+import { ChatMessage } from "@/types";
 
 export default function ChatPage() {
   const [chatState, setChatState] = useState({
-    messages: [] as Message[],
+    messages: [] as ChatMessage[],
     newMessage: "",
     sending: false,
     loading: true,
@@ -58,11 +59,9 @@ export default function ChatPage() {
       }
     };
 
-    loadChatData();
     setupRealtimeSubscription();
 
     return () => {
-      supabase.removeChannel(supabase.channel("public:messages"));
       toast.success("Chat connection closed");
     };
   }, [userId, receiverId, listingId, router]);
@@ -81,7 +80,9 @@ export default function ChatPage() {
         .or(`sender_id.eq.${receiverId},reciever_id.eq.${receiverId}`)
         .order("sent_at", { ascending: true });
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        throw new Error(`Failed to fetch messages: ${error.message}`);
+      }
 
       const filteredMessages = (data || []).filter(
         (msg) =>
@@ -92,7 +93,7 @@ export default function ChatPage() {
 
       setChatState((prev) => ({ ...prev, messages: filteredMessages }));
     } catch (err) {
-      throw err;
+      console.log("Error loading chat:", err);
     }
   };
 
@@ -183,7 +184,7 @@ export default function ChatPage() {
 
       const { error } = await supabase.from("messages").insert([messageData]);
 
-      if (error) throw new Error(error.message);
+
 
       setChatState((prev) => ({ ...prev, newMessage: "", sending: false }));
     } catch (err) {

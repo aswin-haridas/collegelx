@@ -1,17 +1,17 @@
 import { styles } from "@/shared/styles/theme";
-import { Conversation } from "@/types";
+import { ChatMessage } from "@/types";
 import ConversationGroup from "./ConversationGroup";
 import { useRouter } from "next/navigation";
 
 interface ConversationListProps {
   loading: boolean;
   error: string | null;
-  filteredConversations: Conversation[];
+  filteredConversations: ChatMessage[];
   searchQuery: string;
-  groupedConversations: Record<string, Conversation[]>;
-  handleConversationClick: (conversation: Conversation) => void;
+  groupedConversations: Record<string, ChatMessage[]>;
+  handleConversationClick: (conversation: ChatMessage) => void;
   formatDate: (dateStr: string) => string;
-  getListingname: (conversation: Conversation) => string;
+  getListingname: (conversation: ChatMessage) => string;
 }
 
 export default function ConversationList({

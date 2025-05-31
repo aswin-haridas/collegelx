@@ -25,7 +25,7 @@ export type Listing = {
   condition: string; // text
   status?: string; // text
   images?: string[]; // text[]
-  created_at?: string; // timestamp with time zone
+  created_at?: Date | undefined; // timestamp with time zone
   updated_at?: string; // timestamp with time zone
   category?: string; // text
   tags?: string[]; // text[]
@@ -64,4 +64,5 @@ export type User = {
   department?: string; // text
   password?: string; // text
   phone?: string; // text
+  role: string;
 };

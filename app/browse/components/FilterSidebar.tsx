@@ -1,8 +1,8 @@
-import { Item } from "@/types";
+import { Listing } from "@/types";
 import { Dispatch, SetStateAction } from "react";
 
 interface SidebarProps {
-  items: Item[];
+  items: Listing[];
   filters: {
     search: string;
     condition: string;

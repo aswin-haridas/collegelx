@@ -34,9 +34,7 @@ export default function MessagesPage() {
           .or(`sender_id.eq.${userId},reciever_id.eq.${userId}`)
           .order("sent_at", { ascending: false });
 
-        if (messagesError) {
-          throw new Error(messagesError.message);
-        }
+
 
         // Fetch user data for senders and receivers
         const userIds = new Set<string>();
@@ -148,7 +146,6 @@ export default function MessagesPage() {
       }
     }
 
-    fetchMessages();
   }, [router]);
 
   // Filter conversations when search query changes

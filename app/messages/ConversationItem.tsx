@@ -1,8 +1,8 @@
-import { Conversation } from "@/types";
+import { ChatMessage } from "@/types";
 
 interface ConversationItemProps {
-  conversation: Conversation;
-  onConversationClick: (conversation: Conversation) => void;
+  conversation: ChatMessage;
+  onConversationClick: (conversation: ChatMessage) => void;
   formatDate: (dateStr: string) => string;
 }
 
@@ -20,14 +20,16 @@ export default function ConversationItem({
       <div className="flex justify-between">
         <div className="flex-1">
           <h3 className="font-medium text-lg">
-            {conversation.participant_name}
+            {conversation.sender_id}
           </h3>
           <p className="text-gray-600 mt-1 line-clamp-1">
-            {conversation.last_message}
+            {conversation.message}
           </p>
         </div>
         <div className="text-sm text-gray-500 whitespace-nowrap ml-4">
-          {formatDate(conversation.last_message_time)}
+            {conversation.created_at
+                ? formatDate(conversation.created_at)
+                : "Just now"}
         </div>
       </div>
     </li>

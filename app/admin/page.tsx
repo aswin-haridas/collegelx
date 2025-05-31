@@ -1,8 +1,10 @@
 "use client";
 import React, { useState } from "react";
-import { User, Item } from "@/types";
+import { User, Listing } from "@/types";
 import Header from "@/shared/components/Header";
 import { useAdmin } from "./useAdmin";
+import ItemEditModal from "./components/ItemEditModal";
+import UserEditModal from "./components/UserEditModal";
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<
@@ -10,7 +12,7 @@ function AdminDashboard() {
   >("users");
   const [searchQuery, setSearchQuery] = useState("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [editingItem, setEditingItem] = useState<Listing | null>(null);
 
   const {
     users,
@@ -28,18 +30,18 @@ function AdminDashboard() {
   // Filter users based on search query
   const filteredUsers = users.filter(
     (user) =>
-      user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchQuery.toLowerCase()),
+      user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Filter items based on search query
   const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Filter unlisted items based on search query
   const filteredUnlistedItems = unlistedItems.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -151,11 +153,9 @@ function AdminDashboard() {
                         {filteredUsers.map((user) => (
                           <tr key={user.id} className="border-t">
                             <td className="p-2">{user.id}</td>
-                            <td className="p-2">{user.name || "N/A"}</td>
+                            <td className="p-2">{user.full_name || "N/A"}</td>
                             <td className="p-2">{user.email || "N/A"}</td>
-                            <td className="p-2">
-                              {user.university_id || "N/A"}
-                            </td>
+                            <td className="p-2">{user.college_id || "N/A"}</td>
                             <td className="p-2">{user.department || "N/A"}</td>
                             <td className="p-2">
                               <span
@@ -218,7 +218,7 @@ function AdminDashboard() {
                                 {item.status}
                               </span>
                             </td>
-                            <td className="p-2">{item.seller_id}</td>
+                            <td className="p-2">{item.owner}</td>
                             <td className="p-2">
                               <button
                                 onClick={() => setEditingItem(item)}
@@ -256,9 +256,11 @@ function AdminDashboard() {
                             <td className="p-2">{item.name}</td>
                             <td className="p-2">{item.category}</td>
                             <td className="p-2">${item.price}</td>
-                            <td className="p-2">{item.seller_id}</td>
+                            <td className="p-2">{item.owner}</td>
                             <td className="p-2">
-                              {new Date(item.created_at).toLocaleDateString()}
+                              {new Date(
+                                item.created_at || ""
+                              ).toLocaleDateString()}
                             </td>
                             <td className="p-2">
                               <button
@@ -281,170 +283,19 @@ function AdminDashboard() {
 
         {/* Edit User Modal */}
         {editingUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl border border-gray-300">
-              <h2 className="text-xl font-bold mb-4">Edit User</h2>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  updateUser(editingUser);
-                  setEditingUser(null);
-                }}
-              >
-                <div className="mb-4">
-                  <label className="block text-gray-800 mb-1">Name</label>
-                  <input
-                    type="text"
-                    value={editingUser.full_name || ""}
-                    onChange={(e) =>
-                      setEditingUser({
-                        ...editingUser,
-                        full_name: e.target.value,
-                      })
-                    }
-                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-800 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={editingUser.email || ""}
-                    onChange={(e) =>
-                      setEditingUser({ ...editingUser, email: e.target.value })
-                    }
-                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-800 mb-1">Department</label>
-                  <input
-                    type="text"
-                    value={editingUser.department || ""}
-                    onChange={(e) =>
-                      setEditingUser({
-                        ...editingUser,
-                        department: e.target.value,
-                      })
-                    }
-                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-800 mb-1">Role</label>
-                  <select
-                    value={editingUser.role || "user"}
-                    onChange={(e) =>
-                      setEditingUser({ ...editingUser, role: e.target.value })
-                    }
-                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
-                  >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditingUser(null)}
-                    className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <UserEditModal
+            editingUser={editingUser}
+            setEditingUser={setEditingUser}
+            updateUser={updateUser}
+          />
         )}
-
         {/* Edit Item Modal */}
         {editingItem && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl border border-gray-300">
-              <h2 className="text-xl font-bold mb-4">Edit Item</h2>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  updateItem(editingItem);
-                  setEditingItem(null);
-                }}
-              >
-                <div className="mb-4">
-                  <label className="block text-gray-800 mb-1">name</label>
-                  <input
-                    type="text"
-                    value={editingItem.name}
-                    onChange={(e) =>
-                      setEditingItem({ ...editingItem, name: e.target.value })
-                    }
-                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-800 mb-1">Category</label>
-                  <input
-                    type="text"
-                    value={editingItem.category}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        category: e.target.value,
-                      })
-                    }
-                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-800 mb-1">Price</label>
-                  <input
-                    type="number"
-                    value={editingItem.price}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        price: parseFloat(e.target.value),
-                      })
-                    }
-                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-800 mb-1">Status</label>
-                  <select
-                    value={editingItem.status}
-                    onChange={(e) =>
-                      setEditingItem({ ...editingItem, status: e.target.value })
-                    }
-                    className="w-full p-2 border border-gray-300 rounded focus:border-black focus:outline-none"
-                  >
-                    <option value="available">Available</option>
-                    <option value="unlisted">Unlisted</option>
-                  </select>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditingItem(null)}
-                    className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <ItemEditModal
+            editingItem={editingItem}
+            setEditingItem={setEditingItem}
+            updateItem={updateItem}
+          />
         )}
       </div>
     </>

@@ -9,10 +9,10 @@ import Header from "@/shared/components/Header";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { Item } from "@/types";
+import { Listing } from "@/types";
 export default function SellPage() {
   const router = useRouter();
-  const { register, handleSubmit } = useForm<Item>();
+  const { register, handleSubmit } = useForm<Listing>();
 
   const [images, setImages] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -28,7 +28,7 @@ export default function SellPage() {
     setPreviewUrls(urls);
   };
 
-  const onSubmit: SubmitHandler<Item> = async (data) => {
+  const onSubmit: SubmitHandler<Listing> = async (data) => {
     if (!userId) {
       toast.error("Please login to create a listing");
       return;

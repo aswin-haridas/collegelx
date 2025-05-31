@@ -2,21 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Item } from "@/types"; // Item type
-import { User } from '@supabase/supabase-js'; // Supabase User type
-import { supabase } from '@/shared/lib/supabase'; // Client-side Supabase
-import toast from 'react-hot-toast';
-import { styles } from "@/shared/styles/theme";
+import { Listing } from "@/types"; // Item type
+import { User } from "@supabase/supabase-js"; // Supabase User type
+import { supabase } from "@/shared/lib/supabase"; // Client-side Supabase
+import toast from "react-hot-toast";
+import { styles, playfair } from "@/shared/styles/theme";
 import { MessageSquare, Heart, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// Assuming playfair is part of styles from theme.ts or defined globally.
-// If not, it needs to be imported or defined properly. For now, let's assume it's available via styles.
-const playfair = styles.playfair || { className: "font-playfair" }; // Access from styles or fallback
-
 // Define ItemWithSeller if not imported (structure based on server component query)
-type ItemWithSeller = Item & {
+type ItemWithSeller = Listing & {
   seller_id: User | null;
 };
 
@@ -27,7 +23,12 @@ interface ProductDetailClientViewProps {
   isWishlistedInitial: boolean;
 }
 
-export default function ProductDetailClientView({ item, user, isSeller, isWishlistedInitial }: ProductDetailClientViewProps) {
+export default function ProductDetailClientView({
+  item,
+  user,
+  isSeller,
+  isWishlistedInitial,
+}: ProductDetailClientViewProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const router = useRouter();
   const [isWishlisted, setIsWishlisted] = useState(isWishlistedInitial);
@@ -91,9 +92,6 @@ export default function ProductDetailClientView({ item, user, isSeller, isWishli
     // but as a fallback:
     return <p className="text-center text-red-500">Item not found.</p>;
   }
-
-  // Use item.seller_id directly if it's populated by the server query
-  const seller = item.seller_id;
 
   return (
     <div className="max-w-6xl mx-auto p-4 py-10">
@@ -206,8 +204,12 @@ export default function ProductDetailClientView({ item, user, isSeller, isWishli
               {seller && (
                 <div className="text-sm text-gray-600 flex items-center">
                   <span className="mr-1">Posted by:</span>
-                  <Link href={`/profile/${seller.id}`} className="font-medium cursor-pointer hover:underline" style={{ color: styles.primary }}>
-                      {seller.full_name || "Unknown Seller"}
+                  <Link
+                    href={`/profile/${seller.id}`}
+                    className="font-medium cursor-pointer hover:underline"
+                    style={{ color: styles.primary }}
+                  >
+                    {seller.full_name || "Unknown Seller"}
                   </Link>
                 </div>
               )}
@@ -230,8 +232,12 @@ export default function ProductDetailClientView({ item, user, isSeller, isWishli
                 {seller && (
                   <div className="flex flex-col">
                     <span className="text-gray-500 text-sm">Seller</span>
-                     <Link href={`/profile/${seller.id}`} className="font-medium cursor-pointer hover:underline" style={{ color: styles.primary }}>
-                        {seller.full_name || "Unknown Seller"}
+                    <Link
+                      href={`/profile/${seller.id}`}
+                      className="font-medium cursor-pointer hover:underline"
+                      style={{ color: styles.primary }}
+                    >
+                      {seller.full_name || "Unknown Seller"}
                     </Link>
                   </div>
                 )}
@@ -243,7 +249,10 @@ export default function ProductDetailClientView({ item, user, isSeller, isWishli
                 <h2 className="text-xl font-semibold mb-4">
                   Seller Information
                 </h2>
-                <Link href={`/profile/${seller.id}`} className="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                <Link
+                  href={`/profile/${seller.id}`}
+                  className="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                >
                   <div className="h-12 w-12 rounded-full bg-gray-200 overflow-hidden mr-4 flex items-center justify-center">
                     {seller.profile_picture ? (
                       <Image

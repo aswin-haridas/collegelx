@@ -52,7 +52,6 @@ export default function useSupabase<T = any>(
       }
     };
 
-    fetchData();
   }, [tableName, columns.join(","), equalColumn, equalValue]);
 
   return { data, error, loading };

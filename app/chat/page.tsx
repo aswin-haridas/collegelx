@@ -34,7 +34,6 @@ export default function ChatPage() {
 
         if (data) setUser(data);
       };
-      fetchUser();
     }
   }, []);
 
