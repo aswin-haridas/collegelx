@@ -15,7 +15,7 @@ interface ItemListingsProps {
 
 export default function ItemListings({ initialItems }: ItemListingsProps) {
   const [items, setItems] = useState<Listing[]>(initialItems);
-  const [loading, setLoading] = useState(false); // For client-side operations, initial load is done by server
+  const [loading] = useState(false); // For client-side operations, initial load is done by server
   const [filters, setFilters] = useState({
     search: "",
     condition: "All",

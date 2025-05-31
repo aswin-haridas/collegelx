@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useChat } from "./useChat";
 import Header from "@/shared/components/Header";
 import { User } from "@/types";
 import { supabase } from "@/shared/lib/supabase";
+import Sidebar from "../browse/components/FilterSidebar";
 
 export default function ChatPage() {
   const {
@@ -19,37 +19,21 @@ export default function ChatPage() {
     sendMessage,
   } = useChat();
 
-  const [user, setUser] = useState<User | null>(null);
+  const [user] = useState<User | null>(null);
   const [newMessage, setNewMessage] = useState("");
-
-  useEffect(() => {
-    const currentUserId = sessionStorage.getItem("user_id");
-    if (currentUserId) {
-      const fetchUser = async () => {
-        const { data } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", currentUserId)
-          .single();
-
-        if (data) setUser(data);
-      };
-    }
-  }, []);
 
   return (
     <>
       <Header />
       <div className="flex" style={{ height: "calc(100vh - 70px)" }}>
-        <Sidebar
+        <Sidebar 
           chats={chats}
-          chatProducts={chatProducts}
           chatUsers={chatUsers}
-          user={user}
-          loading={loading}
-          error={error}
           selectedChatId={selectedChatId}
           setSelectedChatId={setSelectedChatId}
+          loading={loading}
+          error={error}
+          user={user}
         />
         <ChatWindow
           messages={messages}

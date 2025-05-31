@@ -19,7 +19,7 @@ interface SidebarProps {
   >;
 }
 
-export default function Sidebar({ items, filters, setFilters }: SidebarProps) {
+export default function Sidebar({ filters, setFilters }: SidebarProps) {
   const categories = ["Notes", "Uniform", "Stationary", "Others", "All"];
   const conditions = ["new", "like_new", "good", "fair", "poor", "All"];
   const clearFilters = () => {

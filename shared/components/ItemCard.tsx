@@ -44,9 +44,7 @@ export default function ItemCard({
       e.preventDefault();
       e.stopPropagation();
       action(id);
-    };
-
-    return (
+    };   return (
       <Link href={`/buy/${item.id}`} className="block h-full">
         <div
           className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow h-full flex flex-col"
@@ -151,8 +149,8 @@ export default function ItemCard({
           </div>
         </div>
       </Link>
-    );
-  // Removed extra curly brace from erroneous line
-};
+  }
+ 
+            
 
 export default ItemCard; // Added default export

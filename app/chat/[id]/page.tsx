@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Loader2, AlertCircle, ArrowLeft, Send } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { supabase } from "@/shared/lib/supabase";
 import { styles } from "@/shared/styles/theme";
 import toast from "react-hot-toast";
 import { ChatMessage } from "@/types";
@@ -16,7 +15,7 @@ export default function ChatPage() {
     error: null as string | null,
   });
 
-  const [participantInfo, setParticipantInfo] = useState({
+  const [participantInfo] = useState({
     receiverName: null as string | null,
     listingInfo: null as { name: string; price: number; id: string } | null,
   });
@@ -40,25 +39,6 @@ export default function ChatPage() {
     if (receiverId) sessionStorage.setItem("receiver_id", receiverId);
     if (listingId) sessionStorage.setItem("listing_id", listingId);
 
-    const loadChatData = async () => {
-      try {
-        setChatState((prev) => ({ ...prev, loading: true }));
-
-        await Promise.all([
-          fetchMessages(),
-          fetchReceiverName(),
-          fetchListingInfo(),
-        ]);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to load chat data";
-        setChatState((prev) => ({ ...prev, error: errorMessage }));
-        console.error("Error loading chat data:", err);
-      } finally {
-        setChatState((prev) => ({ ...prev, loading: false }));
-      }
-    };
-
     return () => {
       toast.success("Chat connection closed");
     };
@@ -67,69 +47,6 @@ export default function ChatPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatState.messages]);
-
-  const fetchMessages = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("listing_id", listingId)
-        .or(`sender_id.eq.${userId},reciever_id.eq.${userId}`)
-        .or(`sender_id.eq.${receiverId},reciever_id.eq.${receiverId}`)
-        .order("sent_at", { ascending: true });
-
-      if (error) {
-        throw new Error(`Failed to fetch messages: ${error.message}`);
-      }
-
-      const filteredMessages = (data || []).filter(
-        (msg) =>
-          ((msg.sender_id === userId && msg.reciever_id === receiverId) ||
-            (msg.sender_id === receiverId && msg.reciever_id === userId)) &&
-          msg.listing_id === listingId
-      );
-
-      setChatState((prev) => ({ ...prev, messages: filteredMessages }));
-    } catch (err) {
-      console.log("Error loading chat:", err);
-    }
-  };
-
-  const fetchReceiverName = async () => {
-    if (!receiverId) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("name")
-        .eq("id", receiverId)
-        .single();
-
-      if (data && !error) {
-        setParticipantInfo((prev) => ({ ...prev, receiverName: data.name }));
-      }
-    } catch (err) {
-      console.error("Error fetching receiver name:", err);
-    }
-  };
-
-  const fetchListingInfo = async () => {
-    if (!listingId) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("listings")
-        .select("name, price, id")
-        .eq("id", listingId)
-        .single();
-
-      if (data && !error) {
-        setParticipantInfo((prev) => ({ ...prev, listingInfo: data }));
-      }
-    } catch (err) {
-      console.error("Error fetching listing info:", err);
-    }
-  };
 
   const goToListing = () => {
     if (listingId) {
