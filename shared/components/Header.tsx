@@ -37,7 +37,7 @@ const Header = () => {
           {/* Desktop Navigation */}
           <div className="flex items-center space-x-4">
             <Link
-              href="/products"
+              href="/browse"
               className="p-2 rounded-full hover:bg-amber-50 text-amber-700"
               title="Browse Products"
             >
