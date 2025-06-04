@@ -1,11 +1,11 @@
 "use client";
 import Link from "next/link";
-import { styles, playfair } from "@/shared/styles/theme";
+import { playfair } from "@/styles/theme";
 import { FieldValues, useForm } from "react-hook-form";
-import Input from "@/shared/components/ui/Input";
-import Button from "@/shared/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
 import Tagline from "../components/Tagline";
-import { supabase } from "@/shared/lib/supabase"; // Verified import path
+import { supabase } from "@/lib/supabase";
 import { redirect } from "next/navigation";
 import toast from "react-hot-toast";
 import { User } from "@/types";
@@ -18,22 +18,17 @@ export default function LoginPage() {
   } = useForm();
 
   const onSubmit = async (data: User) => {
-    try {
-      const { error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", data.email)
-        .single();
+    const { error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", data.email)
+      .single();
 
-      if (error) {
-        toast.error(`Login failed: ${error.message}`);
-        return;
-      }
-
-      redirect("/");
-    } catch (error: any) {
-      toast.error(`An unexpected error occurred: ${error.message}`);
+    if (error) {
+      toast.error(`Login failed: ${error.message}`);
+      return;
     }
+    redirect("/");
   };
 
   return (
@@ -57,10 +52,7 @@ function LoginForm({
   return (
     <div className="md:w-1/2 flex items-center justify-center p-4 md:p-12">
       <div className="w-full max-w-md space-y-6 p-8 md:p-10 rounded-xl shadow-lg bg-white">
-        <h2
-          className={`text-center text-3xl font-bold ${playfair.className}`}
-          style={{ color: styles.accent }}
-        >
+        <h2 className={`text-center text-3xl font-bold ${playfair.className}`}>
           Sign in
         </h2>
 
