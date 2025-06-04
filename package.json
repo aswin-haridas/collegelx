@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow pnpm",
+    "prepare": "husky"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
@@ -29,9 +30,18 @@
     "@typescript-eslint/eslint-plugin": "^8.33.0",
     "eslint": "^8.x.x",
     "eslint-config-next": "^13.x.x",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
     "only-allow": "^1.2.1",
     "prettier": "^3.5.3",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css}": "prettier --write"
   }
 }

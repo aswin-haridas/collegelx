@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display_SC } from "next/font/google";
-import "./globals.css";
-import Header from "@/shared/components/Header";
-import { ReactNode } from "react";
 
-const inter = Inter({ subsets: ["latin"] });
-const playfair = Playfair_Display_SC({
-  subsets: ["latin"],
-  weight: ["400", "700", "900"],
-  variable: "--font-playfair",
-});
+import "./globals.css";
+import { ReactNode } from "react";
+import Sidebar from "@/components/Sidebar";
+import { inter } from "@/styles/fonts";
 
 export const metadata: Metadata = {
   title: "CollegeLX",
@@ -19,9 +13,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} ${playfair.variable} `}>
-        <Header />
-        <main>{children}</main>
+      <body className={`${inter.className} flex`}>
+        <Sidebar />
+        <main className="rounded-lg">{children}</main>
       </body>
     </html>
   );

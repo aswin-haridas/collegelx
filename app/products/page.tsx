@@ -4,7 +4,6 @@ import { useState } from "react";
 import { styles } from "@/shared/styles/theme";
 import Link from "next/link";
 import Header from "@/shared/components/Header";
-import useSupabase from "@/shared/hooks/useSupabase";
 import Image from "next/image";
 
 const departments = [

@@ -1,5 +1,5 @@
 import { Loading } from "./Loading";
-import {styles} from "../../styles/theme";
+import { styles } from "../../styles/theme";
 
 interface ButtonProps {
   isSubmitting: boolean;
