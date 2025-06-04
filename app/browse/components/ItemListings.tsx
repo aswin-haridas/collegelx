@@ -6,8 +6,7 @@ import { Listing } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "./FilterSidebar"; // Adjusted path
-import { LoadingSpinner } from "@/shared/components/ui/Loading"; // Keep if client-side loading state is used
-import { styles } from "@/shared/styles/theme";
+import { LoadingSpinner } from "@/components/ui/Loading"; // Keep if client-side loading state is used
 
 interface ItemListingsProps {
   initialItems: Listing[];
@@ -23,7 +22,6 @@ export default function ItemListings({ initialItems }: ItemListingsProps) {
     sortPrice: "asc",
   });
 
-  // If initialItems can change due to parent re-fetching, you might need an effect to update items
   useEffect(() => {
     setItems(initialItems);
   }, [initialItems]);
@@ -49,10 +47,6 @@ export default function ItemListings({ initialItems }: ItemListingsProps) {
         return (b.price || 0) - (a.price || 0);
       }
     });
-
-  // The loading state here would be for when filters are applied, if that's a slow operation
-  // or if fetching items was a client-side action (which it's not for initial load anymore)
-  // For now, the main loading spinner from the original page (for initial fetch) is removed from here.
 
   return (
     <div className="flex min-h-screen">
@@ -95,20 +89,14 @@ export default function ItemListings({ initialItems }: ItemListingsProps) {
                       )}
                     </div>
                     <div className="p-4 flex flex-col flex-grow">
-                      <h3
-                        className={`font-medium text-lg mb-2`}
-                        style={{ color: styles.accent }}
-                      >
+                      <h3 className={`font-medium text-lg mb-2`}>
                         {item.name}
                       </h3>
                       <p className="text-gray-600 mb-2 text-sm flex-grow line-clamp-2">
                         {item.description}
                       </p>
                       <div className="flex justify-between items-center mt-2">
-                        <span
-                          className="font-bold"
-                          style={{ color: styles.primary }}
-                        >
+                        <span className="font-bold">
                           ₹{item.price.toFixed(2)}
                         </span>
                         <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">

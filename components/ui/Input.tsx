@@ -1,5 +1,3 @@
-import { styles } from "@/shared/styles/theme";
-
 interface InputProps {
   placeholder: string;
   type?: string;
@@ -19,12 +17,6 @@ export default function Input({
       type={type}
       autoComplete={type}
       placeholder={placeholder}
-      className={`relative block w-full px-3 py-2 border-2 rounded-md placeholder-${styles.text} focus:outline-none`}
-      style={{
-        borderColor: styles.primary,
-        color: styles.accent,
-        backgroundColor: styles.background,
-      }}
     />
   );
 }

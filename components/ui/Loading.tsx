@@ -1,11 +1,10 @@
 import React from "react";
-import { styles } from "@/shared/styles/theme";
 import { LoaderCircle } from "lucide-react";
 
 export const Loading = () => {
   return (
     <div className="flex items-center justify-center">
-      <LoaderCircle className="animate-spin " color={styles.primary_light} />
+      <LoaderCircle className="animate-spin " />
     </div>
   );
 };
@@ -18,7 +17,6 @@ export const LoadingSpinner = () => {
     >
       <circle
         className="opacity-10 transition-colors"
-        style={{ stroke: styles.primary }}
         cx="20"
         cy="20"
         r="17.5"
@@ -28,7 +26,6 @@ export const LoadingSpinner = () => {
       />
       <circle
         className="[stroke-dasharray:25,75] [stroke-dashoffset:0] stroke-linecap-round transition-colors"
-        style={{ stroke: styles.secondary }}
         cx="20"
         cy="20"
         r="17.5"

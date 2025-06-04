@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react"; // Add useCallback
-import { supabase } from "@/shared/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { Listing } from "@/types";
 
 interface User {
@@ -43,9 +43,11 @@ export const useProfile = (userId: string | null) => {
 
       if (error) throw error;
       setUser(data);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching user data:", error);
-      setError(error.message);
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred",
+      );
     } finally {
       setLoading(false);
     }
@@ -62,9 +64,8 @@ export const useProfile = (userId: string | null) => {
 
       if (error) throw error;
       setItems(data || []);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching user items:", error);
-      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -82,9 +83,8 @@ export const useProfile = (userId: string | null) => {
 
       if (error) throw error;
       setReviews(data || []);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching user reviews:", error);
-      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -115,9 +115,8 @@ export const useProfile = (userId: string | null) => {
       if (itemsError) throw itemsError;
 
       setWishlistItems(itemsData || []);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching wishlist:", error);
-      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -139,9 +138,8 @@ export const useProfile = (userId: string | null) => {
         if (error) throw error;
         setUser((prevUser) => ({ ...prevUser, ...formData }) as User);
         return data;
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error updating user data:", error);
-        setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -168,20 +166,19 @@ export const useProfile = (userId: string | null) => {
         // Update local items state
         setItems((prevItems) =>
           prevItems.map((item) =>
-            item.id === itemId ? { ...item, ...updates } : item
-          )
+            item.id === itemId ? { ...item, ...updates } : item,
+          ),
         );
 
         return data;
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error updating item:", error);
-        setError(error.message);
         return null;
       } finally {
         setLoading(false);
       }
     },
-    [userId]
+    [userId],
   );
 
   return {

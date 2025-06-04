@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Loader2, AlertCircle, ArrowLeft, Send } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { styles } from "@/shared/styles/theme";
+
 import toast from "react-hot-toast";
 import { ChatMessage } from "@/types";
 
@@ -57,10 +57,7 @@ export default function ChatPage() {
   if (chatState.loading) {
     return (
       <div className="h-screen flex items-center justify-center">
-        <Loader2
-          className="h-8 w-8 animate-spin"
-          style={{ color: styles.primary }}
-        />
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -74,7 +71,6 @@ export default function ChatPage() {
           <button
             onClick={() => router.push("/messages")}
             className="mt-4 px-4 py-2 rounded-lg text-white"
-            style={{ backgroundColor: styles.primary }}
           >
             Back to Messages
           </button>
@@ -86,22 +82,16 @@ export default function ChatPage() {
   return (
     <div className="h-screen flex">
       <div className="flex-1 flex flex-col">
-        <div
-          className="p-4 border-b flex items-center justify-between"
-          style={{ borderColor: styles.primary_dark }}
-        >
+        <div className="p-4 border-b flex items-center justify-between">
           <div className="flex items-center">
             <button
               onClick={() => router.push("/messages")}
               className="mr-4 p-2 rounded-full hover:bg-gray-100"
             >
-              <ArrowLeft className="h-5 w-5" style={{ color: styles.text }} />
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
-              <h2
-                className="font-medium text-lg"
-                style={{ color: styles.text }}
-              >
+              <h2 className="font-medium text-lg">
                 {participantInfo.receiverName || "Chat"}
               </h2>
             </div>
@@ -116,9 +106,7 @@ export default function ChatPage() {
                 <p className="text-sm font-medium">
                   {participantInfo.listingInfo.name}
                 </p>
-                <p className="text-sm" style={{ color: styles.primary }}>
-                  ₹{participantInfo.listingInfo.price}
-                </p>
+                <p className="text-sm">₹{participantInfo.listingInfo.price}</p>
               </div>
             </div>
           )}
@@ -131,53 +119,11 @@ export default function ChatPage() {
               <p className="text-sm">Start the conversation!</p>
             </div>
           ) : (
-            chatState.messages.map((msg: any) => (
-              <div
-                key={msg.id}
-                className={`flex mb-4 ${
-                  msg.sender_id === userId ? "justify-end" : "justify-start"
-                }`}
-              >
-                {msg.sender_id !== userId && (
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm"
-                    style={{ backgroundColor: styles.primary }}
-                  >
-                    {participantInfo.receiverName
-                      ? participantInfo.receiverName.charAt(0).toUpperCase()
-                      : "?"}
-                  </div>
-                )}
-                <div
-                  className={`rounded-lg max-w-[70%] shadow-sm ${
-                    msg.sender_id === userId
-                      ? "rounded-tr-none ml-2"
-                      : "rounded-tl-none mr-2"
-                  }`}
-                  style={{
-                    backgroundColor:
-                      msg.sender_id === userId ? styles.primary : "#F5F5F7",
-                    color: msg.sender_id === userId ? "white" : styles.text,
-                    padding: "12px 16px",
-                  }}
-                >
-                  <p className="break-words">{msg.message}</p>
-                  <div className="text-xs mt-1 opacity-80 text-right">
-                    {new Date(msg.sent_at).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
-                </div>
-              </div>
-            ))
+            <div></div>
           )}
           <div ref={messagesEndRef} />
         </div>
-        <form
-          className="p-3 border-t flex"
-          style={{ borderColor: styles.primary_dark }}
-        >
+        <form className="p-3 border-t flex">
           <input
             type="text"
             value={chatState.newMessage}
@@ -185,14 +131,12 @@ export default function ChatPage() {
               setChatState((prev) => ({ ...prev, newMessage: e.target.value }))
             }
             className="flex-grow p-3 border rounded-lg mr-2"
-            style={{ borderColor: styles.primary_dark }}
             placeholder="Type your message..."
             disabled={chatState.sending}
           />
           <button
             type="submit"
             className="p-3 rounded-lg text-white"
-            style={{ backgroundColor: styles.primary }}
             disabled={!chatState.newMessage.trim() || chatState.sending}
           >
             {chatState.sending ? (

@@ -1,6 +1,6 @@
 // app/browse/page.tsx (structure outline)
-import Header from "@/shared/components/Header";
-import { supabase } from "@/shared/lib/supabase";
+
+import { supabase } from "@/lib/supabase";
 import ItemListings from "./components/ItemListings"; // New client component
 import { Listing } from "@/types"; // Keep Item type if needed for casting
 
@@ -12,9 +12,10 @@ export default async function ItemsPage() {
     // Optionally render an error message to the user
     return (
       <>
-        <Header />
         <div className="flex justify-center items-center h-screen">
-          <p className="text-red-500">Error loading items. Please try again later.</p>
+          <p className="text-red-500">
+            Error loading items. Please try again later.
+          </p>
         </div>
       </>
     );
@@ -22,7 +23,6 @@ export default async function ItemsPage() {
 
   return (
     <>
-      <Header />
       <ItemListings initialItems={(data as Listing[]) || []} />
     </>
   );

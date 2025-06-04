@@ -9,14 +9,25 @@ import {
   Settings,
   LogOut,
   LogIn,
+  LucideIcon,
 } from "lucide-react";
 import { playfair } from "../styles/theme";
 
-const handleLogout = () => {
+const handleLogout = (): void => {
   console.log("Logout clicked");
 };
 
-const SidebarItem = ({ href, icon: Icon, title }) => (
+interface SidebarItemProps {
+  href: string;
+  icon: LucideIcon;
+  title: string;
+}
+
+const SidebarItem: React.FC<SidebarItemProps> = ({
+  href,
+  icon: Icon,
+  title,
+}) => (
   <Link
     href={href}
     className="flex items-center p-3 rounded-lg hover:bg-amber-50 text-amber-700"
@@ -27,7 +38,7 @@ const SidebarItem = ({ href, icon: Icon, title }) => (
   </Link>
 );
 
-const SidebarLogo = () => (
+const SidebarLogo: React.FC = () => (
   <div className="mb-10 ml-3">
     <Link href="/" className="flex items-center w-full">
       <span className={`text-3xl font-bold ${playfair.className}`}>
@@ -37,34 +48,38 @@ const SidebarLogo = () => (
   </div>
 );
 
-const SidebarNavLinks = ({ isAuthenticated }) => (
+interface SidebarNavLinksProps {
+  isAuthenticated: boolean;
+}
+
+const SidebarNavLinks: React.FC<SidebarNavLinksProps> = ({
+  isAuthenticated,
+}) => (
   <nav className="flex flex-col space-y-4">
     <SidebarItem href="/browse" icon={ShoppingBag} title="Browse Products" />
 
     {isAuthenticated && (
       <>
-        <SidebarItem href="/sell" icon={PlusCircle} title="Add Product">
-          Add Product
-        </SidebarItem>
-        <SidebarItem href="/messages" icon={MessageCircle} title="Messages">
-          Messages
-        </SidebarItem>
+        <SidebarItem href="/sell" icon={PlusCircle} title="Add Product" />
+        <SidebarItem href="/messages" icon={MessageCircle} title="Messages" />
         <SidebarItem
           href="/" // Assuming this is the profile page for logged-in users
           icon={UserCircle}
           title="Profile"
-        >
-          Profile
-        </SidebarItem>
-        <SidebarItem href="/admin" icon={Settings} title="Admin Dashboard">
-          Admin
-        </SidebarItem>
+        />
+        <SidebarItem href="/admin" icon={Settings} title="Admin Dashboard" />
       </>
     )}
   </nav>
 );
 
-const SidebarUserActions = ({ isAuthenticated }) => (
+interface SidebarUserActionsProps {
+  isAuthenticated: boolean;
+}
+
+const SidebarUserActions: React.FC<SidebarUserActionsProps> = ({
+  isAuthenticated,
+}) => (
   <div className="mt-auto">
     {isAuthenticated ? (
       <button
@@ -87,9 +102,9 @@ const SidebarUserActions = ({ isAuthenticated }) => (
   </div>
 );
 
-export default function Sidebar() {
+const Sidebar: React.FC = () => {
   // Replace true with actual authentication status check
-  const isAuthenticated = true;
+  const isAuthenticated: boolean = true;
 
   return (
     <div className={`h-screen w-64 bg-amber-400/15 flex flex-col p-4`}>
@@ -98,4 +113,6 @@ export default function Sidebar() {
       <SidebarUserActions isAuthenticated={isAuthenticated} />
     </div>
   );
-}
+};
+
+export default Sidebar;

@@ -1,5 +1,4 @@
 import { Loading } from "./Loading";
-import { styles } from "../../styles/theme";
 
 interface ButtonProps {
   isSubmitting: boolean;
@@ -19,7 +18,6 @@ export default function Button({
       disabled={isSubmitting}
       className="w-full px-4 py-2 rounded-md font-semibold border transition-all duration-200 text-[#FAF9F6] hover:opacity-90  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FAF9F6]"
       style={{
-        backgroundColor: isSubmitting ? styles.primary : styles.primary,
         cursor: isSubmitting ? "not-allowed" : "pointer",
       }}
       {...rest}

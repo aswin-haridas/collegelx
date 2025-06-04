@@ -2,10 +2,10 @@
 
 import { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { styles } from "@/shared/styles/theme";
-import { supabase } from "@/shared/lib/supabase";
+
+import { supabase } from "@/lib/supabase";
 import { Loader2, Upload } from "lucide-react";
-import Header from "@/shared/components/Header";
+
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -18,7 +18,7 @@ export default function SellPage() {
   const [uploading, setUploading] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-  const userId = sessionStorage.getItem("user_id");
+  const userId = "39629";
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -55,7 +55,7 @@ export default function SellPage() {
           } = supabase.storage.from("images").getPublicUrl(fileName);
 
           return publicUrl;
-        })
+        }),
       );
 
       const { error: insertError } = await supabase.from("products").insert({
@@ -87,7 +87,6 @@ export default function SellPage() {
 
   return (
     <>
-      <Header />
       <div className="h-screen">
         <div className="max-w-4xl mx-auto p-4 ">
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -189,10 +188,6 @@ export default function SellPage() {
                   type="text"
                   placeholder="e.g., mathematics, sem3, engineering"
                   className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-opacity-50"
-                  style={{
-                    borderColor: styles.primary,
-                    color: styles.text,
-                  }}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Add relevant tags to help others find your listing
@@ -245,7 +240,6 @@ export default function SellPage() {
               <button
                 type="submit"
                 className="w-full py-2 px-4 rounded-lg text-white flex items-center justify-center disabled:opacity-50"
-                style={{ backgroundColor: styles.primary }}
                 disabled={uploading}
               >
                 {uploading ? (
