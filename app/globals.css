@@ -1,11 +1,62 @@
 @import "tailwindcss";
 
+:root {
+	--color-beige-50: #fdfbf7;
+	--color-beige-100: #faf7f0;
+	--color-beige-200: #f5f0e6;
+	--color-beige-300: #eee6d6;
+	--color-beige-400: #e6d9c2;
+	--color-beige-500: #d4c4a8;
+	--color-beige-600: #c2b08e;
+	--color-beige-700: #a89a7a;
+	--color-beige-800: #8a7d65;
+	--color-beige-900: #6b6150;
+
+	--color-brown-50: #fdf8f6;
+	--color-brown-100: #f9f0ed;
+	--color-brown-200: #f2e4df;
+	--color-brown-300: #e8d3cc;
+	--color-brown-400: #d9b8ae;
+	--color-brown-500: #c49a8c;
+	--color-brown-600: #b07d6a;
+	--color-brown-700: #8f6353;
+	--color-brown-800: #735045;
+	--color-brown-900: #5a3e37;
+}
+
 body {
 	margin: 0;
 	padding: 0;
-	background-color: white;
+	background-color: var(--color-beige-50);
+	color: var(--color-brown-900);
 }
 
 button {
 	cursor: pointer;
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+/* Custom scrollbar for chat */
+.chat-scrollbar::-webkit-scrollbar {
+	width: 6px;
+}
+
+.chat-scrollbar::-webkit-scrollbar-track {
+	background: var(--color-beige-100);
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb {
+	background: var(--color-brown-300);
+	border-radius: 3px;
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb:hover {
+	background: var(--color-brown-400);
 }

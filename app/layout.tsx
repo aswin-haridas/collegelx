@@ -1,25 +1,27 @@
 import type { Metadata } from "next";
-
+import { Inter } from "next/font/google";
 import "./globals.css";
-import type { ReactNode } from "react";
-import { Sidebar } from "@/components";
-import { inter } from "@/styles/fonts";
+import Navigation from "@/components/Navigation";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-	title: "CollegeLX",
-	description: "Minimal college marketplace for students",
+	title: "College Marketplace",
+	description: "A marketplace for college students to buy and sell items",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+	children,
+}: {
+	children: React.ReactNode;
+}) {
 	return (
 		<html lang="en">
-			<body className={`${inter.className} flex h-screen`}>
-				<Sidebar />
-				<div className="flex-1 bg-amber-400/10 overflow-auto">
-					<main className="rounded-xl m-2 w-full p-8 bg-amber-600/5 min-h-full">
-						{children}
-					</main>
-				</div>
+			<body className={inter.className}>
+				<main className="min-h-screen bg-beige-50">
+					<Navigation />
+					<div className="container mx-auto px-4 py-8">{children}</div>
+				</main>
 			</body>
 		</html>
 	);
